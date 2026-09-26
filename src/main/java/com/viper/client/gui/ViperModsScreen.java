@@ -34,7 +34,6 @@ public class ViperModsScreen extends Screen {
 
     private final List<List<ModCard>> TAB_MODULES = new ArrayList<>();
 
-    // sidebar
     private static final String[] SIDEBAR_LABELS = {"COSMETICS", "SKINS", "EMOTES", "FRIENDS"};
 
     public ViperModsScreen() {
@@ -63,6 +62,8 @@ public class ViperModsScreen extends Screen {
 
         List<ModCard> pvp = new ArrayList<>();
         pvp.add(new ModCard("togglesprint", "TOGGLE SPRINT", "Auto-sprint toggle (R)", () -> Config.toggleSprint, v -> Config.toggleSprint = v));
+        pvp.add(new ModCard("customcrosshair", "CUSTOM CROSSHAIR", "Lila crosshair", () -> Config.showCustomCrosshair, v -> Config.showCustomCrosshair = v));
+        pvp.add(new ModCard("targetindicator", "TARGET INDICATOR", "Box when aiming at entity", () -> Config.showTargetIndicator, v -> Config.showTargetIndicator = v));
         TAB_MODULES.add(pvp);
     }
 
@@ -81,7 +82,6 @@ public class ViperModsScreen extends Screen {
 
         drawSidebar(context, mouseX, mouseY);
 
-        // tabs
         int tabsX = panelX + SIDEBAR_W + 16;
         int tx = tabsX;
         for (int i = 0; i < TABS.length; i++) {
@@ -100,7 +100,6 @@ public class ViperModsScreen extends Screen {
             tx += tw + 8;
         }
 
-        // close X
         int closeX = panelX + panelW - 28;
         int closeY = panelY + 8;
         boolean closeHover = mouseX >= closeX && mouseX <= closeX + 20 && mouseY >= closeY && mouseY <= closeY + 20;
@@ -109,7 +108,6 @@ public class ViperModsScreen extends Screen {
 
         context.fill(panelX + SIDEBAR_W + 1, panelY + TAB_H + 18, panelX + panelW, panelY + TAB_H + 19, 0xFF2a1a3a);
 
-        // cards
         if (activeTab < TAB_MODULES.size()) {
             List<ModCard> cards = TAB_MODULES.get(activeTab);
             int cardsStartX = panelX + SIDEBAR_W + 16;
@@ -145,26 +143,21 @@ public class ViperModsScreen extends Screen {
         int startY = panelY + 20;
         int cx = panelX + SIDEBAR_W / 2;
 
-        // MODS icon oben — IMMER aktiv auf diesem screen
         {
             int iy = startY;
             int bg = 0xFF2a1a44;
             context.fill(cx - iconSize / 2, iy, cx + iconSize / 2, iy + iconSize, bg);
             context.fill(cx - iconSize / 2, iy, cx - iconSize / 2 + 2, iy + iconSize, COLOR_ACCENT);
-
             drawModsIcon(context, cx, iy + iconSize / 2);
             context.drawCenteredTextWithShadow(this.textRenderer, "MODS", cx, iy + iconSize + 2, COLOR_ACCENT);
         }
 
-        // placeholders drunter
         int startY2 = startY + itemH + gap;
         for (int i = 0; i < SIDEBAR_LABELS.length; i++) {
             int iy = startY2 + i * (itemH + gap);
             boolean hovered = mouseX >= cx - iconSize / 2 && mouseX <= cx + iconSize / 2 && mouseY >= iy && mouseY <= iy + iconSize;
-
             int bg = hovered ? 0x33A855F7 : 0x00000000;
             context.fill(cx - iconSize / 2, iy, cx + iconSize / 2, iy + iconSize, bg);
-
             drawPlaceholderIcon(context, i, cx, iy + iconSize / 2, hovered);
             context.drawCenteredTextWithShadow(this.textRenderer, SIDEBAR_LABELS[i], cx, iy + iconSize + 2, hovered ? COLOR_ACCENT : COLOR_MUTED);
         }
@@ -245,7 +238,6 @@ public class ViperModsScreen extends Screen {
         int mx = (int) click.x();
         int my = (int) click.y();
 
-        // close X
         int closeX = panelX + panelW - 28;
         int closeY = panelY + 8;
         if (mx >= closeX && mx <= closeX + 20 && my >= closeY && my <= closeY + 20) {
@@ -260,7 +252,6 @@ public class ViperModsScreen extends Screen {
         int startY = panelY + 20;
         int cxSide = panelX + SIDEBAR_W / 2;
 
-        // placeholder-navigation (MODS icon selbst macht nichts — man ist schon hier)
         int startY2 = startY + itemH + gap;
         for (int i = 0; i < SIDEBAR_LABELS.length; i++) {
             int iy = startY2 + i * (itemH + gap);
@@ -270,7 +261,6 @@ public class ViperModsScreen extends Screen {
             }
         }
 
-        // tabs
         int tabsX = panelX + SIDEBAR_W + 16;
         int tx = tabsX;
         for (int i = 0; i < TABS.length; i++) {
@@ -282,7 +272,6 @@ public class ViperModsScreen extends Screen {
             tx += tw + 8;
         }
 
-        // cards
         if (activeTab < TAB_MODULES.size()) {
             List<ModCard> cards = TAB_MODULES.get(activeTab);
             int cardsStartX = panelX + SIDEBAR_W + 16;

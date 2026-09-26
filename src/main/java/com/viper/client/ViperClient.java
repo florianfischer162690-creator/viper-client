@@ -3,6 +3,7 @@ package com.viper.client;
 import com.viper.client.config.Config;
 import com.viper.client.gui.ViperStartMenu;
 import com.viper.client.hud.HudRenderer;
+import com.viper.client.hud.element.CrosshairElement;
 import com.viper.client.util.ClickTracker;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -47,6 +48,7 @@ public class ViperClient implements ClientModInitializer {
             } catch (Throwable ignored) {}
 
             HudRenderer.render(context, 0.0f);
+            CrosshairElement.render(context);
         });
 
         toggleHudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(

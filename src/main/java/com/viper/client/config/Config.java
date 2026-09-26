@@ -22,17 +22,17 @@ public class Config {
     public static boolean showPotion = true;
     public static boolean showKeystrokes = true;
 
+    // PVP
+    public static boolean toggleSprint = true;
+    public static boolean showCustomCrosshair = true;
+    public static boolean showTargetIndicator = true;
+
     // HUD POSITION
     public static int hudX = 4;
     public static int hudY = 4;
     public static float hudScale = 1.0f;
 
-    // per-element
     public static Map<String, ElementPos> elementPositions = new HashMap<>();
-
-    // PVP
-    public static boolean toggleSprint = true;
-    public static boolean customCrosshair = false;
 
     public static class ElementPos {
         public int x;
@@ -91,11 +91,12 @@ public class Config {
         showArmor = d.showArmor;
         showPotion = d.showPotion;
         showKeystrokes = d.showKeystrokes;
+        toggleSprint = d.toggleSprint;
+        showCustomCrosshair = d.showCustomCrosshair;
+        showTargetIndicator = d.showTargetIndicator;
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
-        toggleSprint = d.toggleSprint;
-        customCrosshair = d.customCrosshair;
         elementPositions = d.elementPositions != null ? d.elementPositions : new HashMap<>();
     }
 
@@ -109,11 +110,12 @@ public class Config {
         d.showArmor = showArmor;
         d.showPotion = showPotion;
         d.showKeystrokes = showKeystrokes;
+        d.toggleSprint = toggleSprint;
+        d.showCustomCrosshair = showCustomCrosshair;
+        d.showTargetIndicator = showTargetIndicator;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
-        d.toggleSprint = toggleSprint;
-        d.customCrosshair = customCrosshair;
         d.elementPositions = elementPositions;
         return d;
     }
@@ -127,11 +129,12 @@ public class Config {
         boolean showArmor = true;
         boolean showPotion = true;
         boolean showKeystrokes = true;
+        boolean toggleSprint = true;
+        boolean showCustomCrosshair = true;
+        boolean showTargetIndicator = true;
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;
-        boolean toggleSprint = true;
-        boolean customCrosshair = false;
         Map<String, ElementPos> elementPositions = new HashMap<>();
     }
 }
