@@ -1,0 +1,15 @@
+# gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# idea
+.idea/
+*.iml
+
+# os
+.DS_Store
+Thumbs.db
+
+# minecraft
+run/

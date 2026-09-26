@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "viper",
+  "version": "1.0.0",
+  "name": "Viper V1",
+  "description": "The Viper V1 PvP client mod.",
+  "authors": [
+    "Viper"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/viper/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.viper.client.ViperClient"
+    ]
+  },
+  "mixins": [
+    "viper.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "fabric-api": "*",
+    "minecraft": "~1.21.11",
+    "java": ">=21"
+  }
+}
