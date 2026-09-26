@@ -1,10 +1,13 @@
 package com.viper.client.gui;
 
 import com.viper.client.config.Config;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +16,7 @@ public class ViperModsScreen extends Screen {
 
     private static final int SIDEBAR_W = 78;
     private static final int TAB_H = 28;
-    private static final int CARD_H = 76;
+    private static final int CARD_H = 96;
     private static final int CARD_GAP = 8;
 
     private static final int COLOR_ACCENT      = 0xFFA855F7;
@@ -26,15 +29,27 @@ public class ViperModsScreen extends Screen {
     private static final int COLOR_CARD_HOVER  = 0xFF2a1a44;
     private static final int COLOR_TOGGLE_OFF  = 0xFF3a3a4a;
     private static final int COLOR_TOGGLE_ON   = 0xFFA855F7;
+    private static final int COLOR_KEYBG       = 0xFF0a0a12;
+    private static final int COLOR_KEYBORDER   = 0xFF2a1c3d;
 
     private int panelX, panelY, panelW, panelH;
-
     private int activeTab = 0;
-    private final String[] TABS = {"HUD", "PVP"};
+    private final String[] TABS = {"HUD", "PVP", "COLORS"};
 
     private final List<List<ModCard>> TAB_MODULES = new ArrayList<>();
-
     private static final String[] SIDEBAR_LABELS = {"COSMETICS", "SKINS", "EMOTES", "FRIENDS"};
+
+    private static final int[] COLOR_OPTIONS = {
+            0xFFA855F7, 0xFFFF3B30, 0xFF23A55A, 0xFF3498DB,
+            0xFFFFC107, 0xFFFFFFFF, 0xFFFF69B4, 0xFF00FFFF
+    };
+    private static final String[] COLOR_NAMES = {
+            "LILA", "ROT", "GRÜN", "BLAU", "GELB", "WEISS", "PINK", "CYAN"
+    };
+
+    private int scrollOffset = 0;
+    private int maxScroll = 0;
+    private String awaitingKeybindId = null;
 
     public ViperModsScreen() {
         super(Text.literal("Viper V1 — Mods"));
@@ -43,13 +58,14 @@ public class ViperModsScreen extends Screen {
     @Override
     protected void init() {
         panelW = Math.min(720, this.width - 80);
-        panelH = Math.min(440, this.height - 80);
+        panelH = Math.min(460, this.height - 80);
         panelX = (this.width - panelW) / 2;
         panelY = (this.height - panelH) / 2;
 
         TAB_MODULES.clear();
 
         List<ModCard> hud = new ArrayList<>();
+        hud.add(new ModCard("watermark", "WATERMARK", "Show Viper V1 logo", () -> Config.showWatermark, v -> Config.showWatermark = v));
         hud.add(new ModCard("fps", "FPS", "Show FPS counter", () -> Config.showFps, v -> Config.showFps = v));
         hud.add(new ModCard("cps", "CPS", "Show clicks per second", () -> Config.showCps, v -> Config.showCps = v));
         hud.add(new ModCard("coords", "COORDS", "Show XYZ position", () -> Config.showCoords, v -> Config.showCoords = v));
@@ -60,13 +76,42 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("reach", "REACH", "Show last hit distance", () -> Config.showReach, v -> Config.showReach = v));
         hud.add(new ModCard("combo", "COMBO", "Show hit combo", () -> Config.showCombo, v -> Config.showCombo = v));
         hud.add(new ModCard("hudtoggle", "HUD MASTER", "Toggle entire HUD (F4)", () -> Config.hudEnabled, v -> Config.hudEnabled = v));
+        hud.add(new ModCard("lowhealth", "LOW HEALTH", "Red border on low HP", () -> Config.lowHealthWarning, v -> Config.lowHealthWarning = v));
         TAB_MODULES.add(hud);
 
         List<ModCard> pvp = new ArrayList<>();
-        pvp.add(new ModCard("togglesprint", "TOGGLE SPRINT", "Auto-sprint toggle (R)", () -> Config.toggleSprint, v -> Config.toggleSprint = v));
-        pvp.add(new ModCard("customcrosshair", "CUSTOM CROSSHAIR", "Lila crosshair", () -> Config.showCustomCrosshair, v -> Config.showCustomCrosshair = v));
-        pvp.add(new ModCard("targetindicator", "TARGET INDICATOR", "Box when aiming at entity", () -> Config.showTargetIndicator, v -> Config.showTargetIndicator = v));
+        pvp.add(new ModCard("togglesprint", "TOGGLE SPRINT", "Auto-sprint (R)", () -> Config.toggleSprint, v -> Config.toggleSprint = v));
+        pvp.add(new ModCard("togglesneak", "TOGGLE SNEAK", "Auto-sneak", () -> Config.toggleSneak, v -> Config.toggleSneak = v));
+        pvp.add(new ModCard("customcrosshair", "CUSTOM CROSSHAIR", "Custom crosshair", () -> Config.showCustomCrosshair, v -> Config.showCustomCrosshair = v));
+        pvp.add(new ModCard("targetindicator", "TARGET INDICATOR", "Box when aiming entity", () -> Config.showTargetIndicator, v -> Config.showTargetIndicator = v));
+        pvp.add(new ModCard("healthindicator", "HEALTH OVER ENTITY", "Show HP over target", () -> Config.showHealthIndicator, v -> Config.showHealthIndicator = v));
+        pvp.add(new ModCard("fullbright", "FULLBRIGHT", "Night vision (F8)", () -> Config.fullbright, v -> {
+            Config.fullbright = v;
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc != null && mc.options != null) {
+                mc.options.getGamma().setValue(v ? 10.0 : 1.0);
+            }
+        }));
+        pvp.add(new ModCard("fpsboost", "FPS BOOST", "Lower render distance", () -> Config.fpsBoost, v -> applyFpsBoost(v)));
         TAB_MODULES.add(pvp);
+
+        TAB_MODULES.add(new ArrayList<>());
+
+        scrollOffset = 0;
+    }
+
+    private void applyFpsBoost(boolean enable) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc == null || mc.options == null) return;
+        if (enable && !Config.fpsBoost) {
+            Config.fpsPrevRenderDist = mc.options.getViewDistance().getValue();
+            mc.options.getViewDistance().setValue(4);
+            Config.fpsBoost = true;
+        } else if (!enable && Config.fpsBoost) {
+            mc.options.getViewDistance().setValue(Config.fpsPrevRenderDist);
+            Config.fpsBoost = false;
+        }
+        Config.save();
     }
 
     @Override
@@ -109,29 +154,114 @@ public class ViperModsScreen extends Screen {
 
         context.fill(panelX + SIDEBAR_W + 1, panelY + TAB_H + 18, panelX + panelW, panelY + TAB_H + 19, 0xFF2a1a3a);
 
-        if (activeTab < TAB_MODULES.size()) {
+        if (activeTab == 2) {
+            renderColorsTab(context, mouseX, mouseY);
+        } else if (activeTab < TAB_MODULES.size()) {
             List<ModCard> cards = TAB_MODULES.get(activeTab);
             int cardsStartX = panelX + SIDEBAR_W + 16;
             int cardsStartY = panelY + TAB_H + 32;
             int cardsW = panelX + panelW - cardsStartX - 16;
             int cardW = (cardsW - CARD_GAP) / 2;
+            int visibleTop = cardsStartY;
+            int visibleBottom = panelY + panelH - 24;
+
+            int rows = (cards.size() + 1) / 2;
+            int totalH = rows * (CARD_H + CARD_GAP) - CARD_GAP;
+            int visibleH = visibleBottom - visibleTop;
+            maxScroll = Math.max(0, totalH - visibleH);
+            if (scrollOffset > maxScroll) scrollOffset = maxScroll;
+            if (scrollOffset < 0) scrollOffset = 0;
+
+            context.enableScissor(cardsStartX, visibleTop, panelX + panelW - 16, visibleBottom);
 
             int col = 0, row = 0;
             for (ModCard card : cards) {
                 int cx = cardsStartX + col * (cardW + CARD_GAP);
-                int cy = cardsStartY + row * (CARD_H + CARD_GAP);
-                if (cy + CARD_H > panelY + panelH - 24) break;
-                boolean hovered = mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + CARD_H;
-                drawCard(context, card, cx, cy, cardW, CARD_H, hovered);
+                int cy = cardsStartY + row * (CARD_H + CARD_GAP) - scrollOffset;
+                boolean hovered = mouseY >= visibleTop && mouseY <= visibleBottom
+                        && mouseX >= cx && mouseX <= cx + cardW
+                        && mouseY >= cy && mouseY <= cy + CARD_H;
+                drawCard(context, card, cx, cy, cardW, CARD_H, hovered, mouseX, mouseY);
                 col++;
                 if (col >= 2) { col = 0; row++; }
             }
+            context.disableScissor();
+
+            if (maxScroll > 0) {
+                int barX = panelX + panelW - 8;
+                int barY = visibleTop;
+                int barH = visibleH;
+                int barW = 4;
+                context.fill(barX, barY, barX + barW, barY + barH, 0x44FFFFFF);
+                float ratio = (float) visibleH / totalH;
+                int thumbH = Math.max(20, (int) (barH * ratio));
+                int thumbY = barY + (int) ((barH - thumbH) * ((float) scrollOffset / maxScroll));
+                context.fill(barX, thumbY, barX + barW, thumbY + thumbH, COLOR_ACCENT);
+            }
         }
 
-        context.drawText(this.textRenderer, "§7Click a card to toggle | ESC to close",
+        if (awaitingKeybindId != null) {
+            int ow = 300, oh = 80;
+            int ox = this.width / 2 - ow / 2;
+            int oy = this.height / 2 - oh / 2;
+            context.fill(ox, oy, ox + ow, oy + oh, 0xEE0a0a12);
+            context.fill(ox, oy, ox + ow, oy + 2, COLOR_ACCENT);
+            context.fill(ox, oy + oh - 2, ox + ow, oy + oh, COLOR_ACCENT);
+            context.fill(ox, oy, ox + 2, oy + oh, COLOR_ACCENT);
+            context.fill(ox + ow - 2, oy, ox + ow, oy + oh, COLOR_ACCENT);
+            context.drawCenteredTextWithShadow(this.textRenderer, "§lPRESS A KEY", this.width / 2, oy + 22, COLOR_ACCENT);
+            context.drawCenteredTextWithShadow(this.textRenderer, "§7for §f" + awaitingKeybindId, this.width / 2, oy + 42, COLOR_WHITE);
+            context.drawCenteredTextWithShadow(this.textRenderer, "§7ESC to cancel / DELETE to remove", this.width / 2, oy + 58, COLOR_MUTED);
+        }
+
+        context.drawText(this.textRenderer, "§7Click card to toggle | Click key to set | ESC to close",
                 panelX + SIDEBAR_W + 16, panelY + panelH - 16, COLOR_MUTED, false);
 
         super.render(context, mouseX, mouseY, delta);
+    }
+
+    private void renderColorsTab(DrawContext context, int mouseX, int mouseY) {
+        int x = panelX + SIDEBAR_W + 30;
+        int y = panelY + TAB_H + 45;
+        int rowH = 70;
+        String[] labels = {"CROSSHAIR COLOR", "TARGET COLOR", "HEALTH BAR COLOR"};
+        int[] currentColors = {Config.crosshairColor, Config.targetColor, Config.healthIndicatorColor};
+
+        for (int r = 0; r < 3; r++) {
+            int ry = y + r * rowH;
+            context.drawText(this.textRenderer, "§l" + labels[r], x, ry - 14, COLOR_WHITE, false);
+
+            int swatchSize = 22;
+            int swatchGap = 6;
+            for (int c = 0; c < COLOR_OPTIONS.length; c++) {
+                int sx = x + c * (swatchSize + swatchGap);
+                int sy = ry;
+                int col = COLOR_OPTIONS[c];
+                boolean hovered = mouseX >= sx && mouseX <= sx + swatchSize && mouseY >= sy && mouseY <= sy + swatchSize;
+                boolean isSelected = (col == currentColors[r]);
+
+                context.fill(sx, sy, sx + swatchSize, sy + swatchSize, col);
+
+                if (isSelected) {
+                    context.fill(sx - 2, sy - 2, sx + swatchSize + 2, sy - 1, COLOR_WHITE);
+                    context.fill(sx - 2, sy + swatchSize + 1, sx + swatchSize + 2, sy + swatchSize + 2, COLOR_WHITE);
+                    context.fill(sx - 2, sy - 1, sx - 1, sy + swatchSize + 1, COLOR_WHITE);
+                    context.fill(sx + swatchSize + 1, sy - 1, sx + swatchSize + 2, sy + swatchSize + 1, COLOR_WHITE);
+                } else if (hovered) {
+                    context.fill(sx - 1, sy - 1, sx + swatchSize + 1, sy, 0xAAFFFFFF);
+                    context.fill(sx - 1, sy + swatchSize, sx + swatchSize + 1, sy + swatchSize + 1, 0xAAFFFFFF);
+                    context.fill(sx - 1, sy, sx, sy + swatchSize, 0xAAFFFFFF);
+                    context.fill(sx + swatchSize, sy, sx + swatchSize + 1, sy + swatchSize, 0xAAFFFFFF);
+                }
+            }
+
+            int currentCol = currentColors[r];
+            String name = "?";
+            for (int c = 0; c < COLOR_OPTIONS.length; c++) {
+                if (COLOR_OPTIONS[c] == currentCol) { name = COLOR_NAMES[c]; break; }
+            }
+            context.drawText(this.textRenderer, "§7Selected: §f" + name, x, ry + swatchSize + 4, COLOR_MUTED, false);
+        }
     }
 
     private void drawSidebar(DrawContext context, int mouseX, int mouseY) {
@@ -199,7 +329,7 @@ public class ViperModsScreen extends Screen {
         }
     }
 
-    private void drawCard(DrawContext context, ModCard card, int x, int y, int w, int h, boolean hovered) {
+    private void drawCard(DrawContext context, ModCard card, int x, int y, int w, int h, boolean hovered, int mouseX, int mouseY) {
         int bg = hovered ? COLOR_CARD_HOVER : COLOR_CARD;
         context.fill(x, y, x + w, y + h, bg);
 
@@ -221,15 +351,101 @@ public class ViperModsScreen extends Screen {
 
         int tw = 24, th = 12;
         int tx = x + w - tw - 14;
-        int ty = y + h - th - 14;
+        int ty = y + 12;
         context.fill(tx, ty, tx + tw, ty + th, card.getter.get() ? COLOR_TOGGLE_ON : COLOR_TOGGLE_OFF);
         int dotX = card.getter.get() ? tx + tw - 10 : tx + 2;
         context.fill(dotX, ty + 2, dotX + 8, ty + th - 2, COLOR_WHITE);
+
+        int kbY = y + h - 26;
+        int kbH = 18;
+        int kbX = x + 14;
+        int kbW = w - 28;
+
+        int key = Config.getKeybind(card.id);
+        String keyName = key > 0 ? getKeyName(key) : "NONE";
+        boolean isSetting = card.id.equals(awaitingKeybindId);
+        boolean kbHovered = mouseX >= kbX && mouseX <= kbX + kbW && mouseY >= kbY && mouseY <= kbY + kbH;
+
+        context.fill(kbX, kbY, kbX + kbW, kbY + kbH, isSetting ? 0xFF3a1a2a : COLOR_KEYBG);
+        int kbBorder = isSetting ? COLOR_ACCENT : (kbHovered ? COLOR_ACCENT : COLOR_KEYBORDER);
+        context.fill(kbX, kbY, kbX + kbW, kbY + 1, kbBorder);
+        context.fill(kbX, kbY + kbH - 1, kbX + kbW, kbY + kbH, kbBorder);
+        context.fill(kbX, kbY, kbX + 1, kbY + kbH, kbBorder);
+        context.fill(kbX + kbW - 1, kbY, kbX + kbW, kbY + kbH, kbBorder);
+
+        if (isSetting) {
+            context.drawCenteredTextWithShadow(this.textRenderer, "§ePRESS A KEY...", kbX + kbW / 2, kbY + 5, 0xFFFFC107);
+        } else {
+            String label = "§7key: §f" + keyName;
+            context.drawText(this.textRenderer, label, kbX + 8, kbY + 5, COLOR_WHITE, false);
+        }
+    }
+
+    private String getKeyName(int key) {
+        if (key <= 0) return "NONE";
+        switch (key) {
+            case GLFW.GLFW_KEY_SPACE: return "SPACE";
+            case GLFW.GLFW_KEY_LEFT_SHIFT: return "LSHIFT";
+            case GLFW.GLFW_KEY_RIGHT_SHIFT: return "RSHIFT";
+            case GLFW.GLFW_KEY_LEFT_CONTROL: return "LCTRL";
+            case GLFW.GLFW_KEY_RIGHT_CONTROL: return "RCTRL";
+            case GLFW.GLFW_KEY_LEFT_ALT: return "LALT";
+            case GLFW.GLFW_KEY_RIGHT_ALT: return "RALT";
+            case GLFW.GLFW_KEY_TAB: return "TAB";
+            case GLFW.GLFW_KEY_ENTER: return "ENTER";
+            case GLFW.GLFW_KEY_BACKSPACE: return "BACKSPACE";
+            case GLFW.GLFW_KEY_ESCAPE: return "ESC";
+            case GLFW.GLFW_KEY_UP: return "UP";
+            case GLFW.GLFW_KEY_DOWN: return "DOWN";
+            case GLFW.GLFW_KEY_LEFT: return "LEFT";
+            case GLFW.GLFW_KEY_RIGHT: return "RIGHT";
+        }
+        if (key >= GLFW.GLFW_KEY_F1 && key <= GLFW.GLFW_KEY_F12) return "F" + (key - GLFW.GLFW_KEY_F1 + 1);
+        if (key >= GLFW.GLFW_KEY_A && key <= GLFW.GLFW_KEY_Z) return String.valueOf((char) ('A' + (key - GLFW.GLFW_KEY_A)));
+        if (key >= GLFW.GLFW_KEY_0 && key <= GLFW.GLFW_KEY_9) return String.valueOf((char) ('0' + (key - GLFW.GLFW_KEY_0)));
+        return "KEY" + key;
+    }
+
+    @Override
+    public boolean keyPressed(KeyInput input) {
+        if (awaitingKeybindId != null) {
+            int keyCode = input.key();
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                awaitingKeybindId = null;
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_DELETE || keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+                Config.setKeybind(awaitingKeybindId, -1);
+                awaitingKeybindId = null;
+                Config.save();
+                return true;
+            }
+            Config.setKeybind(awaitingKeybindId, keyCode);
+            awaitingKeybindId = null;
+            Config.save();
+            return true;
+        }
+        return super.keyPressed(input);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (awaitingKeybindId != null) return false;
+        if (activeTab == 2) return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        if (maxScroll > 0) {
+            scrollOffset -= (int) (verticalAmount * 20);
+            if (scrollOffset < 0) scrollOffset = 0;
+            if (scrollOffset > maxScroll) scrollOffset = maxScroll;
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override
     public boolean mouseClicked(Click click, boolean doubled) {
         if (click.button() != 0) return super.mouseClicked(click, doubled);
+        if (awaitingKeybindId != null) return true;
+
         int mx = (int) click.x();
         int my = (int) click.y();
 
@@ -262,9 +478,34 @@ public class ViperModsScreen extends Screen {
             int tw = this.textRenderer.getWidth(TABS[i]) + 24;
             if (mx >= tx && mx <= tx + tw && my >= panelY + 8 && my <= panelY + 32) {
                 activeTab = i;
+                scrollOffset = 0;
                 return true;
             }
             tx += tw + 8;
+        }
+
+        if (activeTab == 2) {
+            int x0 = panelX + SIDEBAR_W + 30;
+            int y0 = panelY + TAB_H + 45;
+            int rowH = 70;
+            int swatchSize = 22;
+            int swatchGap = 6;
+            for (int r = 0; r < 3; r++) {
+                int ry = y0 + r * rowH;
+                for (int c = 0; c < COLOR_OPTIONS.length; c++) {
+                    int sx = x0 + c * (swatchSize + swatchGap);
+                    int sy = ry;
+                    if (mx >= sx && mx <= sx + swatchSize && my >= sy && my <= sy + swatchSize) {
+                        int newCol = COLOR_OPTIONS[c];
+                        if (r == 0) Config.crosshairColor = newCol;
+                        else if (r == 1) Config.targetColor = newCol;
+                        else if (r == 2) Config.healthIndicatorColor = newCol;
+                        Config.save();
+                        return true;
+                    }
+                }
+            }
+            return true;
         }
 
         if (activeTab < TAB_MODULES.size()) {
@@ -273,13 +514,36 @@ public class ViperModsScreen extends Screen {
             int cardsStartY = panelY + TAB_H + 32;
             int cardsW = panelX + panelW - cardsStartX - 16;
             int cardW = (cardsW - CARD_GAP) / 2;
+            int visibleTop = cardsStartY;
+            int visibleBottom = panelY + panelH - 24;
 
             int col = 0, row = 0;
             for (ModCard card : cards) {
                 int cx = cardsStartX + col * (cardW + CARD_GAP);
-                int cy = cardsStartY + row * (CARD_H + CARD_GAP);
-                if (cy + CARD_H > panelY + panelH - 24) break;
-                if (mx >= cx && mx <= cx + cardW && my >= cy && my <= cy + CARD_H) {
+                int cy = cardsStartY + row * (CARD_H + CARD_GAP) - scrollOffset;
+                if (my >= visibleTop && my <= visibleBottom
+                        && mx >= cx && mx <= cx + cardW
+                        && my >= cy && my <= cy + CARD_H) {
+
+                    int kbY = cy + CARD_H - 26;
+                    int kbH = 18;
+                    int kbX = cx + 14;
+                    int kbW = cardW - 28;
+                    if (my >= kbY && my <= kbY + kbH && mx >= kbX && mx <= kbX + kbW) {
+                        awaitingKeybindId = card.id;
+                        return true;
+                    }
+
+                    int tw = 24, th = 12;
+                    int tx2 = cx + cardW - tw - 14;
+                    int ty2 = cy + 12;
+                    if (my >= ty2 - 4 && my <= ty2 + th + 4 && mx >= tx2 - 4 && mx <= tx2 + tw + 4) {
+                        boolean newVal = !card.getter.get();
+                        card.setter.accept(newVal);
+                        Config.save();
+                        return true;
+                    }
+
                     boolean newVal = !card.getter.get();
                     card.setter.accept(newVal);
                     Config.save();

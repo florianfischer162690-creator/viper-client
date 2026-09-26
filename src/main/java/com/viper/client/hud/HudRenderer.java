@@ -11,6 +11,7 @@ import com.viper.client.hud.element.KeystrokesElement;
 import com.viper.client.hud.element.PingElement;
 import com.viper.client.hud.element.PotionElement;
 import com.viper.client.hud.element.ReachElement;
+import com.viper.client.hud.element.WatermarkElement;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 
@@ -25,6 +26,7 @@ public class HudRenderer {
 
     public static void init() {
         ELEMENTS.clear();
+        ELEMENTS.add(new WatermarkElement());
         ELEMENTS.add(new FpsElement());
         ELEMENTS.add(new CpsElement());
         ELEMENTS.add(new CoordsElement());

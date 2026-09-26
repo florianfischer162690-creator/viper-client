@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Config {
-    // HUD ELEMENTS
+    // HUD
     public static boolean hudEnabled = true;
     public static boolean showFps = true;
     public static boolean showCps = true;
@@ -23,11 +23,41 @@ public class Config {
     public static boolean showKeystrokes = true;
     public static boolean showReach = true;
     public static boolean showCombo = true;
+    public static boolean showWatermark = true;
 
     // PVP
     public static boolean toggleSprint = true;
+    public static boolean toggleSneak = false;
     public static boolean showCustomCrosshair = true;
     public static boolean showTargetIndicator = true;
+    public static boolean showHealthIndicator = true;
+
+    // FARBEN
+    public static int crosshairColor = 0xFFA855F7;
+    public static int targetColor = 0xFFFF3B30;
+    public static int healthIndicatorColor = 0xFFFF3B30;
+
+    // MISC
+    public static boolean fullbright = false;
+    public static boolean lowHealthWarning = true;
+    public static boolean fpsBoost = false;
+    public static int fpsPrevRenderDist = 8;
+    public static int fpsPrevEntityDist = 100;
+    public static int fpsPrevParticles = 0;
+    public static int fpsPrevClouds = 0;
+    public static int fpsPrevGraphics = 1;
+
+    // KEYBINDS pro modul (id → GLFW key code). 0 / -1 = keiner
+    public static Map<String, Integer> keybinds = new HashMap<>();
+
+    public static int getKeybind(String id) {
+        return keybinds.getOrDefault(id, -1);
+    }
+
+    public static void setKeybind(String id, int key) {
+        if (key <= 0) keybinds.remove(id);
+        else keybinds.put(id, key);
+    }
 
     // HUD POSITION
     public static int hudX = 4;
@@ -40,12 +70,8 @@ public class Config {
         public int x;
         public int y;
         public float scale = 1.0f;
-
         public ElementPos() {}
-        public ElementPos(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
+        public ElementPos(int x, int y) { this.x = x; this.y = y; }
     }
 
     public static ElementPos getPos(String id, int defaultX, int defaultY) {
@@ -95,13 +121,28 @@ public class Config {
         showKeystrokes = d.showKeystrokes;
         showReach = d.showReach;
         showCombo = d.showCombo;
+        showWatermark = d.showWatermark;
         toggleSprint = d.toggleSprint;
+        toggleSneak = d.toggleSneak;
         showCustomCrosshair = d.showCustomCrosshair;
         showTargetIndicator = d.showTargetIndicator;
+        showHealthIndicator = d.showHealthIndicator;
+        crosshairColor = d.crosshairColor;
+        targetColor = d.targetColor;
+        healthIndicatorColor = d.healthIndicatorColor;
+        fullbright = d.fullbright;
+        lowHealthWarning = d.lowHealthWarning;
+        fpsBoost = d.fpsBoost;
+        fpsPrevRenderDist = d.fpsPrevRenderDist;
+        fpsPrevEntityDist = d.fpsPrevEntityDist;
+        fpsPrevParticles = d.fpsPrevParticles;
+        fpsPrevClouds = d.fpsPrevClouds;
+        fpsPrevGraphics = d.fpsPrevGraphics;
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
         elementPositions = d.elementPositions != null ? d.elementPositions : new HashMap<>();
+        keybinds = d.keybinds != null ? d.keybinds : new HashMap<>();
     }
 
     private static ConfigData toData() {
@@ -116,13 +157,28 @@ public class Config {
         d.showKeystrokes = showKeystrokes;
         d.showReach = showReach;
         d.showCombo = showCombo;
+        d.showWatermark = showWatermark;
         d.toggleSprint = toggleSprint;
+        d.toggleSneak = toggleSneak;
         d.showCustomCrosshair = showCustomCrosshair;
         d.showTargetIndicator = showTargetIndicator;
+        d.showHealthIndicator = showHealthIndicator;
+        d.crosshairColor = crosshairColor;
+        d.targetColor = targetColor;
+        d.healthIndicatorColor = healthIndicatorColor;
+        d.fullbright = fullbright;
+        d.lowHealthWarning = lowHealthWarning;
+        d.fpsBoost = fpsBoost;
+        d.fpsPrevRenderDist = fpsPrevRenderDist;
+        d.fpsPrevEntityDist = fpsPrevEntityDist;
+        d.fpsPrevParticles = fpsPrevParticles;
+        d.fpsPrevClouds = fpsPrevClouds;
+        d.fpsPrevGraphics = fpsPrevGraphics;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
         d.elementPositions = elementPositions;
+        d.keybinds = keybinds;
         return d;
     }
 
@@ -137,12 +193,27 @@ public class Config {
         boolean showKeystrokes = true;
         boolean showReach = true;
         boolean showCombo = true;
+        boolean showWatermark = true;
         boolean toggleSprint = true;
+        boolean toggleSneak = false;
         boolean showCustomCrosshair = true;
         boolean showTargetIndicator = true;
+        boolean showHealthIndicator = true;
+        int crosshairColor = 0xFFA855F7;
+        int targetColor = 0xFFFF3B30;
+        int healthIndicatorColor = 0xFFFF3B30;
+        boolean fullbright = false;
+        boolean lowHealthWarning = true;
+        boolean fpsBoost = false;
+        int fpsPrevRenderDist = 8;
+        int fpsPrevEntityDist = 100;
+        int fpsPrevParticles = 0;
+        int fpsPrevClouds = 0;
+        int fpsPrevGraphics = 1;
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;
         Map<String, ElementPos> elementPositions = new HashMap<>();
+        Map<String, Integer> keybinds = new HashMap<>();
     }
 }
