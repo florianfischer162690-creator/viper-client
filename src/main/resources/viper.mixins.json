@@ -3,7 +3,9 @@
   "package": "com.viper.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "InGameHudMixin"
+    "InGameHudMixin",
+    "ChatHudMixin",
+    "ScreenshotMixin"
   ],
   "injectors": {
     "defaultRequire": 1

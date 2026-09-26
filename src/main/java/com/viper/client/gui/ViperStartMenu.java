@@ -1,5 +1,6 @@
 package com.viper.client.gui;
 
+import com.viper.client.config.Config;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -8,18 +9,14 @@ public class ViperStartMenu extends Screen {
 
     private static final int BTN_SIZE = 44;
 
-    private static final int COLOR_ACCENT       = 0xFFA855F7;
-    private static final int COLOR_ACCENT_DARK  = 0xFF7c3aed;
-    private static final int COLOR_ACCENT_GLOW  = 0x55A855F7;
-    private static final int COLOR_WHITE        = 0xFFFFFFFF;
-    private static final int COLOR_MUTED        = 0xFF8A8A9C;
+    private static final int COLOR_WHITE = 0xFFFFFFFF;
+    private static final int COLOR_MUTED = 0xFF8A8A9C;
 
     private int menuX;
     private int menuY;
     private boolean hoveredLabel = false;
     private boolean hoveredBtn = false;
 
-    // label rect wird im render berechnet und für hit-test zwischengespeichert
     private int labelX, labelY, labelW, labelH;
 
     public ViperStartMenu() {
@@ -34,6 +31,10 @@ public class ViperStartMenu extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        int accent = Config.getAccent();
+        int accentLight = Config.getAccentLight();
+        int accentDark = Config.getAccentDark();
+
         context.fill(0, 0, this.width, this.height, 0xBB0a0a12);
         drawSoftVignette(context);
 
@@ -43,7 +44,7 @@ public class ViperStartMenu extends Screen {
         long t = System.currentTimeMillis();
         float pulse = (float) (Math.sin(t / 500.0) * 0.5 + 0.5);
 
-        drawTitle(context, cx, cy - 80, pulse);
+        drawTitle(context, cx, cy - 80, pulse, accent, accentLight, accentDark);
 
         context.drawCenteredTextWithShadow(
                 this.textRenderer,
@@ -51,7 +52,7 @@ public class ViperStartMenu extends Screen {
                 cx, cy - 40, COLOR_MUTED
         );
 
-        // ═══ MOD MENU LABEL — klickbar ═══
+        // MOD MENU label — klickbar
         labelW = 280;
         labelH = 26;
         labelX = cx - labelW / 2;
@@ -59,19 +60,16 @@ public class ViperStartMenu extends Screen {
 
         hoveredLabel = mouseX >= labelX && mouseX <= labelX + labelW && mouseY >= labelY && mouseY <= labelY + labelH;
 
-        // glow linie drüber
-        context.fill(cx - 160, labelY - 12, cx + 160, labelY - 11, COLOR_ACCENT_GLOW);
-        context.fill(cx - 160, labelY - 11, cx + 160, labelY - 10, COLOR_ACCENT);
+        int glowColor = (accent & 0x00FFFFFF) | 0x55000000;
+        context.fill(cx - 160, labelY - 12, cx + 160, labelY - 11, glowColor);
+        context.fill(cx - 160, labelY - 11, cx + 160, labelY - 10, accent);
 
-        // box (hovered → heller + lila rahmen)
         int labelBg = hoveredLabel ? 0xFF2a1a44 : 0xCC1c1228;
         context.fill(labelX, labelY, labelX + labelW, labelY + labelH, labelBg);
 
-        // rahmen oben/unten — immer lila, kräftiger beim hover
-        int borderColor = hoveredLabel ? COLOR_ACCENT : COLOR_ACCENT_DARK;
+        int borderColor = hoveredLabel ? accent : accentDark;
         context.fill(labelX, labelY, labelX + labelW, labelY + 1, borderColor);
         context.fill(labelX, labelY + labelH - 1, labelX + labelW, labelY + labelH, borderColor);
-        // rahmen links/rechts nur beim hover
         if (hoveredLabel) {
             context.fill(labelX, labelY, labelX + 1, labelY + labelH, borderColor);
             context.fill(labelX + labelW - 1, labelY, labelX + labelW, labelY + labelH, borderColor);
@@ -79,7 +77,7 @@ public class ViperStartMenu extends Screen {
 
         context.drawCenteredTextWithShadow(this.textRenderer, "MOD MENU", cx, labelY + 9, COLOR_WHITE);
 
-        // ═══ EIN BUTTON drunter (HUD-editor) ═══
+        // EIN BUTTON drunter
         int btnY = labelY + labelH + 22;
         int bx = cx - BTN_SIZE / 2;
 
@@ -88,22 +86,22 @@ public class ViperStartMenu extends Screen {
         int bg = hoveredBtn ? 0xFF2a1a44 : 0xCC1c1228;
         context.fill(bx, btnY, bx + BTN_SIZE, btnY + BTN_SIZE, bg);
 
-        int bColor = hoveredBtn ? COLOR_ACCENT : 0x66a855f7;
+        int bColor = hoveredBtn ? accent : 0x66a855f7;
         context.fill(bx, btnY, bx + BTN_SIZE, btnY + 1, bColor);
         context.fill(bx, btnY + BTN_SIZE - 1, bx + BTN_SIZE, btnY + BTN_SIZE, bColor);
         context.fill(bx, btnY, bx + 1, btnY + BTN_SIZE, bColor);
         context.fill(bx + BTN_SIZE - 1, btnY, bx + BTN_SIZE, btnY + BTN_SIZE, bColor);
 
-        drawHudIcon(context, bx + BTN_SIZE / 2, btnY + BTN_SIZE / 2, hoveredBtn);
+        drawHudIcon(context, bx + BTN_SIZE / 2, btnY + BTN_SIZE / 2, hoveredBtn, accent);
 
         if (hoveredBtn) {
-            context.drawCenteredTextWithShadow(this.textRenderer, "HUD EDITOR", cx, btnY + BTN_SIZE + 10, COLOR_ACCENT);
+            context.drawCenteredTextWithShadow(this.textRenderer, "HUD EDITOR", cx, btnY + BTN_SIZE + 10, accent);
         }
 
         super.render(context, mouseX, mouseY, delta);
     }
 
-    private void drawTitle(DrawContext context, int cx, int cy, float pulse) {
+    private void drawTitle(DrawContext context, int cx, int cy, float pulse, int accent, int accentLight, int accentDark) {
         context.getMatrices().pushMatrix();
         context.getMatrices().translate((float) cx, (float) cy);
         float scale = 2.6f + pulse * 0.05f;
@@ -111,54 +109,57 @@ public class ViperStartMenu extends Screen {
 
         String vip = "VIPER";
         String v1 = "V1";
+
         int vipW = this.textRenderer.getWidth(vip);
         int v1W = this.textRenderer.getWidth(v1);
         int logoW = 20;
         int gap = 10;
+
         int totalW = vipW + gap + logoW + gap + v1W;
         int startX = -totalW / 2;
 
-        drawGlowText(context, "§l" + vip, startX, -4);
-        drawVLogo(context, startX + vipW + gap, -8, logoW, 16, pulse);
-        drawGlowText(context, "§l" + v1, startX + vipW + gap + logoW + gap, -4);
+        drawGlowText(context, "§l" + vip, startX, -4, accent, accentLight);
+        drawVLogo(context, startX + vipW + gap, -8, logoW, 16, pulse, accent);
+        drawGlowText(context, "§l" + v1, startX + vipW + gap + logoW + gap, -4, accent, accentLight);
 
         context.getMatrices().popMatrix();
     }
 
-    private void drawGlowText(DrawContext context, String txt, int x, int y) {
+    private void drawGlowText(DrawContext context, String txt, int x, int y, int accent, int accentLight) {
         for (int dx = -2; dx <= 2; dx++) {
             for (int dy = -2; dy <= 2; dy++) {
                 if (dx == 0 && dy == 0) continue;
-                context.drawText(this.textRenderer, txt, x + dx, y + dy, COLOR_ACCENT, false);
+                context.drawText(this.textRenderer, txt, x + dx, y + dy, accent, false);
             }
         }
         context.drawText(this.textRenderer, txt, x, y, COLOR_WHITE, false);
     }
 
-    private void drawVLogo(DrawContext context, int x, int y, int w, int h, float pulse) {
+    private void drawVLogo(DrawContext context, int x, int y, int w, int h, float pulse, int accent) {
+        int glowColor = (accent & 0x00FFFFFF) | 0x55000000;
         for (int i = 0; i < h; i++) {
             float t = (float) i / h;
             int lx = (int) (x + t * (w / 2 - 1));
             int rx = (int) (x + w - 2 - t * (w / 2 - 1));
-            context.fill(lx - 1, y + i, lx + 3, y + i + 1, 0x55a855f7);
-            context.fill(rx - 1, y + i, rx + 3, y + i + 1, 0x55a855f7);
+            context.fill(lx - 1, y + i, lx + 3, y + i + 1, glowColor);
+            context.fill(rx - 1, y + i, rx + 3, y + i + 1, glowColor);
         }
         for (int i = 0; i < h; i++) {
             float t = (float) i / h;
             int lx = (int) (x + t * (w / 2 - 1));
             int rx = (int) (x + w - 2 - t * (w / 2 - 1));
-            context.fill(lx, y + i, lx + 2, y + i + 1, COLOR_ACCENT);
-            context.fill(rx, y + i, rx + 2, y + i + 1, COLOR_ACCENT);
+            context.fill(lx, y + i, lx + 2, y + i + 1, accent);
+            context.fill(rx, y + i, rx + 2, y + i + 1, accent);
         }
         int sparkAlpha = (int) (pulse * 200 + 55);
-        int sparkColor = (sparkAlpha << 24) | 0x00c084fc;
+        int sparkColor = (accent & 0x00FFFFFF) | (sparkAlpha << 24);
         context.fill(x - 3, y + h / 3, x - 2, y + h / 3 + 1, sparkColor);
         context.fill(x + w + 1, y + h / 2, x + w + 2, y + h / 2 + 1, sparkColor);
         context.fill(x + w / 2 - 1, y - 3, x + w / 2, y - 2, sparkColor);
     }
 
-    private void drawHudIcon(DrawContext context, int cx, int cy, boolean hovered) {
-        int color = hovered ? COLOR_ACCENT : COLOR_WHITE;
+    private void drawHudIcon(DrawContext context, int cx, int cy, boolean hovered, int accent) {
+        int color = hovered ? accent : COLOR_WHITE;
         int w = 18, h = 14;
         int x = cx - w / 2, y = cy - h / 2;
 
@@ -193,13 +194,11 @@ public class ViperStartMenu extends Screen {
         int mx = (int) click.x();
         int my = (int) click.y();
 
-        // MOD MENU label → mods-screen
         if (mx >= labelX && mx <= labelX + labelW && my >= labelY && my <= labelY + labelH) {
             if (this.client != null) this.client.setScreen(new ViperModsScreen());
             return true;
         }
 
-        // HUD button → hud-editor
         int btnY = labelY + labelH + 22;
         int bx = menuX - BTN_SIZE / 2;
         if (mx >= bx && mx <= bx + BTN_SIZE && my >= btnY && my <= btnY + BTN_SIZE) {
@@ -216,7 +215,5 @@ public class ViperStartMenu extends Screen {
     }
 
     @Override
-    public boolean shouldPause() {
-        return false;
-    }
+    public boolean shouldPause() { return false; }
 }

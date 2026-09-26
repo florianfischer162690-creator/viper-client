@@ -8,6 +8,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +25,8 @@ public class Config {
     public static boolean showReach = true;
     public static boolean showCombo = true;
     public static boolean showWatermark = true;
+    public static boolean showDirection = true;
+    public static boolean showSpeed = true;
 
     // PVP
     public static boolean toggleSprint = true;
@@ -31,6 +34,10 @@ public class Config {
     public static boolean showCustomCrosshair = true;
     public static boolean showTargetIndicator = true;
     public static boolean showHealthIndicator = true;
+    public static boolean showHitMarker = true;
+
+    // CROSSHAIR
+    public static String crosshairPreset = "classic"; // classic, dot, cross, big, circle, circle-dot, t-style, bracket, plus, x, corner, minimal
 
     // THEME
     public static String theme = "viper";
@@ -39,18 +46,28 @@ public class Config {
     public static boolean useCustomCrosshairColor = false;
     public static boolean useCustomTargetColor = false;
     public static boolean useCustomHealthColor = false;
+    public static boolean useCustomHitMarkerColor = false;
 
     public static int crosshairColor = 0xFFA855F7;
     public static int targetColor = 0xFFFF3B30;
     public static int healthIndicatorColor = 0xFFFF3B30;
+    public static int hitMarkerColor = 0xFFFF3B30;
 
     // MISC
     public static boolean fullbright = false;
+    public static boolean noFog = false;
     public static boolean lowHealthWarning = true;
     public static boolean fpsBoost = false;
     public static int fpsPrevRenderDist = 8;
     public static int fpsPrevSimDist = 12;
     public static int fpsPrevEntityDist = 100;
+
+    // ZOOM
+    public static int zoomFov = 30;
+    public static int defaultFov = 70;
+
+    // CHAT
+    public static boolean chatTimestamps = true;
 
     // KEYBINDS
     public static Map<String, Integer> keybinds = new HashMap<>();
@@ -80,7 +97,7 @@ public class Config {
         return elementPositions.computeIfAbsent(id, k -> new ElementPos(defaultX, defaultY));
     }
 
-    /* ═══════════ THEME FARBEN ═══════════ */
+    /* ═══════════ THEME ═══════════ */
 
     private static final Map<String, int[]> THEME_COLORS = new HashMap<>();
     static {
@@ -98,12 +115,10 @@ public class Config {
         int[] t = THEME_COLORS.getOrDefault(theme, THEME_COLORS.get("viper"));
         return t[0];
     }
-
     public static int getAccentLight() {
         int[] t = THEME_COLORS.getOrDefault(theme, THEME_COLORS.get("viper"));
         return t[1];
     }
-
     public static int getAccentDark() {
         int[] t = THEME_COLORS.getOrDefault(theme, THEME_COLORS.get("viper"));
         return t[2];
@@ -112,13 +127,46 @@ public class Config {
     public static int getEffectiveCrosshairColor() {
         return useCustomCrosshairColor ? crosshairColor : getAccent();
     }
-
     public static int getEffectiveTargetColor() {
         return useCustomTargetColor ? targetColor : 0xFFFF3B30;
     }
-
     public static int getEffectiveHealthColor() {
         return useCustomHealthColor ? healthIndicatorColor : 0xFF23A55A;
+    }
+    public static int getEffectiveHitMarkerColor() {
+        return useCustomHitMarkerColor ? hitMarkerColor : getAccent();
+    }
+
+    /* ═══════════ EXPORT / IMPORT ═══════════ */
+
+    public static String exportAsString() {
+        try {
+            ConfigData data = toData();
+            String json = GSON.toJson(data);
+            return "VIPER-CFG-V1:" + Base64.getEncoder().encodeToString(json.getBytes());
+        } catch (Exception e) {
+            ViperClient.LOGGER.error("[Config] export failed", e);
+            return null;
+        }
+    }
+
+    public static boolean importFromString(String raw) {
+        try {
+            String input = raw.trim();
+            if (input.startsWith("VIPER-CFG-V1:")) {
+                input = input.substring("VIPER-CFG-V1:".length());
+            }
+            byte[] decoded = Base64.getDecoder().decode(input);
+            String json = new String(decoded);
+            ConfigData data = GSON.fromJson(json, ConfigData.class);
+            if (data == null) return false;
+            applyFrom(data);
+            save();
+            return true;
+        } catch (Exception e) {
+            ViperClient.LOGGER.error("[Config] import failed", e);
+            return false;
+        }
     }
 
     /* ═══════════ LOAD / SAVE ═══════════ */
@@ -128,30 +176,23 @@ public class Config {
 
     public static void load() {
         configPath = FabricLoader.getInstance().getConfigDir().resolve("viper.json");
-        if (!Files.exists(configPath)) {
-            ViperClient.LOGGER.info("[Viper] no config found, using defaults");
-            save();
-            return;
-        }
+        if (!Files.exists(configPath)) { ViperClient.LOGGER.info("[Viper] no config found"); save(); return; }
         try {
             String json = Files.readString(configPath);
             ConfigData data = GSON.fromJson(json, ConfigData.class);
             if (data != null) applyFrom(data);
             ViperClient.LOGGER.info("[Viper] config loaded");
         } catch (IOException e) {
-            ViperClient.LOGGER.error("[Viper] failed to load config", e);
+            ViperClient.LOGGER.error("[Viper] load failed", e);
         }
     }
 
     public static void save() {
-        if (configPath == null) {
-            configPath = FabricLoader.getInstance().getConfigDir().resolve("viper.json");
-        }
+        if (configPath == null) configPath = FabricLoader.getInstance().getConfigDir().resolve("viper.json");
         try {
-            ConfigData data = toData();
-            Files.writeString(configPath, GSON.toJson(data));
+            Files.writeString(configPath, GSON.toJson(toData()));
         } catch (IOException e) {
-            ViperClient.LOGGER.error("[Viper] failed to save config", e);
+            ViperClient.LOGGER.error("[Viper] save failed", e);
         }
     }
 
@@ -167,24 +208,34 @@ public class Config {
         showReach = d.showReach;
         showCombo = d.showCombo;
         showWatermark = d.showWatermark;
+        showDirection = d.showDirection;
+        showSpeed = d.showSpeed;
         toggleSprint = d.toggleSprint;
         toggleSneak = d.toggleSneak;
         showCustomCrosshair = d.showCustomCrosshair;
         showTargetIndicator = d.showTargetIndicator;
         showHealthIndicator = d.showHealthIndicator;
+        showHitMarker = d.showHitMarker;
+        crosshairPreset = d.crosshairPreset != null ? d.crosshairPreset : "classic";
         theme = d.theme != null ? d.theme : "viper";
         useCustomCrosshairColor = d.useCustomCrosshairColor;
         useCustomTargetColor = d.useCustomTargetColor;
         useCustomHealthColor = d.useCustomHealthColor;
+        useCustomHitMarkerColor = d.useCustomHitMarkerColor;
         crosshairColor = d.crosshairColor;
         targetColor = d.targetColor;
         healthIndicatorColor = d.healthIndicatorColor;
+        hitMarkerColor = d.hitMarkerColor;
         fullbright = d.fullbright;
+        noFog = d.noFog;
         lowHealthWarning = d.lowHealthWarning;
         fpsBoost = d.fpsBoost;
         fpsPrevRenderDist = d.fpsPrevRenderDist;
         fpsPrevSimDist = d.fpsPrevSimDist;
         fpsPrevEntityDist = d.fpsPrevEntityDist;
+        zoomFov = d.zoomFov;
+        defaultFov = d.defaultFov;
+        chatTimestamps = d.chatTimestamps;
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -205,24 +256,34 @@ public class Config {
         d.showReach = showReach;
         d.showCombo = showCombo;
         d.showWatermark = showWatermark;
+        d.showDirection = showDirection;
+        d.showSpeed = showSpeed;
         d.toggleSprint = toggleSprint;
         d.toggleSneak = toggleSneak;
         d.showCustomCrosshair = showCustomCrosshair;
         d.showTargetIndicator = showTargetIndicator;
         d.showHealthIndicator = showHealthIndicator;
+        d.showHitMarker = showHitMarker;
+        d.crosshairPreset = crosshairPreset;
         d.theme = theme;
         d.useCustomCrosshairColor = useCustomCrosshairColor;
         d.useCustomTargetColor = useCustomTargetColor;
         d.useCustomHealthColor = useCustomHealthColor;
+        d.useCustomHitMarkerColor = useCustomHitMarkerColor;
         d.crosshairColor = crosshairColor;
         d.targetColor = targetColor;
         d.healthIndicatorColor = healthIndicatorColor;
+        d.hitMarkerColor = hitMarkerColor;
         d.fullbright = fullbright;
+        d.noFog = noFog;
         d.lowHealthWarning = lowHealthWarning;
         d.fpsBoost = fpsBoost;
         d.fpsPrevRenderDist = fpsPrevRenderDist;
         d.fpsPrevSimDist = fpsPrevSimDist;
         d.fpsPrevEntityDist = fpsPrevEntityDist;
+        d.zoomFov = zoomFov;
+        d.defaultFov = defaultFov;
+        d.chatTimestamps = chatTimestamps;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -243,24 +304,34 @@ public class Config {
         boolean showReach = true;
         boolean showCombo = true;
         boolean showWatermark = true;
+        boolean showDirection = true;
+        boolean showSpeed = true;
         boolean toggleSprint = true;
         boolean toggleSneak = false;
         boolean showCustomCrosshair = true;
         boolean showTargetIndicator = true;
         boolean showHealthIndicator = true;
+        boolean showHitMarker = true;
+        String crosshairPreset = "classic";
         String theme = "viper";
         boolean useCustomCrosshairColor = false;
         boolean useCustomTargetColor = false;
         boolean useCustomHealthColor = false;
+        boolean useCustomHitMarkerColor = false;
         int crosshairColor = 0xFFA855F7;
         int targetColor = 0xFFFF3B30;
         int healthIndicatorColor = 0xFFFF3B30;
+        int hitMarkerColor = 0xFFFF3B30;
         boolean fullbright = false;
+        boolean noFog = false;
         boolean lowHealthWarning = true;
         boolean fpsBoost = false;
         int fpsPrevRenderDist = 8;
         int fpsPrevSimDist = 12;
         int fpsPrevEntityDist = 100;
+        int zoomFov = 30;
+        int defaultFov = 70;
+        boolean chatTimestamps = true;
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;

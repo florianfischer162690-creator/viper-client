@@ -14,18 +14,18 @@ public class HudEditorScreen extends Screen {
     private int dragOffsetX = 0;
     private int dragOffsetY = 0;
 
-    public HudEditorScreen() {
-        super(Text.literal("HUD Editor"));
-    }
+    public HudEditorScreen() { super(Text.literal("HUD Editor")); }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        int accent = Config.getAccent();
+
         MinecraftClient mc = this.client;
         context.fill(0, 0, this.width, this.height, 0x88000000);
 
         context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.literal("§d§lHUD EDITOR").asOrderedText(),
-                this.width / 2, 15, 0xFFA855F7);
+                Text.literal("§lHUD EDITOR").asOrderedText(),
+                this.width / 2, 15, accent);
 
         context.drawCenteredTextWithShadow(this.textRenderer,
                 Text.literal("§7Drag: move | Scroll: resize | ESC: save").asOrderedText(),
@@ -33,27 +33,46 @@ public class HudEditorScreen extends Screen {
 
         if (mc.player == null) return;
 
-        // alle beweglichen elemente
         for (HudRenderer.HudElement el : HudRenderer.ELEMENTS) {
             if (!el.isEnabled()) continue;
             Config.ElementPos pos = Config.getPos(el.getId(), el.getDefaultX(), el.getDefaultY());
-            renderElementWithBorder(mc, context, el, pos);
+            renderElementWithBorder(mc, context, el, pos, accent);
         }
 
-        // keystrokes
         if (HudRenderer.keystrokesElement.isEnabled()) {
             Config.ElementPos pos = Config.getPos(
                     HudRenderer.keystrokesElement.getId(),
                     HudRenderer.keystrokesElement.getDefaultX(mc),
                     HudRenderer.keystrokesElement.getDefaultY(mc)
             );
-            renderElementWithBorder(mc, context, HudRenderer.keystrokesElement, pos);
+            renderElementWithBorder(mc, context, HudRenderer.keystrokesElement, pos, accent);
+        }
+
+        // armor-element (fix position, zeigt nur rand)
+        if (Config.showArmor && HudRenderer.armorElement.isEnabled()) {
+            int scaledW = mc.getWindow().getScaledWidth();
+            int scaledH = mc.getWindow().getScaledHeight();
+            int armorW = HudRenderer.armorElement.getWidth(mc);
+            int armorH = HudRenderer.armorElement.getHeight(mc);
+            int ax = (scaledW / 2) - 91 - 29 - armorW - 6;
+            int ay = (scaledH - 11) - (armorH / 2);
+
+            context.getMatrices().pushMatrix();
+            context.getMatrices().translate((float) ax, (float) ay);
+
+            context.fill(-1, -1, armorW + 1, 0, accent);
+            context.fill(-1, armorH, armorW + 1, armorH + 1, accent);
+            context.fill(-1, -1, 0, armorH + 1, accent);
+            context.fill(armorW, -1, armorW + 1, armorH + 1, accent);
+
+            HudRenderer.armorElement.render(context, mc, 0, 0);
+            context.getMatrices().popMatrix();
         }
 
         super.render(context, mouseX, mouseY, delta);
     }
 
-    private void renderElementWithBorder(MinecraftClient mc, DrawContext context, HudRenderer.HudElement el, Config.ElementPos pos) {
+    private void renderElementWithBorder(MinecraftClient mc, DrawContext context, HudRenderer.HudElement el, Config.ElementPos pos, int accent) {
         context.getMatrices().pushMatrix();
         context.getMatrices().translate((float) pos.x, (float) pos.y);
         context.getMatrices().scale(pos.scale, pos.scale);
@@ -61,7 +80,7 @@ public class HudEditorScreen extends Screen {
         int w = el.getWidth(mc);
         int h = el.getHeight(mc);
 
-        int borderColor = el.getId().equals(draggingId) ? 0xFF23A55A : 0xFFA855F7;
+        int borderColor = el.getId().equals(draggingId) ? 0xFF23A55A : accent;
         context.fill(-1, -1, w + 1, 0, borderColor);
         context.fill(-1, h, w + 1, h + 1, borderColor);
         context.fill(-1, -1, 0, h + 1, borderColor);
@@ -116,7 +135,6 @@ public class HudEditorScreen extends Screen {
                 int w = el != null ? (int) (el.getWidth(mc) * pos.scale) : 40;
                 int h = el != null ? (int) (el.getHeight(mc) * pos.scale) : 20;
 
-                // clamp im bild
                 int maxX = this.width - w;
                 int maxY = this.height - h;
                 if (newX < 0) newX = 0;
@@ -124,21 +142,17 @@ public class HudEditorScreen extends Screen {
                 if (newX > maxX) newX = maxX;
                 if (newY > maxY) newY = maxY;
 
-                // overlap-check
                 if (!overlaps(mc, draggingId, newX, newY, w, h)) {
                     pos.x = newX;
                     pos.y = newY;
                 }
-                // sonst: nicht bewegen (blockiert)
             }
             return true;
         }
         return super.mouseDragged(click, offsetX, offsetY);
     }
 
-    /** prüft ob das dragging-element bei (nx, ny) mit einem anderen element kollidiert */
     private boolean overlaps(MinecraftClient mc, String selfId, int nx, int ny, int w, int h) {
-        // keystrokes sind ein "anderes" element
         if (!selfId.equals(HudRenderer.keystrokesElement.getId())) {
             Config.ElementPos kpos = Config.getPos(
                     HudRenderer.keystrokesElement.getId(),
@@ -167,10 +181,7 @@ public class HudEditorScreen extends Screen {
 
     @Override
     public boolean mouseReleased(Click click) {
-        if (draggingId != null) {
-            draggingId = null;
-            return true;
-        }
+        if (draggingId != null) { draggingId = null; return true; }
         return super.mouseReleased(click);
     }
 
@@ -217,9 +228,7 @@ public class HudEditorScreen extends Screen {
             return Config.getPos(id, HudRenderer.keystrokesElement.getDefaultX(mc), HudRenderer.keystrokesElement.getDefaultY(mc));
         }
         for (HudRenderer.HudElement el : HudRenderer.ELEMENTS) {
-            if (el.getId().equals(id)) {
-                return Config.getPos(id, el.getDefaultX(), el.getDefaultY());
-            }
+            if (el.getId().equals(id)) return Config.getPos(id, el.getDefaultX(), el.getDefaultY());
         }
         return null;
     }
@@ -233,10 +242,7 @@ public class HudEditorScreen extends Screen {
     }
 
     @Override
-    public void close() {
-        Config.save();
-        this.client.setScreen(null);
-    }
+    public void close() { Config.save(); this.client.setScreen(null); }
 
     @Override
     public boolean shouldPause() { return false; }

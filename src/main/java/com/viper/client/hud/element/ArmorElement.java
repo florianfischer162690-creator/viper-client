@@ -12,12 +12,6 @@ public class ArmorElement extends HudElement {
     private static final int SLOT_SIZE = 20;
     private static final int SLOT_GAP = 1;
 
-    // Viper lila slot-farben
-    private static final int SLOT_BORDER = 0xFFA855F7;   // lila rahmen
-    private static final int SLOT_INNER  = 0xFF1c1228;   // dunkel-lila innen
-    private static final int SLOT_HL     = 0x66c084fc;   // highlight oben-links (hell-lila, halbtransparent)
-    private static final int SLOT_SH     = 0xFF3a2050;   // schatten unten-rechts (dunkler lila)
-
     private static final int VANILLA_BAR_BG = 0xFF000000;
     private static final int VANILLA_BAR_FG_GOOD = 0xFF00FF00;
     private static final int VANILLA_BAR_FG_MID  = 0xFFFFFF00;
@@ -27,9 +21,7 @@ public class ArmorElement extends HudElement {
     public String getId() { return "armor"; }
 
     @Override
-    public boolean isEnabled() {
-        return Config.showArmor;
-    }
+    public boolean isEnabled() { return Config.showArmor; }
 
     @Override
     public int getDefaultX() { return 4; }
@@ -39,6 +31,10 @@ public class ArmorElement extends HudElement {
     @Override
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
         if (mc.player == null) return 0;
+
+        int accent = Config.getAccent();
+        int accentLight = Config.getAccentLight();
+        int accentDark = Config.getAccentDark();
 
         EquipmentSlot[] slots = {
                 EquipmentSlot.HEAD,
@@ -57,7 +53,7 @@ public class ArmorElement extends HudElement {
             ItemStack stack = mc.player.getEquippedStack(slots[i]);
             int slotX = x + i * (SLOT_SIZE + SLOT_GAP);
 
-            drawSlot(context, slotX, y, SLOT_SIZE);
+            drawSlot(context, slotX, y, SLOT_SIZE, accent, accentLight, accentDark);
 
             if (!stack.isEmpty()) {
                 context.drawItem(stack, slotX + 2, y + 2);
@@ -91,18 +87,18 @@ public class ArmorElement extends HudElement {
         return SLOT_SIZE;
     }
 
-    /** lila slot-rahmen im vanilla-style */
-    private void drawSlot(DrawContext context, int x, int y, int size) {
-        // lila außen-rahmen
-        context.fill(x, y, x + size, y + size, SLOT_BORDER);
-        // dunkel-lila innen
-        context.fill(x + 1, y + 1, x + size - 1, y + size - 1, SLOT_INNER);
-        // highlight oben-links
-        context.fill(x + 1, y + 1, x + size - 1, y + 2, SLOT_HL);
-        context.fill(x + 1, y + 1, x + 2, y + size - 1, SLOT_HL);
-        // schatten unten-rechts
-        context.fill(x + 1, y + size - 2, x + size - 1, y + size - 1, SLOT_SH);
-        context.fill(x + size - 2, y + 1, x + size - 1, y + size - 1, SLOT_SH);
+    private void drawSlot(DrawContext context, int x, int y, int size, int accent, int accentLight, int accentDark) {
+        // außen-rahmen in accent-dark
+        context.fill(x, y, x + size, y + size, accent);
+        // innerer slot (dunkel)
+        context.fill(x + 1, y + 1, x + size - 1, y + size - 1, 0xFF1c1228);
+        // highlight oben-links (hellere akzent-variante)
+        int highlight = (accentLight & 0x00FFFFFF) | 0x66000000;
+        context.fill(x + 1, y + 1, x + size - 1, y + 2, highlight);
+        context.fill(x + 1, y + 1, x + 2, y + size - 1, highlight);
+        // shadow unten-rechts (dunkler akzent)
+        context.fill(x + 1, y + size - 2, x + size - 1, y + size - 1, accentDark);
+        context.fill(x + size - 2, y + 1, x + size - 1, y + size - 1, accentDark);
     }
 
     @Override
@@ -111,7 +107,5 @@ public class ArmorElement extends HudElement {
     }
 
     @Override
-    public int getHeight(MinecraftClient mc) {
-        return SLOT_SIZE;
-    }
+    public int getHeight(MinecraftClient mc) { return SLOT_SIZE; }
 }

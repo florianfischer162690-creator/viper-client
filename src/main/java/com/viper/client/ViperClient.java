@@ -31,12 +31,13 @@ public class ViperClient implements ClientModInitializer {
     private static KeyBinding openMenuKey;
     private static KeyBinding toggleSprintKey;
     private static KeyBinding toggleFullbrightKey;
+    private static KeyBinding noFogKey;
+    private static KeyBinding zoomKey;
 
     private static boolean lastLeftDown = false;
     private static boolean lastRightDown = false;
-
-    // keybind-listener: merkt sich welcher key als letztes gedrückt war pro id
     private static final Map<String, Boolean> keyPressedState = new HashMap<>();
+    private static boolean zoomed = false;
 
     @Override
     public void onInitializeClient() {
@@ -57,6 +58,8 @@ public class ViperClient implements ClientModInitializer {
                     double dz = playerPos.z - ez;
                     double reach = Math.sqrt(dx * dx + dy * dy + dz * dz);
                     AttackTracker.registerHit(reach);
+                    // hit-marker auslösen
+                    CrosshairElement.triggerHitMarker();
                 }
             } catch (Throwable ignored) {}
             return ActionResult.PASS;
@@ -67,10 +70,8 @@ public class ViperClient implements ClientModInitializer {
                 long window = MinecraftClient.getInstance().getWindow().getHandle();
                 boolean leftDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
                 boolean rightDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
-
                 if (leftDown && !lastLeftDown) ClickTracker.registerLeft();
                 if (rightDown && !lastRightDown) ClickTracker.registerRight();
-
                 lastLeftDown = leftDown;
                 lastRightDown = rightDown;
             } catch (Throwable ignored) {}
@@ -95,55 +96,50 @@ public class ViperClient implements ClientModInitializer {
         });
 
         toggleHudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.viper.toggle_hud", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F4, KeyBinding.Category.MISC
-        ));
+                "key.viper.toggle_hud", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F4, KeyBinding.Category.MISC));
         openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.viper.open_menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, KeyBinding.Category.MISC
-        ));
+                "key.viper.open_menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, KeyBinding.Category.MISC));
         toggleSprintKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.viper.toggle_sprint", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_R, KeyBinding.Category.MISC
-        ));
+                "key.viper.toggle_sprint", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_R, KeyBinding.Category.MISC));
         toggleFullbrightKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.viper.fullbright", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F8, KeyBinding.Category.MISC
-        ));
+                "key.viper.fullbright", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F8, KeyBinding.Category.MISC));
+        noFogKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.viper.no_fog", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F9, KeyBinding.Category.MISC));
+        zoomKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.viper.zoom", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, KeyBinding.Category.MISC));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleHudKey.wasPressed()) {
                 Config.hudEnabled = !Config.hudEnabled;
                 Config.save();
-                if (client.player != null) {
-                    client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fHUD " + (Config.hudEnabled ? "§aon" : "§coff")), true);
-                }
+                if (client.player != null) client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fHUD " + (Config.hudEnabled ? "§aon" : "§coff")), true);
             }
 
             while (openMenuKey.wasPressed()) {
-                if (client.currentScreen instanceof ViperStartMenu) {
-                    client.setScreen(null);
-                } else {
-                    client.setScreen(new ViperStartMenu());
-                }
+                if (client.currentScreen instanceof ViperStartMenu) client.setScreen(null);
+                else client.setScreen(new ViperStartMenu());
             }
 
             while (toggleSprintKey.wasPressed()) {
                 Config.toggleSprint = !Config.toggleSprint;
                 Config.save();
-                if (client.player != null) {
-                    client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fSprint " + (Config.toggleSprint ? "§aon" : "§coff")), true);
-                }
                 if (!Config.toggleSprint) client.options.sprintKey.setPressed(false);
+                if (client.player != null) client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fSprint " + (Config.toggleSprint ? "§aon" : "§coff")), true);
             }
 
             while (toggleFullbrightKey.wasPressed()) {
                 Config.fullbright = !Config.fullbright;
                 Config.save();
-                if (Config.fullbright) client.options.getGamma().setValue(10.0);
-                else client.options.getGamma().setValue(1.0);
-                if (client.player != null) {
-                    client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fFullbright " + (Config.fullbright ? "§aon" : "§coff")), true);
-                }
+                client.options.getGamma().setValue(Config.fullbright ? 10.0 : 1.0);
+                if (client.player != null) client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fFullbright " + (Config.fullbright ? "§aon" : "§coff")), true);
             }
 
-            // custom keybinds pro modul
+            while (noFogKey.wasPressed()) {
+                Config.noFog = !Config.noFog;
+                Config.save();
+                if (client.player != null) client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fNoFog " + (Config.noFog ? "§aon" : "§coff")), true);
+            }
+
             try {
                 long window = client.getWindow().getHandle();
                 if (client.currentScreen == null) {
@@ -151,15 +147,23 @@ public class ViperClient implements ClientModInitializer {
                         String id = entry.getKey();
                         int key = entry.getValue();
                         if (key <= 0) continue;
-
                         boolean isDown = GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS;
                         boolean wasDown = keyPressedState.getOrDefault(id, false);
-
-                        if (isDown && !wasDown) {
-                            toggleModule(id);
-                        }
+                        if (isDown && !wasDown) toggleModule(id);
                         keyPressedState.put(id, isDown);
                     }
+                }
+            } catch (Throwable ignored) {}
+
+            try {
+                boolean zoomPressed = zoomKey.isPressed();
+                if (zoomPressed && !zoomed) {
+                    Config.defaultFov = client.options.getFov().getValue();
+                    client.options.getFov().setValue(Config.zoomFov);
+                    zoomed = true;
+                } else if (!zoomPressed && zoomed) {
+                    client.options.getFov().setValue(Config.defaultFov);
+                    zoomed = false;
                 }
             } catch (Throwable ignored) {}
 
@@ -175,7 +179,6 @@ public class ViperClient implements ClientModInitializer {
         LOGGER.info("[Viper V1] ready.");
     }
 
-    /** togglet ein modul anhand der id */
     private static void toggleModule(String id) {
         switch (id) {
             case "watermark": Config.showWatermark = !Config.showWatermark; break;
@@ -188,6 +191,8 @@ public class ViperClient implements ClientModInitializer {
             case "keystrokes": Config.showKeystrokes = !Config.showKeystrokes; break;
             case "reach": Config.showReach = !Config.showReach; break;
             case "combo": Config.showCombo = !Config.showCombo; break;
+            case "direction": Config.showDirection = !Config.showDirection; break;
+            case "speed": Config.showSpeed = !Config.showSpeed; break;
             case "hudtoggle": Config.hudEnabled = !Config.hudEnabled; break;
             case "lowhealth": Config.lowHealthWarning = !Config.lowHealthWarning; break;
             case "togglesprint": Config.toggleSprint = !Config.toggleSprint; break;
@@ -195,25 +200,17 @@ public class ViperClient implements ClientModInitializer {
             case "customcrosshair": Config.showCustomCrosshair = !Config.showCustomCrosshair; break;
             case "targetindicator": Config.showTargetIndicator = !Config.showTargetIndicator; break;
             case "healthindicator": Config.showHealthIndicator = !Config.showHealthIndicator; break;
+            case "hitmarker": Config.showHitMarker = !Config.showHitMarker; break;
             case "fullbright":
                 Config.fullbright = !Config.fullbright;
                 MinecraftClient mc = MinecraftClient.getInstance();
-                if (mc != null && mc.options != null) {
-                    mc.options.getGamma().setValue(Config.fullbright ? 10.0 : 1.0);
-                }
+                if (mc != null && mc.options != null) mc.options.getGamma().setValue(Config.fullbright ? 10.0 : 1.0);
                 break;
-            case "fpsboost":
-                Config.fpsBoost = !Config.fpsBoost;
-                break;
+            case "nofog": Config.noFog = !Config.noFog; break;
+            case "fpsboost": Config.fpsBoost = !Config.fpsBoost; break;
         }
         Config.save();
-
         MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player != null) {
-            client.player.sendMessage(
-                    net.minecraft.text.Text.literal("§a[Viper] §f" + id + " toggled"),
-                    true
-            );
-        }
+        if (client.player != null) client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §f" + id), true);
     }
 }

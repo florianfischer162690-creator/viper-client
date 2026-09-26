@@ -3,5 +3,7 @@
   "key.viper.toggle_hud": "Toggle HUD",
   "key.viper.open_menu": "Open Menu",
   "key.viper.toggle_sprint": "Toggle Sprint",
-  "key.viper.fullbright": "Toggle Fullbright"
+  "key.viper.fullbright": "Toggle Fullbright",
+  "key.viper.no_fog": "Toggle No-Fog",
+  "key.viper.zoom": "Zoom"
 }

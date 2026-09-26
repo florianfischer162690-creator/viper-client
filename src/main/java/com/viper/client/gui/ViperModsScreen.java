@@ -29,7 +29,7 @@ public class ViperModsScreen extends Screen {
 
     private int panelX, panelY, panelW, panelH;
     private int activeTab = 0;
-    private final String[] TABS = {"HUD", "PVP", "THEME", "COLORS"};
+    private final String[] TABS = {"HUD", "PVP", "CROSSHAIR", "THEME", "COLORS", "CONFIG"};
 
     private final List<List<ModCard>> TAB_MODULES = new ArrayList<>();
     private static final String[] SIDEBAR_LABELS = {"COSMETICS", "SKINS", "EMOTES", "FRIENDS"};
@@ -42,11 +42,22 @@ public class ViperModsScreen extends Screen {
             0xFFA855F7, 0xFFFF3B30, 0xFF23A55A, 0xFF3498DB,
             0xFFFFC107, 0xFFFFFFFF, 0xFFFF69B4, 0xFF00FFFF
     };
-    private static final String[] COLOR_NAMES = {"LILA", "ROT", "GRÜN", "BLAU", "GELB", "WEISS", "PINK", "CYAN"};
+
+    private static final String[] CROSSHAIR_IDS = {
+            "classic", "dot", "cross", "big", "circle", "circle-dot",
+            "t-style", "bracket", "plus", "x", "corner", "minimal"
+    };
+    private static final String[] CROSSHAIR_NAMES = {
+            "CLASSIC", "DOT", "CROSS", "BIG", "CIRCLE", "CIRCLE-DOT",
+            "T-STYLE", "BRACKET", "PLUS", "X", "CORNER", "MINIMAL"
+    };
 
     private int scrollOffset = 0;
     private int maxScroll = 0;
     private String awaitingKeybindId = null;
+
+    private String shareStatusMsg = "";
+    private long shareStatusTime = 0;
 
     public ViperModsScreen() { super(Text.literal("Viper V1 — Mods")); }
 
@@ -70,6 +81,8 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("keystrokes", "KEYSTROKES", "Show WASD keys", () -> Config.showKeystrokes, v -> Config.showKeystrokes = v));
         hud.add(new ModCard("reach", "REACH", "Show last hit distance", () -> Config.showReach, v -> Config.showReach = v));
         hud.add(new ModCard("combo", "COMBO", "Show hit combo", () -> Config.showCombo, v -> Config.showCombo = v));
+        hud.add(new ModCard("direction", "DIRECTION", "Show compass direction", () -> Config.showDirection, v -> Config.showDirection = v));
+        hud.add(new ModCard("speed", "SPEED", "Show movement speed", () -> Config.showSpeed, v -> Config.showSpeed = v));
         hud.add(new ModCard("hudtoggle", "HUD MASTER", "Toggle entire HUD (F4)", () -> Config.hudEnabled, v -> Config.hudEnabled = v));
         hud.add(new ModCard("lowhealth", "LOW HEALTH", "Red border on low HP", () -> Config.lowHealthWarning, v -> Config.lowHealthWarning = v));
         TAB_MODULES.add(hud);
@@ -80,41 +93,40 @@ public class ViperModsScreen extends Screen {
         pvp.add(new ModCard("customcrosshair", "CUSTOM CROSSHAIR", "Custom crosshair", () -> Config.showCustomCrosshair, v -> Config.showCustomCrosshair = v));
         pvp.add(new ModCard("targetindicator", "TARGET INDICATOR", "Box when aiming entity", () -> Config.showTargetIndicator, v -> Config.showTargetIndicator = v));
         pvp.add(new ModCard("healthindicator", "HEALTH OVER ENTITY", "Show HP over target", () -> Config.showHealthIndicator, v -> Config.showHealthIndicator = v));
+        pvp.add(new ModCard("hitmarker", "HIT MARKER", "X when you hit", () -> Config.showHitMarker, v -> Config.showHitMarker = v));
         pvp.add(new ModCard("fullbright", "FULLBRIGHT", "Night vision (F8)", () -> Config.fullbright, v -> {
             Config.fullbright = v;
             MinecraftClient mc = MinecraftClient.getInstance();
             if (mc != null && mc.options != null) mc.options.getGamma().setValue(v ? 10.0 : 1.0);
         }));
+        pvp.add(new ModCard("nofog", "NO FOG", "Remove fog (F9)", () -> Config.noFog, v -> Config.noFog = v));
         pvp.add(new ModCard("fpsboost", "FPS BOOST", "Aggressive settings for max FPS", () -> Config.fpsBoost, v -> applyFpsBoost(v)));
+        pvp.add(new ModCard("chattimestamps", "CHAT TIMESTAMPS", "Show time in chat", () -> Config.chatTimestamps, v -> Config.chatTimestamps = v));
         TAB_MODULES.add(pvp);
 
-        TAB_MODULES.add(new ArrayList<>());
-        TAB_MODULES.add(new ArrayList<>());
-
-        scrollOffset = 0;
+        TAB_MODULES.add(new ArrayList<>()); // CROSSHAIR (index 2)
+        TAB_MODULES.add(new ArrayList<>()); // THEME (index 3)
+        TAB_MODULES.add(new ArrayList<>()); // COLORS (index 4)
+        TAB_MODULES.add(new ArrayList<>()); // CONFIG (index 5)
     }
 
     private void applyFpsBoost(boolean enable) {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc == null || mc.options == null) return;
-
         if (enable && !Config.fpsBoost) {
             Config.fpsPrevRenderDist = mc.options.getViewDistance().getValue();
             Config.fpsPrevSimDist = mc.options.getSimulationDistance().getValue();
             Config.fpsPrevEntityDist = (int) (mc.options.getEntityDistanceScaling().getValue() * 100);
-
             mc.options.getViewDistance().setValue(2);
             mc.options.getSimulationDistance().setValue(4);
             mc.options.getEntityDistanceScaling().setValue(0.5);
             mc.options.getCloudRenderMode().setValue(net.minecraft.client.option.CloudRenderMode.OFF);
-
             Config.fpsBoost = true;
         } else if (!enable && Config.fpsBoost) {
             mc.options.getViewDistance().setValue(Config.fpsPrevRenderDist);
             mc.options.getSimulationDistance().setValue(Config.fpsPrevSimDist);
             mc.options.getEntityDistanceScaling().setValue(Config.fpsPrevEntityDist / 100.0);
             mc.options.getCloudRenderMode().setValue(net.minecraft.client.option.CloudRenderMode.FANCY);
-
             Config.fpsBoost = false;
         }
         Config.save();
@@ -123,7 +135,6 @@ public class ViperModsScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         int accent = Config.getAccent();
-        int accentLight = Config.getAccentLight();
         int accentDark = Config.getAccentDark();
 
         context.fill(0, 0, this.width, this.height, 0xBB000000);
@@ -137,23 +148,23 @@ public class ViperModsScreen extends Screen {
         context.fill(panelX, panelY, panelX + SIDEBAR_W, panelY + panelH, COLOR_PANEL);
         context.fill(panelX + SIDEBAR_W, panelY, panelX + SIDEBAR_W + 1, panelY + panelH, accentDark);
 
-        drawSidebar(context, mouseX, mouseY, accent, accentLight);
+        drawSidebar(context, mouseX, mouseY, accent);
 
-        int tabsX = panelX + SIDEBAR_W + 16;
+        int tabsX = panelX + SIDEBAR_W + 12;
         int tx = tabsX;
         for (int i = 0; i < TABS.length; i++) {
             String tab = TABS[i];
-            int tw = this.textRenderer.getWidth(tab) + 24;
+            int tw = this.textRenderer.getWidth(tab) + 20;
             boolean active = (i == activeTab);
             int textColor = active ? COLOR_WHITE : COLOR_MUTED;
             if (active) {
                 context.fill(tx, panelY + 8, tx + tw, panelY + 32, 0xFF221533);
-                context.drawText(this.textRenderer, "§l" + tab, tx + 12, panelY + 16, textColor, false);
+                context.drawText(this.textRenderer, "§l" + tab, tx + 10, panelY + 16, textColor, false);
                 context.fill(tx, panelY + 32, tx + tw, panelY + 33, accent);
             } else {
-                context.drawText(this.textRenderer, tab, tx + 12, panelY + 16, textColor, false);
+                context.drawText(this.textRenderer, tab, tx + 10, panelY + 16, textColor, false);
             }
-            tx += tw + 8;
+            tx += tw + 4;
         }
 
         int closeX = panelX + panelW - 28;
@@ -164,13 +175,11 @@ public class ViperModsScreen extends Screen {
 
         context.fill(panelX + SIDEBAR_W + 1, panelY + TAB_H + 18, panelX + panelW, panelY + TAB_H + 19, 0xFF2a1a3a);
 
-        if (activeTab == 2) {
-            renderThemeTab(context, mouseX, mouseY);
-        } else if (activeTab == 3) {
-            renderColorsTab(context, mouseX, mouseY);
-        } else if (activeTab < TAB_MODULES.size()) {
-            renderCardsTab(context, mouseX, mouseY, accent);
-        }
+        if (activeTab == 2) renderCrosshairTab(context, mouseX, mouseY);
+        else if (activeTab == 3) renderThemeTab(context, mouseX, mouseY);
+        else if (activeTab == 4) renderColorsTab(context, mouseX, mouseY);
+        else if (activeTab == 5) renderConfigTab(context, mouseX, mouseY, accent);
+        else if (activeTab < TAB_MODULES.size()) renderCardsTab(context, mouseX, mouseY, accent);
 
         if (awaitingKeybindId != null) {
             int ow = 300, oh = 80;
@@ -186,10 +195,158 @@ public class ViperModsScreen extends Screen {
             context.drawCenteredTextWithShadow(this.textRenderer, "§7ESC to cancel / DELETE to remove", this.width / 2, oy + 58, COLOR_MUTED);
         }
 
+        if (!shareStatusMsg.isEmpty() && System.currentTimeMillis() - shareStatusTime < 3000) {
+            context.drawCenteredTextWithShadow(this.textRenderer, shareStatusMsg, this.width / 2, panelY + panelH - 36, accent);
+        }
+
         context.drawText(this.textRenderer, "§7Click card to toggle | Click key to set | ESC to close",
                 panelX + SIDEBAR_W + 16, panelY + panelH - 16, COLOR_MUTED, false);
 
         super.render(context, mouseX, mouseY, delta);
+    }
+
+    private void renderCrosshairTab(DrawContext context, int mouseX, int mouseY) {
+        int accent = Config.getAccent();
+        int x = panelX + SIDEBAR_W + 30;
+        int y = panelY + TAB_H + 60;
+        int swatchSize = 60;
+        int gap = 12;
+
+        context.drawText(this.textRenderer, "§lSELECT CROSSHAIR PRESET", x, y - 30, COLOR_WHITE, false);
+
+        int perRow = 4;
+        for (int i = 0; i < CROSSHAIR_IDS.length; i++) {
+            int col = i % perRow;
+            int row = i / perRow;
+            int sx = x + col * (swatchSize + gap);
+            int sy = y + row * (swatchSize + 22 + gap);
+            if (sy + swatchSize > panelY + panelH - 40) break;
+
+            boolean hovered = mouseX >= sx && mouseX <= sx + swatchSize && mouseY >= sy && mouseY <= sy + swatchSize;
+            boolean active = Config.crosshairPreset.equals(CROSSHAIR_IDS[i]);
+
+            context.fill(sx, sy, sx + swatchSize, sy + swatchSize, 0xFF16121f);
+
+            if (active) {
+                context.fill(sx - 3, sy - 3, sx + swatchSize + 3, sy - 1, 0xFFFFFFFF);
+                context.fill(sx - 3, sy + swatchSize + 1, sx + swatchSize + 3, sy + swatchSize + 3, 0xFFFFFFFF);
+                context.fill(sx - 3, sy - 1, sx - 1, sy + swatchSize + 1, 0xFFFFFFFF);
+                context.fill(sx + swatchSize + 1, sy - 1, sx + swatchSize + 3, sy + swatchSize + 1, 0xFFFFFFFF);
+            } else if (hovered) {
+                context.fill(sx - 2, sy - 2, sx + swatchSize + 2, sy, 0xAAFFFFFF);
+                context.fill(sx - 2, sy + swatchSize, sx + swatchSize + 2, sy + swatchSize + 2, 0xAAFFFFFF);
+                context.fill(sx - 2, sy, sx, sy + swatchSize, 0xAAFFFFFF);
+                context.fill(sx + swatchSize, sy, sx + swatchSize + 2, sy + swatchSize, 0xAAFFFFFF);
+            }
+
+            int cx = sx + swatchSize / 2;
+            int cy = sy + swatchSize / 2;
+            drawCrosshairPreview(context, cx, cy, accent, CROSSHAIR_IDS[i]);
+
+            context.drawCenteredTextWithShadow(this.textRenderer, CROSSHAIR_NAMES[i], sx + swatchSize / 2, sy + swatchSize + 5, active ? accent : COLOR_MUTED);
+        }
+    }
+
+    private void drawCrosshairPreview(DrawContext context, int cx, int cy, int color, String preset) {
+        switch (preset) {
+            case "classic": drawSmallCross(context, cx, cy, color, 4, 2); break;
+            case "dot": context.fill(cx - 1, cy - 1, cx + 2, cy + 2, color); break;
+            case "cross": drawSmallCross(context, cx, cy, color, 4, 2); context.fill(cx, cy, cx + 1, cy + 1, color); break;
+            case "big": drawSmallCross(context, cx, cy, color, 8, 2); break;
+            case "circle": drawSmallCircle(context, cx, cy, 6, color); break;
+            case "circle-dot": drawSmallCircle(context, cx, cy, 6, color); context.fill(cx, cy, cx + 1, cy + 1, color); break;
+            case "t-style":
+                context.fill(cx, cy - 6, cx + 1, cy - 2, color);
+                context.fill(cx - 6, cy, cx - 2, cy + 1, color);
+                context.fill(cx + 2, cy, cx + 6, cy + 1, color);
+                break;
+            case "bracket":
+                context.fill(cx - 7, cy - 6, cx - 6, cy + 6, color);
+                context.fill(cx - 7, cy - 6, cx - 3, cy - 5, color);
+                context.fill(cx - 7, cy + 5, cx - 3, cy + 6, color);
+                context.fill(cx + 6, cy - 6, cx + 7, cy + 6, color);
+                context.fill(cx + 3, cy - 6, cx + 7, cy - 5, color);
+                context.fill(cx + 3, cy + 5, cx + 7, cy + 6, color);
+                break;
+            case "plus":
+                context.fill(cx - 5, cy, cx + 6, cy + 1, color);
+                context.fill(cx, cy - 5, cx + 1, cy + 6, color);
+                break;
+            case "x":
+                for (int i = -5; i <= 5; i++) {
+                    context.fill(cx + i, cy + i, cx + i + 1, cy + i + 1, color);
+                    context.fill(cx + i, cy - i, cx + i + 1, cy - i + 1, color);
+                }
+                break;
+            case "corner":
+                context.fill(cx - 7, cy - 7, cx - 3, cy - 6, color);
+                context.fill(cx - 7, cy - 7, cx - 6, cy - 3, color);
+                context.fill(cx + 3, cy - 7, cx + 7, cy - 6, color);
+                context.fill(cx + 6, cy - 7, cx + 7, cy - 3, color);
+                context.fill(cx - 7, cy + 6, cx - 3, cy + 7, color);
+                context.fill(cx - 7, cy + 3, cx - 6, cy + 7, color);
+                context.fill(cx + 3, cy + 6, cx + 7, cy + 7, color);
+                context.fill(cx + 6, cy + 3, cx + 7, cy + 7, color);
+                break;
+            case "minimal":
+                context.fill(cx, cy - 1, cx + 1, cy + 2, color);
+                break;
+        }
+    }
+
+    private void drawSmallCross(DrawContext context, int cx, int cy, int color, int len, int gap) {
+        context.fill(cx, cy - gap - len, cx + 1, cy - gap, color);
+        context.fill(cx, cy + gap, cx + 1, cy + gap + len, color);
+        context.fill(cx - gap - len, cy, cx - gap, cy + 1, color);
+        context.fill(cx + gap, cy, cx + gap + len, cy + 1, color);
+    }
+
+    private void drawSmallCircle(DrawContext context, int cx, int cy, int radius, int color) {
+        for (int i = -radius; i <= radius; i++) {
+            for (int j = -radius; j <= radius; j++) {
+                int d = i * i + j * j;
+                if (d <= radius * radius && d >= (radius - 1) * (radius - 1)) {
+                    context.fill(cx + i, cy + j, cx + i + 1, cy + j + 1, color);
+                }
+            }
+        }
+    }
+
+    private void renderConfigTab(DrawContext context, int mouseX, int mouseY, int accent) {
+        int x = panelX + SIDEBAR_W + 30;
+        int y = panelY + TAB_H + 50;
+
+        context.drawText(this.textRenderer, "§lCONFIG SHARE", x, y - 30, COLOR_WHITE, false);
+        context.drawText(this.textRenderer, "§7Share your settings with friends", x, y - 12, COLOR_MUTED, false);
+
+        int btnW = 240, btnH = 36;
+
+        int shareY = y + 10;
+        boolean shareHover = mouseX >= x && mouseX <= x + btnW && mouseY >= shareY && mouseY <= shareY + btnH;
+        context.fill(x, shareY, x + btnW, shareY + btnH, shareHover ? 0xFF2a1a44 : COLOR_PANEL);
+        int borderShare = shareHover ? accent : 0xFF2a1c3d;
+        context.fill(x, shareY, x + btnW, shareY + 1, borderShare);
+        context.fill(x, shareY + btnH - 1, x + btnW, shareY + btnH, borderShare);
+        context.fill(x, shareY, x + 1, shareY + btnH, borderShare);
+        context.fill(x + btnW - 1, shareY, x + btnW, shareY + btnH, borderShare);
+        context.drawCenteredTextWithShadow(this.textRenderer, "§l📤 EXPORT CONFIG", x + btnW / 2, shareY + 12, accent);
+        context.drawText(this.textRenderer, "§7Copies your config string to clipboard", x, shareY + btnH + 6, COLOR_MUTED, false);
+
+        int importY = shareY + btnH + 30;
+        boolean importHover = mouseX >= x && mouseX <= x + btnW && mouseY >= importY && mouseY <= importY + btnH;
+        context.fill(x, importY, x + btnW, importY + btnH, importHover ? 0xFF2a1a44 : COLOR_PANEL);
+        int borderImport = importHover ? accent : 0xFF2a1c3d;
+        context.fill(x, importY, x + btnW, importY + 1, borderImport);
+        context.fill(x, importY + btnH - 1, x + btnW, importY + btnH, borderImport);
+        context.fill(x, importY, x + 1, importY + btnH, borderImport);
+        context.fill(x + btnW - 1, importY, x + btnW, importY + btnH, borderImport);
+        context.drawCenteredTextWithShadow(this.textRenderer, "§l📥 IMPORT FROM CLIPBOARD", x + btnW / 2, importY + 12, accent);
+        context.drawText(this.textRenderer, "§7Reads config string from clipboard", x, importY + btnH + 6, COLOR_MUTED, false);
+
+        context.drawText(this.textRenderer, "§7How it works:", x, importY + btnH + 40, COLOR_WHITE, false);
+        context.drawText(this.textRenderer, "§71. Click EXPORT → config code is copied", x, importY + btnH + 56, COLOR_MUTED, false);
+        context.drawText(this.textRenderer, "§72. Send the code to a friend", x, importY + btnH + 70, COLOR_MUTED, false);
+        context.drawText(this.textRenderer, "§73. Friend copies it + clicks IMPORT", x, importY + btnH + 84, COLOR_MUTED, false);
     }
 
     private void renderCardsTab(DrawContext context, int mouseX, int mouseY, int accent) {
@@ -209,14 +366,11 @@ public class ViperModsScreen extends Screen {
         if (scrollOffset < 0) scrollOffset = 0;
 
         context.enableScissor(cardsStartX, visibleTop, panelX + panelW - 16, visibleBottom);
-
         int col = 0, row = 0;
         for (ModCard card : cards) {
             int cx = cardsStartX + col * (cardW + CARD_GAP);
             int cy = cardsStartY + row * (CARD_H + CARD_GAP) - scrollOffset;
-            boolean hovered = mouseY >= visibleTop && mouseY <= visibleBottom
-                    && mouseX >= cx && mouseX <= cx + cardW
-                    && mouseY >= cy && mouseY <= cy + CARD_H;
+            boolean hovered = mouseY >= visibleTop && mouseY <= visibleBottom && mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + CARD_H;
             drawCard(context, card, cx, cy, cardW, CARD_H, hovered, mouseX, mouseY, accent);
             col++;
             if (col >= 2) { col = 0; row++; }
@@ -243,19 +397,15 @@ public class ViperModsScreen extends Screen {
         int gap = 12;
 
         context.drawText(this.textRenderer, "§lSELECT THEME", x, y - 30, COLOR_WHITE, false);
-
         int perRow = 4;
         for (int i = 0; i < THEME_IDS.length; i++) {
             int col = i % perRow;
             int row = i / perRow;
             int sx = x + col * (swatchSize + gap);
             int sy = y + row * (swatchSize + 22 + gap);
-
             boolean hovered = mouseX >= sx && mouseX <= sx + swatchSize && mouseY >= sy && mouseY <= sy + swatchSize;
             boolean active = Config.theme.equals(THEME_IDS[i]);
-
             context.fill(sx, sy, sx + swatchSize, sy + swatchSize, THEME_COLOR[i]);
-
             if (active) {
                 context.fill(sx - 3, sy - 3, sx + swatchSize + 3, sy - 1, 0xFFFFFFFF);
                 context.fill(sx - 3, sy + swatchSize + 1, sx + swatchSize + 3, sy + swatchSize + 3, 0xFFFFFFFF);
@@ -267,7 +417,6 @@ public class ViperModsScreen extends Screen {
                 context.fill(sx - 2, sy, sx, sy + swatchSize, 0xAAFFFFFF);
                 context.fill(sx + swatchSize, sy, sx + swatchSize + 2, sy + swatchSize, 0xAAFFFFFF);
             }
-
             context.drawCenteredTextWithShadow(this.textRenderer, THEME_NAMES[i], sx + swatchSize / 2, sy + swatchSize + 5, active ? accent : COLOR_MUTED);
         }
     }
@@ -277,14 +426,12 @@ public class ViperModsScreen extends Screen {
         int x = panelX + SIDEBAR_W + 30;
         int y = panelY + TAB_H + 45;
         int rowH = 70;
-
         String[] labels = {"CROSSHAIR COLOR", "TARGET COLOR", "HEALTH BAR COLOR"};
         int[] currentColors = {Config.crosshairColor, Config.targetColor, Config.healthIndicatorColor};
         boolean[] useCustom = {Config.useCustomCrosshairColor, Config.useCustomTargetColor, Config.useCustomHealthColor};
 
         for (int r = 0; r < 3; r++) {
             int ry = y + r * rowH;
-
             String status = useCustom[r] ? " §a(custom)" : " §7(theme)";
             context.drawText(this.textRenderer, "§l" + labels[r] + status, x, ry - 14, COLOR_WHITE, false);
 
@@ -296,9 +443,7 @@ public class ViperModsScreen extends Screen {
                 int col = COLOR_OPTIONS[c];
                 boolean hovered = mouseX >= sx && mouseX <= sx + swatchSize && mouseY >= sy && mouseY <= sy + swatchSize;
                 boolean isSelected = useCustom[r] && (col == currentColors[r]);
-
                 context.fill(sx, sy, sx + swatchSize, sy + swatchSize, col);
-
                 if (isSelected) {
                     context.fill(sx - 2, sy - 2, sx + swatchSize + 2, sy - 1, 0xFFFFFFFF);
                     context.fill(sx - 2, sy + swatchSize + 1, sx + swatchSize + 2, sy + swatchSize + 2, 0xFFFFFFFF);
@@ -311,26 +456,23 @@ public class ViperModsScreen extends Screen {
                     context.fill(sx + swatchSize, sy, sx + swatchSize + 1, sy + swatchSize, 0xAAFFFFFF);
                 }
             }
-
             int btnX = x + (swatchSize + swatchGap) * COLOR_OPTIONS.length + 10;
             int btnY = ry;
             int btnW = 80;
             int btnH = swatchSize;
             boolean btnHover = mouseX >= btnX && mouseX <= btnX + btnW && mouseY >= btnY && mouseY <= btnY + btnH;
-
             context.fill(btnX, btnY, btnX + btnW, btnY + btnH, btnHover ? 0xFF2a1a44 : COLOR_PANEL);
             int border = btnHover ? accent : 0xFF2a1c3d;
             context.fill(btnX, btnY, btnX + btnW, btnY + 1, border);
             context.fill(btnX, btnY + btnH - 1, btnX + btnW, btnY + btnH, border);
             context.fill(btnX, btnY, btnX + 1, btnY + btnH, border);
             context.fill(btnX + btnW - 1, btnY, btnX + btnW, btnY + btnH, border);
-
             String btnLabel = useCustom[r] ? "RESET" : "THEME";
             context.drawCenteredTextWithShadow(this.textRenderer, btnLabel, btnX + btnW / 2, btnY + 7, useCustom[r] ? COLOR_MUTED : accent);
         }
     }
 
-    private void drawSidebar(DrawContext context, int mouseX, int mouseY, int accent, int accentLight) {
+    private void drawSidebar(DrawContext context, int mouseX, int mouseY, int accent) {
         int iconSize = 40;
         int labelH = 12;
         int itemH = iconSize + labelH + 6;
@@ -396,18 +538,13 @@ public class ViperModsScreen extends Screen {
 
     private void drawCard(DrawContext context, ModCard card, int x, int y, int w, int h, boolean hovered, int mouseX, int mouseY, int accent) {
         context.fill(x, y, x + w, y + h, hovered ? 0xFF2a1a44 : 0xFF1c1228);
-
-        if (card.getter.get()) {
-            context.fill(x, y, x + 3, y + h, accent);
-        }
+        if (card.getter.get()) context.fill(x, y, x + 3, y + h, accent);
         if (hovered) {
             context.fill(x, y, x + w, y + 1, accent);
             context.fill(x, y + h - 1, x + w, y + h, accent);
             context.fill(x + w - 1, y, x + w, y + h, accent);
         }
-
         context.fill(x + 14, y + 14, x + 26, y + 26, card.getter.get() ? accent : COLOR_MUTED);
-
         context.drawText(this.textRenderer, "§l" + card.title, x + 36, y + 12, COLOR_WHITE, false);
         context.drawText(this.textRenderer, "§7" + card.description, x + 36, y + 28, COLOR_MUTED, false);
 
@@ -422,24 +559,20 @@ public class ViperModsScreen extends Screen {
         int kbH = 18;
         int kbX = x + 14;
         int kbW = w - 28;
-
         int key = Config.getKeybind(card.id);
         String keyName = key > 0 ? getKeyName(key) : "NONE";
         boolean isSetting = card.id.equals(awaitingKeybindId);
         boolean kbHovered = mouseX >= kbX && mouseX <= kbX + kbW && mouseY >= kbY && mouseY <= kbY + kbH;
-
         context.fill(kbX, kbY, kbX + kbW, kbY + kbH, isSetting ? 0xFF3a1a2a : COLOR_KEYBG);
         int kbBorder = isSetting ? accent : (kbHovered ? accent : COLOR_KEYBORDER);
         context.fill(kbX, kbY, kbX + kbW, kbY + 1, kbBorder);
         context.fill(kbX, kbY + kbH - 1, kbX + kbW, kbY + kbH, kbBorder);
         context.fill(kbX, kbY, kbX + 1, kbY + kbH, kbBorder);
         context.fill(kbX + kbW - 1, kbY, kbX + kbW, kbY + kbH, kbBorder);
-
         if (isSetting) {
             context.drawCenteredTextWithShadow(this.textRenderer, "§ePRESS A KEY...", kbX + kbW / 2, kbY + 5, 0xFFFFC107);
         } else {
-            String label = "§7key: §f" + keyName;
-            context.drawText(this.textRenderer, label, kbX + 8, kbY + 5, COLOR_WHITE, false);
+            context.drawText(this.textRenderer, "§7key: §f" + keyName, kbX + 8, kbY + 5, COLOR_WHITE, false);
         }
     }
 
@@ -474,15 +607,9 @@ public class ViperModsScreen extends Screen {
             int keyCode = input.key();
             if (keyCode == GLFW.GLFW_KEY_ESCAPE) { awaitingKeybindId = null; return true; }
             if (keyCode == GLFW.GLFW_KEY_DELETE || keyCode == GLFW.GLFW_KEY_BACKSPACE) {
-                Config.setKeybind(awaitingKeybindId, -1);
-                awaitingKeybindId = null;
-                Config.save();
-                return true;
+                Config.setKeybind(awaitingKeybindId, -1); awaitingKeybindId = null; Config.save(); return true;
             }
-            Config.setKeybind(awaitingKeybindId, keyCode);
-            awaitingKeybindId = null;
-            Config.save();
-            return true;
+            Config.setKeybind(awaitingKeybindId, keyCode); awaitingKeybindId = null; Config.save(); return true;
         }
         return super.keyPressed(input);
     }
@@ -521,7 +648,6 @@ public class ViperModsScreen extends Screen {
         int gap = 8;
         int startY = panelY + 20;
         int cxSide = panelX + SIDEBAR_W / 2;
-
         int startY2 = startY + itemH + gap;
         for (int i = 0; i < SIDEBAR_LABELS.length; i++) {
             int iy = startY2 + i * (itemH + gap);
@@ -531,19 +657,38 @@ public class ViperModsScreen extends Screen {
             }
         }
 
-        int tabsX = panelX + SIDEBAR_W + 16;
+        int tabsX = panelX + SIDEBAR_W + 12;
         int tx = tabsX;
         for (int i = 0; i < TABS.length; i++) {
-            int tw = this.textRenderer.getWidth(TABS[i]) + 24;
+            int tw = this.textRenderer.getWidth(TABS[i]) + 20;
             if (mx >= tx && mx <= tx + tw && my >= panelY + 8 && my <= panelY + 32) {
-                activeTab = i;
-                scrollOffset = 0;
-                return true;
+                activeTab = i; scrollOffset = 0; return true;
             }
-            tx += tw + 8;
+            tx += tw + 4;
         }
 
         if (activeTab == 2) {
+            int x0 = panelX + SIDEBAR_W + 30;
+            int y0 = panelY + TAB_H + 60;
+            int swatchSize = 60;
+            int gap2 = 12;
+            int perRow = 4;
+            for (int i = 0; i < CROSSHAIR_IDS.length; i++) {
+                int col = i % perRow;
+                int row = i / perRow;
+                int sx = x0 + col * (swatchSize + gap2);
+                int sy = y0 + row * (swatchSize + 22 + gap2);
+                if (sy + swatchSize > panelY + panelH - 40) break;
+                if (mx >= sx && mx <= sx + swatchSize && my >= sy && my <= sy + swatchSize) {
+                    Config.crosshairPreset = CROSSHAIR_IDS[i];
+                    Config.save();
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        if (activeTab == 3) {
             int x0 = panelX + SIDEBAR_W + 30;
             int y0 = panelY + TAB_H + 60;
             int swatchSize = 60;
@@ -555,15 +700,13 @@ public class ViperModsScreen extends Screen {
                 int sx = x0 + col * (swatchSize + gap2);
                 int sy = y0 + row * (swatchSize + 22 + gap2);
                 if (mx >= sx && mx <= sx + swatchSize && my >= sy && my <= sy + swatchSize) {
-                    Config.theme = THEME_IDS[i];
-                    Config.save();
-                    return true;
+                    Config.theme = THEME_IDS[i]; Config.save(); return true;
                 }
             }
             return true;
         }
 
-        if (activeTab == 3) {
+        if (activeTab == 4) {
             int x0 = panelX + SIDEBAR_W + 30;
             int y0 = panelY + TAB_H + 45;
             int rowH = 70;
@@ -579,11 +722,9 @@ public class ViperModsScreen extends Screen {
                         if (r == 0) { Config.crosshairColor = newCol; Config.useCustomCrosshairColor = true; }
                         else if (r == 1) { Config.targetColor = newCol; Config.useCustomTargetColor = true; }
                         else if (r == 2) { Config.healthIndicatorColor = newCol; Config.useCustomHealthColor = true; }
-                        Config.save();
-                        return true;
+                        Config.save(); return true;
                     }
                 }
-
                 int btnX = x0 + (swatchSize + swatchGap) * COLOR_OPTIONS.length + 10;
                 int btnY = ry;
                 int btnW = 80;
@@ -592,9 +733,51 @@ public class ViperModsScreen extends Screen {
                     if (r == 0) Config.useCustomCrosshairColor = false;
                     else if (r == 1) Config.useCustomTargetColor = false;
                     else if (r == 2) Config.useCustomHealthColor = false;
-                    Config.save();
-                    return true;
+                    Config.save(); return true;
                 }
+            }
+            return true;
+        }
+
+        if (activeTab == 5) {
+            int x0 = panelX + SIDEBAR_W + 30;
+            int y0 = panelY + TAB_H + 60;
+            int btnW = 240;
+            int btnH = 36;
+
+            int shareY = y0 + 10;
+            if (mx >= x0 && mx <= x0 + btnW && my >= shareY && my <= shareY + btnH) {
+                String cfg = Config.exportAsString();
+                if (cfg != null && this.client != null) {
+                    this.client.keyboard.setClipboard(cfg);
+                    shareStatusMsg = "§a✓ Config copied to clipboard! (" + cfg.length() + " chars)";
+                    shareStatusTime = System.currentTimeMillis();
+                } else {
+                    shareStatusMsg = "§c✗ Export failed";
+                    shareStatusTime = System.currentTimeMillis();
+                }
+                return true;
+            }
+
+            int importY = shareY + btnH + 30;
+            if (mx >= x0 && mx <= x0 + btnW && my >= importY && my <= importY + btnH) {
+                if (this.client != null) {
+                    String clip = this.client.keyboard.getClipboard();
+                    if (clip != null && !clip.isEmpty()) {
+                        boolean ok = Config.importFromString(clip);
+                        if (ok) {
+                            shareStatusMsg = "§a✓ Config imported!";
+                            shareStatusTime = System.currentTimeMillis();
+                        } else {
+                            shareStatusMsg = "§c✗ Invalid config string";
+                            shareStatusTime = System.currentTimeMillis();
+                        }
+                    } else {
+                        shareStatusMsg = "§c✗ Clipboard is empty";
+                        shareStatusTime = System.currentTimeMillis();
+                    }
+                }
+                return true;
             }
             return true;
         }
@@ -607,15 +790,11 @@ public class ViperModsScreen extends Screen {
             int cardW = (cardsW - CARD_GAP) / 2;
             int visibleTop = cardsStartY;
             int visibleBottom = panelY + panelH - 24;
-
             int col = 0, row = 0;
             for (ModCard card : cards) {
                 int cx = cardsStartX + col * (cardW + CARD_GAP);
                 int cy = cardsStartY + row * (CARD_H + CARD_GAP) - scrollOffset;
-                if (my >= visibleTop && my <= visibleBottom
-                        && mx >= cx && mx <= cx + cardW
-                        && my >= cy && my <= cy + CARD_H) {
-
+                if (my >= visibleTop && my <= visibleBottom && mx >= cx && mx <= cx + cardW && my >= cy && my <= cy + CARD_H) {
                     int kbY = cy + CARD_H - 26;
                     int kbH = 18;
                     int kbX = cx + 14;
@@ -624,7 +803,6 @@ public class ViperModsScreen extends Screen {
                         awaitingKeybindId = card.id;
                         return true;
                     }
-
                     boolean newVal = !card.getter.get();
                     card.setter.accept(newVal);
                     Config.save();
