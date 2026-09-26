@@ -4,14 +4,18 @@ import com.viper.client.config.Config;
 import com.viper.client.gui.ViperStartMenu;
 import com.viper.client.hud.HudRenderer;
 import com.viper.client.hud.element.CrosshairElement;
+import com.viper.client.util.AttackTracker;
 import com.viper.client.util.ClickTracker;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +37,24 @@ public class ViperClient implements ClientModInitializer {
 
         Config.load();
         HudRenderer.init();
+
+        // attack-callback für reach + combo
+        AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+            try {
+                if (player == MinecraftClient.getInstance().player && entity != null) {
+                    Vec3d playerPos = player.getEyePos();
+                    double ex = entity.getX();
+                    double ey = entity.getY() + entity.getHeight() / 2.0;
+                    double ez = entity.getZ();
+                    double dx = playerPos.x - ex;
+                    double dy = playerPos.y - ey;
+                    double dz = playerPos.z - ez;
+                    double reach = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    AttackTracker.registerHit(reach);
+                }
+            } catch (Throwable ignored) {}
+            return ActionResult.PASS;
+        });
 
         HudRenderCallback.EVENT.register((context, tickCounter) -> {
             try {
@@ -113,6 +135,6 @@ public class ViperClient implements ClientModInitializer {
             }
         });
 
-        LOGGER.info("[Viper V1] ready. F4: HUD, RightShift: Menu, R: Sprint");
+        LOGGER.info("[Viper V1] ready.");
     }
 }

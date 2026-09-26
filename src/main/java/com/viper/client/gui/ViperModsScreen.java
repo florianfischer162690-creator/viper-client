@@ -57,6 +57,8 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("armor", "ARMOR", "Show armor HUD", () -> Config.showArmor, v -> Config.showArmor = v));
         hud.add(new ModCard("potion", "POTIONS", "Show active effects", () -> Config.showPotion, v -> Config.showPotion = v));
         hud.add(new ModCard("keystrokes", "KEYSTROKES", "Show WASD keys", () -> Config.showKeystrokes, v -> Config.showKeystrokes = v));
+        hud.add(new ModCard("reach", "REACH", "Show last hit distance", () -> Config.showReach, v -> Config.showReach = v));
+        hud.add(new ModCard("combo", "COMBO", "Show hit combo", () -> Config.showCombo, v -> Config.showCombo = v));
         hud.add(new ModCard("hudtoggle", "HUD MASTER", "Toggle entire HUD (F4)", () -> Config.hudEnabled, v -> Config.hudEnabled = v));
         TAB_MODULES.add(hud);
 
@@ -89,7 +91,6 @@ public class ViperModsScreen extends Screen {
             int tw = this.textRenderer.getWidth(tab) + 24;
             boolean active = (i == activeTab);
             int textColor = active ? COLOR_WHITE : COLOR_MUTED;
-
             if (active) {
                 context.fill(tx, panelY + 8, tx + tw, panelY + 32, 0xFF221533);
                 context.drawText(this.textRenderer, "§l" + tab, tx + 12, panelY + 16, textColor, false);
@@ -120,10 +121,8 @@ public class ViperModsScreen extends Screen {
                 int cx = cardsStartX + col * (cardW + CARD_GAP);
                 int cy = cardsStartY + row * (CARD_H + CARD_GAP);
                 if (cy + CARD_H > panelY + panelH - 24) break;
-
                 boolean hovered = mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + CARD_H;
                 drawCard(context, card, cx, cy, cardW, CARD_H, hovered);
-
                 col++;
                 if (col >= 2) { col = 0; row++; }
             }
@@ -145,8 +144,7 @@ public class ViperModsScreen extends Screen {
 
         {
             int iy = startY;
-            int bg = 0xFF2a1a44;
-            context.fill(cx - iconSize / 2, iy, cx + iconSize / 2, iy + iconSize, bg);
+            context.fill(cx - iconSize / 2, iy, cx + iconSize / 2, iy + iconSize, 0xFF2a1a44);
             context.fill(cx - iconSize / 2, iy, cx - iconSize / 2 + 2, iy + iconSize, COLOR_ACCENT);
             drawModsIcon(context, cx, iy + iconSize / 2);
             context.drawCenteredTextWithShadow(this.textRenderer, "MODS", cx, iy + iconSize + 2, COLOR_ACCENT);
@@ -208,7 +206,6 @@ public class ViperModsScreen extends Screen {
         if (card.getter.get()) {
             context.fill(x, y, x + 3, y + h, COLOR_ACCENT);
         }
-
         if (hovered) {
             context.fill(x, y, x + w, y + 1, COLOR_ACCENT);
             context.fill(x, y + h - 1, x + w, y + h, COLOR_ACCENT);
@@ -226,7 +223,6 @@ public class ViperModsScreen extends Screen {
         int tx = x + w - tw - 14;
         int ty = y + h - th - 14;
         context.fill(tx, ty, tx + tw, ty + th, card.getter.get() ? COLOR_TOGGLE_ON : COLOR_TOGGLE_OFF);
-
         int dotX = card.getter.get() ? tx + tw - 10 : tx + 2;
         context.fill(dotX, ty + 2, dotX + 8, ty + th - 2, COLOR_WHITE);
     }
@@ -234,7 +230,6 @@ public class ViperModsScreen extends Screen {
     @Override
     public boolean mouseClicked(Click click, boolean doubled) {
         if (click.button() != 0) return super.mouseClicked(click, doubled);
-
         int mx = (int) click.x();
         int my = (int) click.y();
 
@@ -284,19 +279,16 @@ public class ViperModsScreen extends Screen {
                 int cx = cardsStartX + col * (cardW + CARD_GAP);
                 int cy = cardsStartY + row * (CARD_H + CARD_GAP);
                 if (cy + CARD_H > panelY + panelH - 24) break;
-
                 if (mx >= cx && mx <= cx + cardW && my >= cy && my <= cy + CARD_H) {
                     boolean newVal = !card.getter.get();
                     card.setter.accept(newVal);
                     Config.save();
                     return true;
                 }
-
                 col++;
                 if (col >= 2) { col = 0; row++; }
             }
         }
-
         return super.mouseClicked(click, doubled);
     }
 
@@ -307,15 +299,12 @@ public class ViperModsScreen extends Screen {
     }
 
     @Override
-    public boolean shouldPause() {
-        return false;
-    }
+    public boolean shouldPause() { return false; }
 
     private static class ModCard {
         String id, title, description;
         java.util.function.Supplier<Boolean> getter;
         java.util.function.Consumer<Boolean> setter;
-
         ModCard(String id, String title, String desc, java.util.function.Supplier<Boolean> getter, java.util.function.Consumer<Boolean> setter) {
             this.id = id;
             this.title = title;

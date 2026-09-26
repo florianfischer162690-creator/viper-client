@@ -21,6 +21,8 @@ public class Config {
     public static boolean showArmor = true;
     public static boolean showPotion = true;
     public static boolean showKeystrokes = true;
+    public static boolean showReach = true;
+    public static boolean showCombo = true;
 
     // PVP
     public static boolean toggleSprint = true;
@@ -91,6 +93,8 @@ public class Config {
         showArmor = d.showArmor;
         showPotion = d.showPotion;
         showKeystrokes = d.showKeystrokes;
+        showReach = d.showReach;
+        showCombo = d.showCombo;
         toggleSprint = d.toggleSprint;
         showCustomCrosshair = d.showCustomCrosshair;
         showTargetIndicator = d.showTargetIndicator;
@@ -110,6 +114,8 @@ public class Config {
         d.showArmor = showArmor;
         d.showPotion = showPotion;
         d.showKeystrokes = showKeystrokes;
+        d.showReach = showReach;
+        d.showCombo = showCombo;
         d.toggleSprint = toggleSprint;
         d.showCustomCrosshair = showCustomCrosshair;
         d.showTargetIndicator = showTargetIndicator;
@@ -129,6 +135,8 @@ public class Config {
         boolean showArmor = true;
         boolean showPotion = true;
         boolean showKeystrokes = true;
+        boolean showReach = true;
+        boolean showCombo = true;
         boolean toggleSprint = true;
         boolean showCustomCrosshair = true;
         boolean showTargetIndicator = true;

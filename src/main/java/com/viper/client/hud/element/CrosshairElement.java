@@ -10,9 +10,7 @@ import net.minecraft.util.hit.HitResult;
 public class CrosshairElement {
 
     private static final int COLOR_ACCENT     = 0xFFA855F7;
-    private static final int COLOR_ACCENT_HL  = 0xFFC084FC;
     private static final int COLOR_TARGET     = 0xFFFF3B30;
-    private static final int COLOR_BG         = 0xAA000000;
 
     public static void render(DrawContext context) {
         MinecraftClient mc = MinecraftClient.getInstance();
@@ -23,17 +21,14 @@ public class CrosshairElement {
         int cx = mc.getWindow().getScaledWidth() / 2;
         int cy = mc.getWindow().getScaledHeight() / 2;
 
-        // vanilla crosshair entfernen wäre schöner — machen wir erstmal nicht
-        // custom crosshair drüber zeichnen
-
-        // target-indicator prüfen
+        // target check
         boolean targetLocked = false;
         if (Config.showTargetIndicator) {
             HitResult hit = mc.crosshairTarget;
             if (hit != null && hit.getType() == HitResult.Type.ENTITY) {
                 EntityHitResult eHit = (EntityHitResult) hit;
                 Entity e = eHit.getEntity();
-                if (e != mc.player && (e.isAlive())) {
+                if (e != mc.player && e.isAlive()) {
                     targetLocked = true;
                 }
             }
@@ -42,36 +37,36 @@ public class CrosshairElement {
         if (Config.showCustomCrosshair) {
             int color = targetLocked ? COLOR_TARGET : COLOR_ACCENT;
 
-            // 4 striche
-            int len = 5;
-            int gap = 3;
-            int thick = 1;
+            // 4 dünne striche
+            int len = 4;
+            int gap = 2;
 
             // oben
-            context.fill(cx - thick, cy - gap - len, cx + thick + 1, cy - gap, color);
+            context.fill(cx, cy - gap - len, cx + 1, cy - gap, color);
             // unten
-            context.fill(cx - thick, cy + gap, cx + thick + 1, cy + gap + len, color);
+            context.fill(cx, cy + gap, cx + 1, cy + gap + len, color);
             // links
-            context.fill(cx - gap - len, cy - thick, cx - gap, cy + thick + 1, color);
+            context.fill(cx - gap - len, cy, cx - gap, cy + 1, color);
             // rechts
-            context.fill(cx + gap, cy - thick, cx + gap + len, cy + thick + 1, color);
-
-            // mittelpunkt
-            context.fill(cx, cy, cx + 1, cy + 1, color);
+            context.fill(cx + gap, cy, cx + gap + len, cy + 1, color);
         }
 
         if (targetLocked) {
-            // viereck drumrum
-            int boxSize = 16;
+            // puls-wert (sinus, 0..1)
+            long t = System.currentTimeMillis();
+            float pulse = (float) (Math.sin(t / 250.0) * 0.5 + 0.5);
+
+            // größe basiert auf puls (leicht)
+            int boxSize = (int) (10 + pulse * 2); // 10..12
+            int seg = 4;
+
             int x1 = cx - boxSize;
             int y1 = cy - boxSize;
             int x2 = cx + boxSize;
             int y2 = cy + boxSize;
             int c = COLOR_TARGET;
 
-            // 4 ecken als L-form
-            int seg = 5;
-
+            // 4 ecken (L-form), dünn
             // oben links
             context.fill(x1, y1, x1 + seg, y1 + 1, c);
             context.fill(x1, y1, x1 + 1, y1 + seg, c);
