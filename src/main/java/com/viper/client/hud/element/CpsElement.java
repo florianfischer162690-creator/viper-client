@@ -8,7 +8,6 @@ import net.minecraft.client.gui.DrawContext;
 
 public class CpsElement extends HudElement {
 
-    private static final int COLOR_LABEL = 0xFFA855F7;
     private static final int COLOR_VALUE = 0xFFE6E6E6;
     private static final int COLOR_GOOD  = 0xFF23A55A;
     private static final int COLOR_BG    = 0x66000000;
@@ -23,10 +22,11 @@ public class CpsElement extends HudElement {
     @Override
     public int getDefaultX() { return 4; }
     @Override
-    public int getDefaultY() { return 22; }
+    public int getDefaultY() { return 40; }
 
     @Override
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
+        int accent = Config.getAccent();
         int left = ClickTracker.getLeftCps();
         int right = ClickTracker.getRightCps();
 
@@ -39,9 +39,9 @@ public class CpsElement extends HudElement {
         int height = mc.textRenderer.fontHeight + PADDING * 2;
 
         context.fill(x, y, x + width, y + height, COLOR_BG);
-        context.fill(x, y, x + 2, y + height, COLOR_LABEL);
+        context.fill(x, y, x + 2, y + height, accent);
 
-        context.drawText(mc.textRenderer, label, x + PADDING + 3, y + PADDING, COLOR_LABEL, true);
+        context.drawText(mc.textRenderer, label, x + PADDING + 3, y + PADDING, accent, true);
 
         int valueColor = left > 0 ? COLOR_GOOD : COLOR_VALUE;
         context.drawText(mc.textRenderer, value, x + PADDING + 3 + labelW + 6, y + PADDING, valueColor, true);

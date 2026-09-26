@@ -7,7 +7,6 @@ import net.minecraft.client.gui.DrawContext;
 
 public class FpsElement extends HudElement {
 
-    private static final int COLOR_LABEL = 0xFFA855F7;
     private static final int COLOR_VALUE = 0xFFE6E6E6;
     private static final int COLOR_GOOD  = 0xFF23A55A;
     private static final int COLOR_WARN  = 0xFFF1C40F;
@@ -24,10 +23,11 @@ public class FpsElement extends HudElement {
     @Override
     public int getDefaultX() { return 4; }
     @Override
-    public int getDefaultY() { return 4; }
+    public int getDefaultY() { return 22; }
 
     @Override
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
+        int accent = Config.getAccent();
         int fps = mc.getCurrentFps();
         String label = "FPS";
         String value = String.valueOf(fps);
@@ -38,9 +38,9 @@ public class FpsElement extends HudElement {
         int height = mc.textRenderer.fontHeight + PADDING * 2;
 
         context.fill(x, y, x + width, y + height, COLOR_BG);
-        context.fill(x, y, x + 2, y + height, COLOR_LABEL);
+        context.fill(x, y, x + 2, y + height, accent);
 
-        context.drawText(mc.textRenderer, label, x + PADDING + 3, y + PADDING, COLOR_LABEL, true);
+        context.drawText(mc.textRenderer, label, x + PADDING + 3, y + PADDING, accent, true);
 
         int valueColor;
         if (fps >= 120) valueColor = COLOR_GOOD;

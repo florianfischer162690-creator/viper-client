@@ -11,7 +11,6 @@ import java.util.Collection;
 
 public class PotionElement extends HudElement {
 
-    private static final int COLOR_LABEL = 0xFFA855F7;
     private static final int COLOR_BG    = 0x66000000;
     private static final int COLOR_TEXT  = 0xFFE6E6E6;
     private static final int PADDING = 3;
@@ -20,18 +19,17 @@ public class PotionElement extends HudElement {
     public String getId() { return "potion"; }
 
     @Override
-    public boolean isEnabled() {
-        return Config.showPotion;
-    }
+    public boolean isEnabled() { return Config.showPotion; }
 
     @Override
     public int getDefaultX() { return 4; }
     @Override
-    public int getDefaultY() { return 102; }
+    public int getDefaultY() { return 130; }
 
     @Override
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
         if (mc.player == null) return 0;
+        int accent = Config.getAccent();
 
         Collection<StatusEffectInstance> effects = mc.player.getStatusEffects();
         if (effects.isEmpty()) return 0;
@@ -51,7 +49,7 @@ public class PotionElement extends HudElement {
         int totalH = lineH * effects.size() + PADDING * 2;
 
         context.fill(x, y, x + width, y + totalH, COLOR_BG);
-        context.fill(x, y, x + 2, y + totalH, COLOR_LABEL);
+        context.fill(x, y, x + 2, y + totalH, accent);
 
         int lineY = y + PADDING;
         for (StatusEffectInstance eff : effects) {
@@ -72,9 +70,7 @@ public class PotionElement extends HudElement {
     }
 
     @Override
-    public int getWidth(MinecraftClient mc) {
-        return 140;
-    }
+    public int getWidth(MinecraftClient mc) { return 140; }
 
     @Override
     public int getHeight(MinecraftClient mc) {

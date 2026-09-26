@@ -19,7 +19,6 @@ public class CrosshairElement {
         int cx = mc.getWindow().getScaledWidth() / 2;
         int cy = mc.getWindow().getScaledHeight() / 2;
 
-        // target check
         LivingEntity targetEntity = null;
         if (Config.showTargetIndicator) {
             HitResult hit = mc.crosshairTarget;
@@ -35,7 +34,7 @@ public class CrosshairElement {
         boolean targetLocked = targetEntity != null;
 
         if (Config.showCustomCrosshair) {
-            int color = targetLocked ? Config.targetColor : Config.crosshairColor;
+            int color = targetLocked ? Config.getEffectiveTargetColor() : Config.getEffectiveCrosshairColor();
 
             int len = 4;
             int gap = 2;
@@ -57,7 +56,7 @@ public class CrosshairElement {
             int y1 = cy - boxSize;
             int x2 = cx + boxSize;
             int y2 = cy + boxSize;
-            int c = Config.targetColor;
+            int c = Config.getEffectiveTargetColor();
 
             context.fill(x1, y1, x1 + seg, y1 + 1, c);
             context.fill(x1, y1, x1 + 1, y1 + seg, c);
@@ -68,7 +67,7 @@ public class CrosshairElement {
             context.fill(x2 - seg, y2 - 1, x2, y2, c);
             context.fill(x2 - 1, y2 - seg, x2, y2, c);
 
-            // health bar unten (nur wenn health indicator an ist)
+            // health-bar UNTER dem target-box, weit weg (y2 + 30)
             if (Config.showHealthIndicator) {
                 float health = targetEntity.getHealth();
                 float maxHealth = targetEntity.getMaxHealth();
@@ -76,34 +75,34 @@ public class CrosshairElement {
                 if (ratio > 1f) ratio = 1f;
                 if (ratio < 0f) ratio = 0f;
 
-                int barW = 40;
-                int barH = 4;
+                int barW = 60;
+                int barH = 5;
                 int barX = cx - barW / 2;
-                int barY = y2 + 6;
+                int barY = y2 + 30;
 
-                int bgColor = 0xAA000000;
-                int fgColor;
-                if (ratio > 0.66f) fgColor = 0xFF23A55A;
-                else if (ratio > 0.33f) fgColor = 0xFFF1C40F;
-                else fgColor = 0xFFFF3B30;
+                int bgColor = 0xCC000000;
+                int fgColor = Config.getEffectiveHealthColor();
 
-                // hintergrund
-                context.fill(barX, barY, barX + barW, barY + barH, bgColor);
+                // hintergrund-box (leicht größer)
+                context.fill(barX - 1, barY - 1, barX + barW + 1, barY + barH + 1, 0xCC0a0a0f);
+
                 // gefüllt
+                context.fill(barX, barY, barX + barW, barY + barH, bgColor);
                 int fillW = (int) (barW * ratio);
                 if (fillW > 0) {
                     context.fill(barX, barY, barX + fillW, barY + barH, fgColor);
                 }
-                // border
+                // weiße border-linien
                 context.fill(barX, barY, barX + barW, barY + 1, 0xFFFFFFFF);
                 context.fill(barX, barY + barH - 1, barX + barW, barY + barH, 0xFFFFFFFF);
                 context.fill(barX, barY, barX + 1, barY + barH, 0xFFFFFFFF);
                 context.fill(barX + barW - 1, barY, barX + barW, barY + barH, 0xFFFFFFFF);
 
-                // health text drüber
-                String hp = (int) health + "/" + (int) maxHealth;
+                // HP-zahl drüber
+                String hp = (int) Math.ceil(health) + " / " + (int) maxHealth;
                 int tw = mc.textRenderer.getWidth(hp);
-                context.drawText(mc.textRenderer, hp, cx - tw / 2, barY - 10, 0xFFFFFFFF, true);
+                context.drawText(mc.textRenderer, hp, cx - tw / 2 + 1, barY - 11 + 1, 0xAA000000, false);
+                context.drawText(mc.textRenderer, hp, cx - tw / 2, barY - 11, 0xFFFFFFFF, true);
             }
         }
     }

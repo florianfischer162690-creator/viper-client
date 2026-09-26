@@ -7,56 +7,66 @@ import net.minecraft.client.gui.DrawContext;
 
 public class WatermarkElement extends HudElement {
 
-    private static final int COLOR_ACCENT  = 0xFFA855F7;
-    private static final int COLOR_ACCENT2 = 0xFFC084FC;
-    private static final int COLOR_BG      = 0x66000000;
-    private static final int PADDING = 4;
+    private static final int COLOR_BG = 0x77000000;
+    private static final int PADDING = 6;
 
     @Override
     public String getId() { return "watermark"; }
 
     @Override
-    public boolean isEnabled() {
-        return Config.showWatermark;
-    }
+    public boolean isEnabled() { return Config.showWatermark; }
 
     @Override
-    public int getDefaultX() { return 4; }
+    public int getDefaultX() { return 8; }
     @Override
-    public int getDefaultY() { return 4; }
+    public int getDefaultY() { return 8; }
 
     @Override
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
+        int accent = Config.getAccent();
+        int accentLight = Config.getAccentLight();
+
+        long t = System.currentTimeMillis();
+        float pulse = (float) (Math.sin(t / 600.0) * 0.5 + 0.5);
+
         String left = "VIPER";
         String right = "V1";
         int lw = mc.textRenderer.getWidth(left);
         int rw = mc.textRenderer.getWidth(right);
 
-        int gap = 4;
-        int width = lw + gap + rw + PADDING * 2 + 4;
+        int gap = 5;
+        int width = lw + gap + rw + PADDING * 2 + 5;
         int height = mc.textRenderer.fontHeight + PADDING * 2;
 
-        // hintergrund
-        context.fill(x, y, x + width, y + height, COLOR_BG);
-        // lila akzent-streifen links
-        context.fill(x, y, x + 2, y + height, COLOR_ACCENT);
+        int glowAlpha = (int) (pulse * 40 + 30);
+        int glowColor = (accent & 0x00FFFFFF) | (glowAlpha << 24);
+        context.fill(x - 2, y - 2, x + width + 2, y + height + 2, glowColor);
+        context.fill(x - 1, y - 1, x + width + 1, y + height + 1, COLOR_BG);
 
-        // "VIPER" bold
-        context.drawText(mc.textRenderer, "§l" + left, x + PADDING + 3, y + PADDING, COLOR_ACCENT, true);
+        context.fill(x, y, x + 3, y + height, accent);
 
-        // "V1" normal
-        context.drawText(mc.textRenderer, right, x + PADDING + 3 + lw + gap, y + PADDING, COLOR_ACCENT2, true);
+        int shadowColor = (accent & 0x00FFFFFF) | 0x55000000;
+        context.drawText(mc.textRenderer, "§l" + left, x + PADDING + 3 + 1, y + PADDING + 1, shadowColor, false);
+        context.drawText(mc.textRenderer, right, x + PADDING + 3 + lw + gap + 1, y + PADDING + 1, shadowColor, false);
 
-        return height;
+        context.drawText(mc.textRenderer, "§l" + left, x + PADDING + 3, y + PADDING, accent, true);
+        context.drawText(mc.textRenderer, right, x + PADDING + 3 + lw + gap, y + PADDING, accentLight, true);
+
+        int pulseAlpha = (int) (pulse * 200 + 55);
+        int pulseAccent = (accentLight & 0x00FFFFFF) | (pulseAlpha << 24);
+        context.fill(x, y, x + 3, y + 2, pulseAccent);
+        context.fill(x, y + height - 2, x + 3, y + height, pulseAccent);
+
+        return height + 4;
     }
 
     @Override
     public int getWidth(MinecraftClient mc) {
-        return mc.textRenderer.getWidth("VIPER") + 4 + mc.textRenderer.getWidth("V1") + PADDING * 2 + 4;
+        return mc.textRenderer.getWidth("VIPER") + 5 + mc.textRenderer.getWidth("V1") + PADDING * 2 + 5 + 4;
     }
 
     @Override
     public int getHeight(MinecraftClient mc) {
-        return mc.textRenderer.fontHeight + PADDING * 2;
+        return mc.textRenderer.fontHeight + PADDING * 2 + 4;
     }
 }

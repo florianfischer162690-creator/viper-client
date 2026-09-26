@@ -7,7 +7,6 @@ import net.minecraft.client.gui.DrawContext;
 
 public class CoordsElement extends HudElement {
 
-    private static final int COLOR_LABEL = 0xFFA855F7;
     private static final int COLOR_VALUE = 0xFFE6E6E6;
     private static final int COLOR_BG    = 0x66000000;
     private static final int PADDING = 3;
@@ -21,11 +20,12 @@ public class CoordsElement extends HudElement {
     @Override
     public int getDefaultX() { return 4; }
     @Override
-    public int getDefaultY() { return 40; }
+    public int getDefaultY() { return 58; }
 
     @Override
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
         if (mc.player == null) return 0;
+        int accent = Config.getAccent();
 
         int px = (int) Math.floor(mc.player.getX());
         int py = (int) Math.floor(mc.player.getY());
@@ -40,9 +40,9 @@ public class CoordsElement extends HudElement {
         int height = mc.textRenderer.fontHeight + PADDING * 2;
 
         context.fill(x, y, x + width, y + height, COLOR_BG);
-        context.fill(x, y, x + 2, y + height, COLOR_LABEL);
+        context.fill(x, y, x + 2, y + height, accent);
 
-        context.drawText(mc.textRenderer, label, x + PADDING + 3, y + PADDING, COLOR_LABEL, true);
+        context.drawText(mc.textRenderer, label, x + PADDING + 3, y + PADDING, accent, true);
         context.drawText(mc.textRenderer, value, x + PADDING + 3 + labelW + 6, y + PADDING, COLOR_VALUE, true);
 
         return height;

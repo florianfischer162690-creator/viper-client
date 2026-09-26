@@ -8,7 +8,6 @@ import net.minecraft.client.gui.DrawContext;
 
 public class ComboElement extends HudElement {
 
-    private static final int COLOR_LABEL = 0xFFA855F7;
     private static final int COLOR_VALUE = 0xFFE6E6E6;
     private static final int COLOR_GOOD  = 0xFF23A55A;
     private static final int COLOR_HOT   = 0xFFFF3B30;
@@ -19,19 +18,18 @@ public class ComboElement extends HudElement {
     public String getId() { return "combo"; }
 
     @Override
-    public boolean isEnabled() {
-        return Config.showCombo;
-    }
+    public boolean isEnabled() { return Config.showCombo; }
 
     @Override
     public int getDefaultX() { return 4; }
     @Override
-    public int getDefaultY() { return 138; }
+    public int getDefaultY() { return 112; }
 
     @Override
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
         int combo = AttackTracker.getCombo();
         if (combo <= 0) return 0;
+        int accent = Config.getAccent();
 
         String label = "COMBO";
         String value = String.valueOf(combo);
@@ -42,11 +40,10 @@ public class ComboElement extends HudElement {
         int height = mc.textRenderer.fontHeight + PADDING * 2;
 
         context.fill(x, y, x + width, y + height, COLOR_BG);
-        context.fill(x, y, x + 2, y + height, COLOR_LABEL);
+        context.fill(x, y, x + 2, y + height, accent);
 
-        context.drawText(mc.textRenderer, label, x + PADDING + 3, y + PADDING, COLOR_LABEL, true);
+        context.drawText(mc.textRenderer, label, x + PADDING + 3, y + PADDING, accent, true);
 
-        // farbe je nach combo-höhe
         int valueColor;
         if (combo >= 8) valueColor = COLOR_HOT;
         else if (combo >= 4) valueColor = COLOR_GOOD;

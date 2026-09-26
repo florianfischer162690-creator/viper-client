@@ -32,7 +32,14 @@ public class Config {
     public static boolean showTargetIndicator = true;
     public static boolean showHealthIndicator = true;
 
+    // THEME
+    public static String theme = "viper";
+
     // FARBEN
+    public static boolean useCustomCrosshairColor = false;
+    public static boolean useCustomTargetColor = false;
+    public static boolean useCustomHealthColor = false;
+
     public static int crosshairColor = 0xFFA855F7;
     public static int targetColor = 0xFFFF3B30;
     public static int healthIndicatorColor = 0xFFFF3B30;
@@ -42,18 +49,13 @@ public class Config {
     public static boolean lowHealthWarning = true;
     public static boolean fpsBoost = false;
     public static int fpsPrevRenderDist = 8;
+    public static int fpsPrevSimDist = 12;
     public static int fpsPrevEntityDist = 100;
-    public static int fpsPrevParticles = 0;
-    public static int fpsPrevClouds = 0;
-    public static int fpsPrevGraphics = 1;
 
-    // KEYBINDS pro modul (id → GLFW key code). 0 / -1 = keiner
+    // KEYBINDS
     public static Map<String, Integer> keybinds = new HashMap<>();
 
-    public static int getKeybind(String id) {
-        return keybinds.getOrDefault(id, -1);
-    }
-
+    public static int getKeybind(String id) { return keybinds.getOrDefault(id, -1); }
     public static void setKeybind(String id, int key) {
         if (key <= 0) keybinds.remove(id);
         else keybinds.put(id, key);
@@ -77,6 +79,49 @@ public class Config {
     public static ElementPos getPos(String id, int defaultX, int defaultY) {
         return elementPositions.computeIfAbsent(id, k -> new ElementPos(defaultX, defaultY));
     }
+
+    /* ═══════════ THEME FARBEN ═══════════ */
+
+    private static final Map<String, int[]> THEME_COLORS = new HashMap<>();
+    static {
+        THEME_COLORS.put("viper",   new int[]{0xFFA855F7, 0xFFC084FC, 0xFF7c3aed});
+        THEME_COLORS.put("blue",    new int[]{0xFF3B82F6, 0xFF60A5FA, 0xFF2563EB});
+        THEME_COLORS.put("green",   new int[]{0xFF22C55E, 0xFF4ADE80, 0xFF16A34A});
+        THEME_COLORS.put("red",     new int[]{0xFFEF4444, 0xFFF87171, 0xFFDC2626});
+        THEME_COLORS.put("yellow",  new int[]{0xFFFACC15, 0xFFFDE047, 0xFFEAB308});
+        THEME_COLORS.put("pink",    new int[]{0xFFEC4899, 0xFFF472B6, 0xFFDB2777});
+        THEME_COLORS.put("white",   new int[]{0xFFE5E5E5, 0xFFF5F5F5, 0xFFA3A3A3});
+        THEME_COLORS.put("vanilla", new int[]{0xFF7c7c7c, 0xFF9c9c9c, 0xFF545454});
+    }
+
+    public static int getAccent() {
+        int[] t = THEME_COLORS.getOrDefault(theme, THEME_COLORS.get("viper"));
+        return t[0];
+    }
+
+    public static int getAccentLight() {
+        int[] t = THEME_COLORS.getOrDefault(theme, THEME_COLORS.get("viper"));
+        return t[1];
+    }
+
+    public static int getAccentDark() {
+        int[] t = THEME_COLORS.getOrDefault(theme, THEME_COLORS.get("viper"));
+        return t[2];
+    }
+
+    public static int getEffectiveCrosshairColor() {
+        return useCustomCrosshairColor ? crosshairColor : getAccent();
+    }
+
+    public static int getEffectiveTargetColor() {
+        return useCustomTargetColor ? targetColor : 0xFFFF3B30;
+    }
+
+    public static int getEffectiveHealthColor() {
+        return useCustomHealthColor ? healthIndicatorColor : 0xFF23A55A;
+    }
+
+    /* ═══════════ LOAD / SAVE ═══════════ */
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static Path configPath;
@@ -127,6 +172,10 @@ public class Config {
         showCustomCrosshair = d.showCustomCrosshair;
         showTargetIndicator = d.showTargetIndicator;
         showHealthIndicator = d.showHealthIndicator;
+        theme = d.theme != null ? d.theme : "viper";
+        useCustomCrosshairColor = d.useCustomCrosshairColor;
+        useCustomTargetColor = d.useCustomTargetColor;
+        useCustomHealthColor = d.useCustomHealthColor;
         crosshairColor = d.crosshairColor;
         targetColor = d.targetColor;
         healthIndicatorColor = d.healthIndicatorColor;
@@ -134,10 +183,8 @@ public class Config {
         lowHealthWarning = d.lowHealthWarning;
         fpsBoost = d.fpsBoost;
         fpsPrevRenderDist = d.fpsPrevRenderDist;
+        fpsPrevSimDist = d.fpsPrevSimDist;
         fpsPrevEntityDist = d.fpsPrevEntityDist;
-        fpsPrevParticles = d.fpsPrevParticles;
-        fpsPrevClouds = d.fpsPrevClouds;
-        fpsPrevGraphics = d.fpsPrevGraphics;
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -163,6 +210,10 @@ public class Config {
         d.showCustomCrosshair = showCustomCrosshair;
         d.showTargetIndicator = showTargetIndicator;
         d.showHealthIndicator = showHealthIndicator;
+        d.theme = theme;
+        d.useCustomCrosshairColor = useCustomCrosshairColor;
+        d.useCustomTargetColor = useCustomTargetColor;
+        d.useCustomHealthColor = useCustomHealthColor;
         d.crosshairColor = crosshairColor;
         d.targetColor = targetColor;
         d.healthIndicatorColor = healthIndicatorColor;
@@ -170,10 +221,8 @@ public class Config {
         d.lowHealthWarning = lowHealthWarning;
         d.fpsBoost = fpsBoost;
         d.fpsPrevRenderDist = fpsPrevRenderDist;
+        d.fpsPrevSimDist = fpsPrevSimDist;
         d.fpsPrevEntityDist = fpsPrevEntityDist;
-        d.fpsPrevParticles = fpsPrevParticles;
-        d.fpsPrevClouds = fpsPrevClouds;
-        d.fpsPrevGraphics = fpsPrevGraphics;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -199,6 +248,10 @@ public class Config {
         boolean showCustomCrosshair = true;
         boolean showTargetIndicator = true;
         boolean showHealthIndicator = true;
+        String theme = "viper";
+        boolean useCustomCrosshairColor = false;
+        boolean useCustomTargetColor = false;
+        boolean useCustomHealthColor = false;
         int crosshairColor = 0xFFA855F7;
         int targetColor = 0xFFFF3B30;
         int healthIndicatorColor = 0xFFFF3B30;
@@ -206,10 +259,8 @@ public class Config {
         boolean lowHealthWarning = true;
         boolean fpsBoost = false;
         int fpsPrevRenderDist = 8;
+        int fpsPrevSimDist = 12;
         int fpsPrevEntityDist = 100;
-        int fpsPrevParticles = 0;
-        int fpsPrevClouds = 0;
-        int fpsPrevGraphics = 1;
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;
