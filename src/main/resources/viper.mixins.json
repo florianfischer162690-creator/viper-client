@@ -6,8 +6,7 @@
     "InGameHudMixin",
     "FoodHoverMixin",
     "ChatHudMixin",
-    "TotemPopMixin",
-    "F5NameMixin"
+    "TotemPopMixin"
   ],
   "injectors": {
     "defaultRequire": 1
