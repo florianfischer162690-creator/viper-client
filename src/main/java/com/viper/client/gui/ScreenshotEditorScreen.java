@@ -90,7 +90,6 @@ public class ScreenshotEditorScreen extends Screen {
         context.drawCenteredTextWithShadow(this.textRenderer, "§l📸 SCREENSHOT EDITOR", this.width / 2, 20, accent);
         context.drawCenteredTextWithShadow(this.textRenderer, "§7Choose how to save: " + screenshotFile.getName(), this.width / 2, 40, 0xFF8A8A9C);
 
-        // PREVIEW-BERECHNUNG — aspect erhalten
         int previewMaxW = 500;
         int previewMaxH = 280;
         int previewW = previewMaxW;
@@ -109,7 +108,6 @@ public class ScreenshotEditorScreen extends Screen {
         int previewX = this.width / 2 - previewW / 2;
         int previewY = 70;
 
-        // rahmen
         context.fill(previewX - 2, previewY - 2, previewX + previewW + 2, previewY + previewH + 2, accent);
 
         if (!loaded) {
@@ -125,7 +123,7 @@ public class ScreenshotEditorScreen extends Screen {
                         textureId,
                         previewX, previewY,
                         previewW, previewH,
-                        0f, 0f,
+                        0, 0,
                         textureW, textureH,
                         textureW, textureH
                 );
