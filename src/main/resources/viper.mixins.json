@@ -6,8 +6,7 @@
     "InGameHudMixin",
     "FoodHoverMixin",
     "ChatHudMixin",
-    "TotemPopMixin",
-    "ShulkerPreviewOverlayMixin"
+    "TotemPopMixin"
   ],
   "injectors": {
     "defaultRequire": 1

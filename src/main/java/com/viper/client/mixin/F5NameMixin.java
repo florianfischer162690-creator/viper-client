@@ -1,13 +1,8 @@
 package com.viper.client.mixin;
 
-import com.viper.client.config.Config;
-import com.viper.client.util.Titles;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,14 +13,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class F5NameMixin {
 
     @Inject(method = "updateRenderState", at = @At("TAIL"), require = 0)
-    private void viper_f5OwnName(AbstractClientPlayerEntity entity, PlayerEntityRenderState state, float tickDelta, CallbackInfo ci) {
+    private void viper_f5OwnName(Object firstArg, PlayerEntityRenderState state, float tickDelta, CallbackInfo ci) {
         try {
             MinecraftClient mc = MinecraftClient.getInstance();
             if (mc.player == null || mc.options == null) return;
-            if (entity != mc.player) return;
             if (mc.options.getPerspective().isFirstPerson()) return;
+            if (state == null) return;
+            if (state.name == null || mc.player.getName() == null) return;
+            if (!state.name.equals(mc.player.getName().getString())) return;
             if (state.nameLabelPos == null) {
-                state.nameLabelPos = new Vec3d(0.0, entity.getHeight() + 0.5, 0.0);
+                state.nameLabelPos = new Vec3d(0.0, mc.player.getHeight() + 0.5, 0.0);
             }
         } catch (Throwable ignored) {}
     }

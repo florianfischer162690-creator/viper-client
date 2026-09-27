@@ -59,9 +59,20 @@ public class TotemPopElement extends HudElement {
         entries.sort(Comparator.comparingInt((PlayerEntry e) -> e.count).reversed());
         if (entries.size() > 3) entries = entries.subList(0, 3);
 
-        if (entries.isEmpty()) return 0;
-
         int lineH = mc.textRenderer.fontHeight + 2;
+
+        // wenn keine pops — wir rendern trotzdem eine kleine "TOTEM POPS" titel-zeile
+        // damit das element im HUD-editor sichtbar + bewegbar ist
+        if (entries.isEmpty()) {
+            String placeholder = "TOTEM POPS";
+            int placeholderW = mc.textRenderer.getWidth(placeholder) + PADDING * 2 + 5;
+            int totalH = mc.textRenderer.fontHeight + PADDING * 2;
+            context.fill(x, y, x + placeholderW, y + totalH, COLOR_BG);
+            context.fill(x, y, x + 2, y + totalH, accent);
+            context.drawText(mc.textRenderer, "§l" + placeholder, x + PADDING + 4, y + PADDING, accent, true);
+            return totalH;
+        }
+
         int width = 0;
         for (PlayerEntry e : entries) {
             String line = e.name + " x" + e.count;
