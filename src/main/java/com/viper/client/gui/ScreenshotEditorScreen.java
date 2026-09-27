@@ -1,20 +1,33 @@
 package com.viper.client.gui;
 
+import com.viper.client.ViperClient;
 import com.viper.client.config.Config;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 public class ScreenshotEditorScreen extends Screen {
 
     private final File screenshotFile;
+
     private BufferedImage previewImage;
     private boolean loaded = false;
+    private String loadError = null;
+
+    private Identifier textureId = null;
+    private int textureW = 0;
+    private int textureH = 0;
 
     private int btnBaseX;
     private int btnBaseY;
@@ -35,37 +48,54 @@ public class ScreenshotEditorScreen extends Screen {
         btnBaseX = this.width / 2 - btnW / 2;
         btnBaseY = this.height - 220;
 
-        // bild laden (asynchron um ruckler zu vermeiden)
-        new Thread(() -> {
-            try {
-                previewImage = ImageIO.read(screenshotFile);
-                loaded = true;
-            } catch (Exception e) {
+        loadPreview();
+    }
+
+    private void loadPreview() {
+        try {
+            previewImage = ImageIO.read(screenshotFile);
+            if (previewImage == null) {
+                loadError = "Could not read file";
                 loaded = false;
+                return;
             }
-        }, "Viper-Screenshot-Loader").start();
+            loaded = true;
+
+            try (InputStream in = new FileInputStream(screenshotFile)) {
+                NativeImage nativeImage = NativeImage.read(in);
+                textureW = nativeImage.getWidth();
+                textureH = nativeImage.getHeight();
+
+                String uniqueName = "screenshot_preview_" + screenshotFile.hashCode();
+                final String texName = uniqueName;
+                textureId = Identifier.of("viper", uniqueName.toLowerCase().replaceAll("[^a-z0-9_]", "_"));
+
+                NativeImageBackedTexture tex = new NativeImageBackedTexture(() -> texName, nativeImage);
+                MinecraftClient.getInstance().getTextureManager().registerTexture(textureId, tex);
+            }
+        } catch (Exception e) {
+            ViperClient.LOGGER.error("[ScreenshotEditor] load failed", e);
+            loadError = e.getMessage();
+            loaded = false;
+        }
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         int accent = Config.getAccent();
-        int accentLight = Config.getAccentLight();
         int accentDark = Config.getAccentDark();
 
-        // overlay
         context.fill(0, 0, this.width, this.height, 0xDD0a0a12);
 
-        // titel
         context.drawCenteredTextWithShadow(this.textRenderer, "§l📸 SCREENSHOT EDITOR", this.width / 2, 20, accent);
         context.drawCenteredTextWithShadow(this.textRenderer, "§7Choose how to save: " + screenshotFile.getName(), this.width / 2, 40, 0xFF8A8A9C);
 
-        // vorschau (mit theme rahmen)
         int previewMaxW = 400;
         int previewMaxH = 240;
         int previewW = previewMaxW;
         int previewH = previewMaxH;
-        if (previewImage != null) {
-            double ratio = (double) previewImage.getWidth() / previewImage.getHeight();
+        if (textureW > 0 && textureH > 0) {
+            double ratio = (double) textureW / textureH;
             if (ratio > 1.5) {
                 previewH = (int) (previewW / ratio);
             } else {
@@ -75,40 +105,46 @@ public class ScreenshotEditorScreen extends Screen {
         int previewX = this.width / 2 - previewW / 2;
         int previewY = 80;
 
-        // preview box
         context.fill(previewX - 2, previewY - 2, previewX + previewW + 2, previewY + previewH + 2, accent);
 
         if (!loaded) {
-            context.drawCenteredTextWithShadow(this.textRenderer, "§7Loading...", this.width / 2, previewY + previewH / 2, 0xFF8A8A9C);
-        } else if (previewImage == null) {
-            context.drawCenteredTextWithShadow(this.textRenderer, "§c✗ Could not load image", this.width / 2, previewY + previewH / 2, 0xFFFF5555);
-        } else {
-            // hintergrund-dunkel als platzhalter bis texture geladen
             context.fill(previewX, previewY, previewX + previewW, previewY + previewH, 0xFF000000);
-            context.drawCenteredTextWithShadow(this.textRenderer, "§7[preview: " + previewImage.getWidth() + "x" + previewImage.getHeight() + "]", this.width / 2, previewY + previewH / 2, 0xFF8A8A9C);
+            context.drawCenteredTextWithShadow(this.textRenderer, "§7Loading...", this.width / 2, previewY + previewH / 2, 0xFF8A8A9C);
+        } else if (textureId == null) {
+            context.fill(previewX, previewY, previewX + previewW, previewY + previewH, 0xFF000000);
+            context.drawCenteredTextWithShadow(this.textRenderer, "§c✗ texture load failed", this.width / 2, previewY + previewH / 2, 0xFFFF5555);
+        } else {
+            try {
+                context.drawTexture(
+                        net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED,
+                        textureId,
+                        previewX, previewY,
+                        0f, 0f,
+                        previewW, previewH,
+                        textureW, textureH
+                );
+            } catch (Throwable t) {
+                ViperClient.LOGGER.error("[ScreenshotEditor] draw failed", t);
+                context.fill(previewX, previewY, previewX + previewW, previewY + previewH, 0xFF000000);
+                context.drawCenteredTextWithShadow(this.textRenderer, "§c✗ draw failed", this.width / 2, previewY + previewH / 2, 0xFFFF5555);
+            }
         }
 
-        // buttons
         int y = btnBaseY;
 
-        // SAVE WITH FRAME
         drawButton(context, btnBaseX, y, btnW, btnH, "🎨 SAVE WITH FRAME", mouseX, mouseY, accent, accentDark);
         y += btnH + btnGap;
 
-        // SAVE PLAIN (just move file)
         drawButton(context, btnBaseX, y, btnW, btnH, "📄 SAVE PLAIN", mouseX, mouseY, accent, accentDark);
         y += btnH + btnGap;
 
-        // DELETE
         drawButton(context, btnBaseX, y, btnW, btnH, "🗑 DELETE SCREENSHOT", mouseX, mouseY, 0xFFEF4444, 0xFFDC2626);
         y += btnH + btnGap;
 
-        // status msg
         if (!status.isEmpty() && System.currentTimeMillis() - statusTime < 3000) {
             context.drawCenteredTextWithShadow(this.textRenderer, status, this.width / 2, y + 10, accent);
         }
 
-        // hint
         context.drawCenteredTextWithShadow(this.textRenderer, "§7ESC to save plain and close", this.width / 2, this.height - 20, 0xFF8A8A9C);
 
         super.render(context, mouseX, mouseY, delta);
@@ -116,7 +152,7 @@ public class ScreenshotEditorScreen extends Screen {
 
     private void drawButton(DrawContext context, int x, int y, int w, int h, String label, int mouseX, int mouseY, int accent, int accentDark) {
         boolean hovered = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
-        int bg = hovered ? 0xFF2a1a44 : 0xFF16121f;
+        int bg = hovered ? Config.getAccentBg() : 0xFF16121f;
         int border = hovered ? accent : accentDark;
 
         context.fill(x, y, x + w, y + h, bg);
@@ -137,16 +173,13 @@ public class ScreenshotEditorScreen extends Screen {
 
         int y = btnBaseY;
 
-        // SAVE WITH FRAME
         if (mx >= btnBaseX && mx <= btnBaseX + btnW && my >= y && my <= y + btnH) {
             saveWithFrame();
             return true;
         }
         y += btnH + btnGap;
 
-        // SAVE PLAIN
         if (mx >= btnBaseX && mx <= btnBaseX + btnW && my >= y && my <= y + btnH) {
-            // schon gespeichert (kein action nötig)
             status = "§a✓ Saved as-is";
             statusTime = System.currentTimeMillis();
             close();
@@ -154,7 +187,6 @@ public class ScreenshotEditorScreen extends Screen {
         }
         y += btnH + btnGap;
 
-        // DELETE
         if (mx >= btnBaseX && mx <= btnBaseX + btnW && my >= y && my <= y + btnH) {
             if (screenshotFile.exists()) screenshotFile.delete();
             status = "§c✗ Deleted";
@@ -175,25 +207,20 @@ public class ScreenshotEditorScreen extends Screen {
             }
             int accent = Config.getAccent();
 
-            // neues bild mit rahmen erstellen
             int border = 8;
             int newW = previewImage.getWidth() + border * 2;
             int newH = previewImage.getHeight() + border * 2;
 
             BufferedImage framed = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
             java.awt.Graphics2D g = framed.createGraphics();
-            // hintergrund in akzent-farbe
             g.setColor(new java.awt.Color(accent, true));
             g.fillRect(0, 0, newW, newH);
-            // original drüber
             g.drawImage(previewImage, border, border, null);
-            // watermark-text
             g.setColor(java.awt.Color.WHITE);
             g.setFont(new java.awt.Font("Monospaced", java.awt.Font.BOLD, 16));
             g.drawString("VIPER V1", border + 10, newH - border - 10);
             g.dispose();
 
-            // speichern mit _framed suffix
             String origName = screenshotFile.getName();
             String newName = origName.replace(".png", "_framed.png");
             File framedFile = new File(screenshotFile.getParentFile(), newName);
@@ -202,7 +229,6 @@ public class ScreenshotEditorScreen extends Screen {
             status = "§a✓ Saved as " + newName;
             statusTime = System.currentTimeMillis();
 
-            // kurz anzeigen, dann schließen
             new Thread(() -> {
                 try { Thread.sleep(800); } catch (InterruptedException ignored) {}
                 if (this.client != null) this.client.execute(this::close);
@@ -215,7 +241,13 @@ public class ScreenshotEditorScreen extends Screen {
 
     @Override
     public void close() {
-        this.client.setScreen(null);
+        try {
+            if (textureId != null) {
+                MinecraftClient.getInstance().getTextureManager().destroyTexture(textureId);
+                textureId = null;
+            }
+        } catch (Throwable ignored) {}
+        if (this.client != null) this.client.setScreen(null);
     }
 
     @Override
