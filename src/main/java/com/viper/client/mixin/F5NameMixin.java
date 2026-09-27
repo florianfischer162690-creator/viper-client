@@ -20,7 +20,6 @@ public abstract class F5NameMixin {
             if (mc.player == null || mc.options == null) return;
             if (entity != mc.player) return;
             if (mc.options.getPerspective().isFirstPerson()) return;
-
             if (state.nameLabelPos == null) {
                 state.nameLabelPos = new Vec3d(0.0, entity.getHeight() + 0.5, 0.0);
             }
