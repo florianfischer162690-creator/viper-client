@@ -3,6 +3,7 @@ package com.viper.client.mixin;
 import com.viper.client.config.Config;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -20,14 +21,13 @@ import java.util.function.Consumer;
 public class ShulkerPreviewMixin {
 
     @Inject(method = "appendTooltip", at = @At("TAIL"))
-    private void viper_shulkerTooltip(Item.TooltipContext context, PlayerEntity player, TooltipType type, Consumer<Text> textConsumer, CallbackInfo ci) {
+    private void viper_shulkerTooltip(Item.TooltipContext context, TooltipDisplayComponent tooltipDisplay, PlayerEntity player, TooltipType type, Consumer<Text> textConsumer, CallbackInfo ci) {
         try {
             if (!Config.showShulkerPreview) return;
             ItemStack stack = (ItemStack) (Object) this;
             ContainerComponent container = stack.get(DataComponentTypes.CONTAINER);
             if (container == null) return;
 
-            // sammle items
             java.util.List<ItemStack> items = new java.util.ArrayList<>();
             for (ItemStack item : container.iterateNonEmpty()) {
                 items.add(item);
