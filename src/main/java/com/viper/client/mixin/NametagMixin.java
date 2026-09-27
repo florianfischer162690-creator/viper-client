@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(EntityRenderer.class)
 public abstract class NametagMixin<S extends EntityRenderState> {
 
-    @ModifyVariable(method = "renderLabelIfPresent", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    @ModifyVariable(method = "renderLabelIfPresent", at = @At("HEAD"), argsOnly = true, ordinal = 0, require = 0)
     private Text viper_addTitleToNametag(Text original) {
         try {
             if (!Config.showTitle) return original;

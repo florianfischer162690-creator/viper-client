@@ -14,10 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPlayNetworkHandler.class)
 public class TotemPopMixin {
 
-    /** status byte 35 = totem of undying benutzt (vanilla) */
     private static final byte TOTEM_STATUS = 35;
 
-    @Inject(method = "onEntityStatus", at = @At("HEAD"))
+    @Inject(method = "onEntityStatus", at = @At("HEAD"), require = 0)
     private void viper_onEntityStatus(EntityStatusS2CPacket packet, CallbackInfo ci) {
         try {
             if (packet.getStatus() != TOTEM_STATUS) return;

@@ -48,6 +48,16 @@ public class HudEditorScreen extends Screen {
             renderElementWithBorder(mc, context, HudRenderer.keystrokesElement, pos, accent);
         }
 
+        // INVENTORY HUD — neu
+        if (Config.showInventoryHud && HudRenderer.inventoryElement.isEnabled()) {
+            Config.ElementPos pos = Config.getPos(
+                    HudRenderer.inventoryElement.getId(),
+                    HudRenderer.inventoryElement.getDefaultX(),
+                    HudRenderer.inventoryElement.getDefaultY()
+            );
+            renderElementWithBorder(mc, context, HudRenderer.inventoryElement, pos, accent);
+        }
+
         // armor-element (fix position, zeigt nur rand)
         if (Config.showArmor && HudRenderer.armorElement.isEnabled()) {
             int scaledW = mc.getWindow().getScaledWidth();
@@ -109,6 +119,21 @@ public class HudEditorScreen extends Screen {
             return true;
         }
 
+        // INVENTORY HUD click
+        if (Config.showInventoryHud && HudRenderer.inventoryElement.isEnabled()) {
+            Config.ElementPos ipos = Config.getPos(
+                    HudRenderer.inventoryElement.getId(),
+                    HudRenderer.inventoryElement.getDefaultX(),
+                    HudRenderer.inventoryElement.getDefaultY()
+            );
+            if (hitTest(mc, HudRenderer.inventoryElement, ipos, mx, my)) {
+                draggingId = HudRenderer.inventoryElement.getId();
+                dragOffsetX = mx - ipos.x;
+                dragOffsetY = my - ipos.y;
+                return true;
+            }
+        }
+
         for (HudRenderer.HudElement el : HudRenderer.ELEMENTS) {
             if (!el.isEnabled()) continue;
             Config.ElementPos pos = Config.getPos(el.getId(), el.getDefaultX(), el.getDefaultY());
@@ -164,6 +189,17 @@ public class HudEditorScreen extends Screen {
             if (rectIntersect(nx, ny, w, h, kpos.x, kpos.y, kw, kh)) return true;
         }
 
+        if (Config.showInventoryHud && !selfId.equals(HudRenderer.inventoryElement.getId())) {
+            Config.ElementPos ipos = Config.getPos(
+                    HudRenderer.inventoryElement.getId(),
+                    HudRenderer.inventoryElement.getDefaultX(),
+                    HudRenderer.inventoryElement.getDefaultY()
+            );
+            int iw = (int) (HudRenderer.inventoryElement.getWidth(mc) * ipos.scale);
+            int ih = (int) (HudRenderer.inventoryElement.getHeight(mc) * ipos.scale);
+            if (rectIntersect(nx, ny, w, h, ipos.x, ipos.y, iw, ih)) return true;
+        }
+
         for (HudRenderer.HudElement el : HudRenderer.ELEMENTS) {
             if (el.getId().equals(selfId)) continue;
             if (!el.isEnabled()) continue;
@@ -199,6 +235,19 @@ public class HudEditorScreen extends Screen {
             return true;
         }
 
+        // INVENTORY HUD scroll
+        if (Config.showInventoryHud && HudRenderer.inventoryElement.isEnabled()) {
+            Config.ElementPos ipos = Config.getPos(
+                    HudRenderer.inventoryElement.getId(),
+                    HudRenderer.inventoryElement.getDefaultX(),
+                    HudRenderer.inventoryElement.getDefaultY()
+            );
+            if (hitTest(mc, HudRenderer.inventoryElement, ipos, (int) mouseX, (int) mouseY)) {
+                changeScale(ipos, verticalAmount);
+                return true;
+            }
+        }
+
         for (HudRenderer.HudElement el : HudRenderer.ELEMENTS) {
             if (!el.isEnabled()) continue;
             Config.ElementPos pos = Config.getPos(el.getId(), el.getDefaultX(), el.getDefaultY());
@@ -227,6 +276,9 @@ public class HudEditorScreen extends Screen {
         if (id.equals(HudRenderer.keystrokesElement.getId())) {
             return Config.getPos(id, HudRenderer.keystrokesElement.getDefaultX(mc), HudRenderer.keystrokesElement.getDefaultY(mc));
         }
+        if (id.equals(HudRenderer.inventoryElement.getId())) {
+            return Config.getPos(id, HudRenderer.inventoryElement.getDefaultX(), HudRenderer.inventoryElement.getDefaultY());
+        }
         for (HudRenderer.HudElement el : HudRenderer.ELEMENTS) {
             if (el.getId().equals(id)) return Config.getPos(id, el.getDefaultX(), el.getDefaultY());
         }
@@ -235,6 +287,7 @@ public class HudEditorScreen extends Screen {
 
     private HudRenderer.HudElement findElement(String id) {
         if (id.equals(HudRenderer.keystrokesElement.getId())) return HudRenderer.keystrokesElement;
+        if (id.equals(HudRenderer.inventoryElement.getId())) return HudRenderer.inventoryElement;
         for (HudRenderer.HudElement el : HudRenderer.ELEMENTS) {
             if (el.getId().equals(id)) return el;
         }

@@ -5,7 +5,11 @@
   "client": [
     "InGameHudMixin",
     "FoodHoverMixin",
-    "ShulkerPreviewMixin"
+    "ShulkerPreviewOverlayMixin",
+    "NametagMixin",
+    "ChatHudMixin",
+    "TotemPopMixin",
+    "F5NameMixin"
   ],
   "injectors": {
     "defaultRequire": 1

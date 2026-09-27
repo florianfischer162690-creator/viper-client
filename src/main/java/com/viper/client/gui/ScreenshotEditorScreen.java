@@ -90,21 +90,26 @@ public class ScreenshotEditorScreen extends Screen {
         context.drawCenteredTextWithShadow(this.textRenderer, "§l📸 SCREENSHOT EDITOR", this.width / 2, 20, accent);
         context.drawCenteredTextWithShadow(this.textRenderer, "§7Choose how to save: " + screenshotFile.getName(), this.width / 2, 40, 0xFF8A8A9C);
 
-        int previewMaxW = 400;
-        int previewMaxH = 240;
+        // PREVIEW-BERECHNUNG — aspect erhalten
+        int previewMaxW = 500;
+        int previewMaxH = 280;
         int previewW = previewMaxW;
         int previewH = previewMaxH;
         if (textureW > 0 && textureH > 0) {
             double ratio = (double) textureW / textureH;
-            if (ratio > 1.5) {
-                previewH = (int) (previewW / ratio);
+            double boxRatio = (double) previewMaxW / previewMaxH;
+            if (ratio > boxRatio) {
+                previewW = previewMaxW;
+                previewH = (int) (previewMaxW / ratio);
             } else {
-                previewW = (int) (previewH * ratio);
+                previewH = previewMaxH;
+                previewW = (int) (previewMaxH * ratio);
             }
         }
         int previewX = this.width / 2 - previewW / 2;
-        int previewY = 80;
+        int previewY = 70;
 
+        // rahmen
         context.fill(previewX - 2, previewY - 2, previewX + previewW + 2, previewY + previewH + 2, accent);
 
         if (!loaded) {
@@ -119,8 +124,9 @@ public class ScreenshotEditorScreen extends Screen {
                         net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED,
                         textureId,
                         previewX, previewY,
-                        0f, 0f,
                         previewW, previewH,
+                        0f, 0f,
+                        textureW, textureH,
                         textureW, textureH
                 );
             } catch (Throwable t) {
