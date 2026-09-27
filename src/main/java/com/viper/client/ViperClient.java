@@ -1,6 +1,7 @@
 package com.viper.client;
 
 import com.viper.client.config.Config;
+import com.viper.client.gui.NotepadScreen;
 import com.viper.client.gui.ViperStartMenu;
 import com.viper.client.hud.HudRenderer;
 import com.viper.client.hud.element.CrosshairElement;
@@ -32,7 +33,7 @@ public class ViperClient implements ClientModInitializer {
     private static KeyBinding toggleSprintKey;
     private static KeyBinding toggleFullbrightKey;
     private static KeyBinding noFogKey;
-    private static KeyBinding zoomKey;
+    private static KeyBinding openNotepadKey;
 
     private static boolean lastLeftDown = false;
     private static boolean lastRightDown = false;
@@ -58,7 +59,6 @@ public class ViperClient implements ClientModInitializer {
                     double dz = playerPos.z - ez;
                     double reach = Math.sqrt(dx * dx + dy * dy + dz * dz);
                     AttackTracker.registerHit(reach);
-                    // hit-marker auslösen
                     CrosshairElement.triggerHitMarker();
                 }
             } catch (Throwable ignored) {}
@@ -105,8 +105,8 @@ public class ViperClient implements ClientModInitializer {
                 "key.viper.fullbright", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F8, KeyBinding.Category.MISC));
         noFogKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.viper.no_fog", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F9, KeyBinding.Category.MISC));
-        zoomKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.viper.zoom", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, KeyBinding.Category.MISC));
+        openNotepadKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.viper.open_notepad", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F7, KeyBinding.Category.MISC));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleHudKey.wasPressed()) {
@@ -140,11 +140,20 @@ public class ViperClient implements ClientModInitializer {
                 if (client.player != null) client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fNoFog " + (Config.noFog ? "§aon" : "§coff")), true);
             }
 
+            while (openNotepadKey.wasPressed()) {
+                if (client.currentScreen instanceof NotepadScreen) {
+                    client.setScreen(null);
+                } else {
+                    client.setScreen(new NotepadScreen());
+                }
+            }
+
             try {
                 long window = client.getWindow().getHandle();
                 if (client.currentScreen == null) {
                     for (Map.Entry<String, Integer> entry : new HashMap<>(Config.keybinds).entrySet()) {
                         String id = entry.getKey();
+                        if ("zoom".equals(id)) continue;
                         int key = entry.getValue();
                         if (key <= 0) continue;
                         boolean isDown = GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS;
@@ -156,12 +165,22 @@ public class ViperClient implements ClientModInitializer {
             } catch (Throwable ignored) {}
 
             try {
-                boolean zoomPressed = zoomKey.isPressed();
-                if (zoomPressed && !zoomed) {
-                    Config.defaultFov = client.options.getFov().getValue();
-                    client.options.getFov().setValue(Config.zoomFov);
-                    zoomed = true;
-                } else if (!zoomPressed && zoomed) {
+                if (Config.zoomEnabled) {
+                    int zoomKeycode = Config.getKeybind("zoom");
+                    boolean zoomPressed = false;
+                    if (zoomKeycode > 0) {
+                        long window = client.getWindow().getHandle();
+                        zoomPressed = GLFW.glfwGetKey(window, zoomKeycode) == GLFW.GLFW_PRESS;
+                    }
+                    if (zoomPressed && !zoomed) {
+                        Config.defaultFov = client.options.getFov().getValue();
+                        client.options.getFov().setValue(Config.zoomFov);
+                        zoomed = true;
+                    } else if (!zoomPressed && zoomed) {
+                        client.options.getFov().setValue(Config.defaultFov);
+                        zoomed = false;
+                    }
+                } else if (zoomed) {
                     client.options.getFov().setValue(Config.defaultFov);
                     zoomed = false;
                 }
@@ -201,6 +220,8 @@ public class ViperClient implements ClientModInitializer {
             case "targetindicator": Config.showTargetIndicator = !Config.showTargetIndicator; break;
             case "healthindicator": Config.showHealthIndicator = !Config.showHealthIndicator; break;
             case "hitmarker": Config.showHitMarker = !Config.showHitMarker; break;
+            case "totempop": Config.showTotemPop = !Config.showTotemPop; break;
+            case "zoom": Config.zoomEnabled = !Config.zoomEnabled; break;
             case "fullbright":
                 Config.fullbright = !Config.fullbright;
                 MinecraftClient mc = MinecraftClient.getInstance();

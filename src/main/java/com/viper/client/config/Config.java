@@ -37,7 +37,7 @@ public class Config {
     public static boolean showHitMarker = true;
 
     // CROSSHAIR
-    public static String crosshairPreset = "classic"; // classic, dot, cross, big, circle, circle-dot, t-style, bracket, plus, x, corner, minimal
+    public static String crosshairPreset = "classic";
 
     // THEME
     public static String theme = "viper";
@@ -63,11 +63,16 @@ public class Config {
     public static int fpsPrevEntityDist = 100;
 
     // ZOOM
+    public static boolean zoomEnabled = true;
     public static int zoomFov = 30;
     public static int defaultFov = 70;
 
     // CHAT
     public static boolean chatTimestamps = true;
+
+    // TOTEM POP COUNTER
+    public static boolean showTotemPop = true;
+    public static boolean totemPopAnnounce = true;
 
     // KEYBINDS
     public static Map<String, Integer> keybinds = new HashMap<>();
@@ -122,6 +127,25 @@ public class Config {
     public static int getAccentDark() {
         int[] t = THEME_COLORS.getOrDefault(theme, THEME_COLORS.get("viper"));
         return t[2];
+    }
+
+    /** sehr dunkle theme-farbe (20% des accents) — für hover-hintergründe */
+    public static int getAccentBg() {
+        int a = getAccent();
+        int r = ((a >> 16) & 0xFF) * 20 / 100;
+        int g = ((a >> 8) & 0xFF) * 20 / 100;
+        int b = (a & 0xFF) * 20 / 100;
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
+    }
+
+    /** theme-farbe mit 20% alpha — für sanftes hover */
+    public static int getAccentHover() {
+        return (getAccent() & 0x00FFFFFF) | 0x33000000;
+    }
+
+    /** theme-farbe mit 40% alpha — für stärkere betonung */
+    public static int getAccentSoft() {
+        return (getAccent() & 0x00FFFFFF) | 0x66000000;
     }
 
     public static int getEffectiveCrosshairColor() {
@@ -233,9 +257,12 @@ public class Config {
         fpsPrevRenderDist = d.fpsPrevRenderDist;
         fpsPrevSimDist = d.fpsPrevSimDist;
         fpsPrevEntityDist = d.fpsPrevEntityDist;
+        zoomEnabled = d.zoomEnabled;
         zoomFov = d.zoomFov;
         defaultFov = d.defaultFov;
         chatTimestamps = d.chatTimestamps;
+        showTotemPop = d.showTotemPop;
+        totemPopAnnounce = d.totemPopAnnounce;
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -281,9 +308,12 @@ public class Config {
         d.fpsPrevRenderDist = fpsPrevRenderDist;
         d.fpsPrevSimDist = fpsPrevSimDist;
         d.fpsPrevEntityDist = fpsPrevEntityDist;
+        d.zoomEnabled = zoomEnabled;
         d.zoomFov = zoomFov;
         d.defaultFov = defaultFov;
         d.chatTimestamps = chatTimestamps;
+        d.showTotemPop = showTotemPop;
+        d.totemPopAnnounce = totemPopAnnounce;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -329,9 +359,12 @@ public class Config {
         int fpsPrevRenderDist = 8;
         int fpsPrevSimDist = 12;
         int fpsPrevEntityDist = 100;
+        boolean zoomEnabled = true;
         int zoomFov = 30;
         int defaultFov = 70;
         boolean chatTimestamps = true;
+        boolean showTotemPop = true;
+        boolean totemPopAnnounce = true;
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;

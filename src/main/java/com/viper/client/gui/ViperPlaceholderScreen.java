@@ -10,8 +10,6 @@ public class ViperPlaceholderScreen extends Screen {
 
     private static final int SIDEBAR_W = 78;
     private static final int TAB_H = 28;
-    private static final int CARD_H = 76;
-    private static final int CARD_GAP = 8;
 
     private static final int COLOR_WHITE = 0xFFFFFFFF;
     private static final int COLOR_MUTED = 0xFF8A8A9C;
@@ -41,6 +39,8 @@ public class ViperPlaceholderScreen extends Screen {
         int accent = Config.getAccent();
         int accentLight = Config.getAccentLight();
         int accentDark = Config.getAccentDark();
+        int accentBg = Config.getAccentBg();
+        int accentHover = Config.getAccentHover();
 
         context.fill(0, 0, this.width, this.height, 0xBB000000);
         context.fill(panelX, panelY, panelX + panelW, panelY + panelH, COLOR_BG);
@@ -53,7 +53,7 @@ public class ViperPlaceholderScreen extends Screen {
         context.fill(panelX, panelY, panelX + SIDEBAR_W, panelY + panelH, COLOR_PANEL);
         context.fill(panelX + SIDEBAR_W, panelY, panelX + SIDEBAR_W + 1, panelY + panelH, accentDark);
 
-        drawSidebar(context, mouseX, mouseY, accent);
+        drawSidebar(context, mouseX, mouseY, accent, accentBg, accentHover);
 
         String title = SIDEBAR_LABELS[categoryIndex];
         context.drawText(this.textRenderer, "§l" + title, panelX + SIDEBAR_W + 20, panelY + 16, COLOR_WHITE, false);
@@ -76,7 +76,7 @@ public class ViperPlaceholderScreen extends Screen {
         super.render(context, mouseX, mouseY, delta);
     }
 
-    private void drawSidebar(DrawContext context, int mouseX, int mouseY, int accent) {
+    private void drawSidebar(DrawContext context, int mouseX, int mouseY, int accent, int accentBg, int accentHover) {
         int iconSize = 40;
         int labelH = 12;
         int itemH = iconSize + labelH + 6;
@@ -87,7 +87,7 @@ public class ViperPlaceholderScreen extends Screen {
         {
             int iy = startY;
             boolean hovered = mouseX >= cx - iconSize / 2 && mouseX <= cx + iconSize / 2 && mouseY >= iy && mouseY <= iy + iconSize;
-            int bg = hovered ? 0x33A855F7 : 0x00000000;
+            int bg = hovered ? accentHover : 0x00000000;
             context.fill(cx - iconSize / 2, iy, cx + iconSize / 2, iy + iconSize, bg);
             drawModsIcon(context, cx, iy + iconSize / 2, hovered ? accent : COLOR_MUTED);
             context.drawCenteredTextWithShadow(this.textRenderer, "MODS", cx, iy + iconSize + 2, hovered ? accent : COLOR_MUTED);
@@ -99,7 +99,7 @@ public class ViperPlaceholderScreen extends Screen {
             boolean active = (i == categoryIndex);
             boolean hovered = mouseX >= cx - iconSize / 2 && mouseX <= cx + iconSize / 2 && mouseY >= iy && mouseY <= iy + iconSize;
 
-            int bg = active ? 0xFF2a1a44 : (hovered ? 0x33A855F7 : 0x00000000);
+            int bg = active ? accentBg : (hovered ? accentHover : 0x00000000);
             context.fill(cx - iconSize / 2, iy, cx + iconSize / 2, iy + iconSize, bg);
             if (active) context.fill(cx - iconSize / 2, iy, cx - iconSize / 2 + 2, iy + iconSize, accent);
 
@@ -167,7 +167,6 @@ public class ViperPlaceholderScreen extends Screen {
         int startY = panelY + 20;
         int cxSide = panelX + SIDEBAR_W / 2;
 
-        // MODS icon
         if (mx >= cxSide - iconSize / 2 && mx <= cxSide + iconSize / 2 && my >= startY && my <= startY + itemH) {
             if (this.client != null) this.client.setScreen(new ViperModsScreen());
             return true;

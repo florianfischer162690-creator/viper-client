@@ -8,6 +8,7 @@ import net.minecraft.text.Text;
 public class ViperStartMenu extends Screen {
 
     private static final int BTN_SIZE = 44;
+    private static final int BTN_GAP = 16;
 
     private static final int COLOR_WHITE = 0xFFFFFFFF;
     private static final int COLOR_MUTED = 0xFF8A8A9C;
@@ -15,7 +16,8 @@ public class ViperStartMenu extends Screen {
     private int menuX;
     private int menuY;
     private boolean hoveredLabel = false;
-    private boolean hoveredBtn = false;
+    private boolean hoveredHudBtn = false;
+    private boolean hoveredScreenBtn = false;
 
     private int labelX, labelY, labelW, labelH;
 
@@ -34,6 +36,7 @@ public class ViperStartMenu extends Screen {
         int accent = Config.getAccent();
         int accentLight = Config.getAccentLight();
         int accentDark = Config.getAccentDark();
+        int accentBg = Config.getAccentBg();
 
         context.fill(0, 0, this.width, this.height, 0xBB0a0a12);
         drawSoftVignette(context);
@@ -64,7 +67,7 @@ public class ViperStartMenu extends Screen {
         context.fill(cx - 160, labelY - 12, cx + 160, labelY - 11, glowColor);
         context.fill(cx - 160, labelY - 11, cx + 160, labelY - 10, accent);
 
-        int labelBg = hoveredLabel ? 0xFF2a1a44 : 0xCC1c1228;
+        int labelBg = hoveredLabel ? accentBg : 0xCC1c1228;
         context.fill(labelX, labelY, labelX + labelW, labelY + labelH, labelBg);
 
         int borderColor = hoveredLabel ? accent : accentDark;
@@ -77,28 +80,41 @@ public class ViperStartMenu extends Screen {
 
         context.drawCenteredTextWithShadow(this.textRenderer, "MOD MENU", cx, labelY + 9, COLOR_WHITE);
 
-        // EIN BUTTON drunter
+        // 2 buttons unter dem label
         int btnY = labelY + labelH + 22;
-        int bx = cx - BTN_SIZE / 2;
+        int totalW = BTN_SIZE * 2 + BTN_GAP;
+        int startX = cx - totalW / 2;
 
-        hoveredBtn = mouseX >= bx && mouseX <= bx + BTN_SIZE && mouseY >= btnY && mouseY <= btnY + BTN_SIZE;
+        // HUD-EDITOR button (links)
+        int bx1 = startX;
+        hoveredHudBtn = mouseX >= bx1 && mouseX <= bx1 + BTN_SIZE && mouseY >= btnY && mouseY <= btnY + BTN_SIZE;
+        drawSquareButton(context, bx1, btnY, BTN_SIZE, hoveredHudBtn, accent, accentDark, accentBg);
+        drawHudIcon(context, bx1 + BTN_SIZE / 2, btnY + BTN_SIZE / 2, hoveredHudBtn, accent);
+        if (hoveredHudBtn) {
+            context.drawCenteredTextWithShadow(this.textRenderer, "HUD EDITOR", bx1 + BTN_SIZE / 2, btnY + BTN_SIZE + 10, accent);
+        }
 
-        int bg = hoveredBtn ? 0xFF2a1a44 : 0xCC1c1228;
-        context.fill(bx, btnY, bx + BTN_SIZE, btnY + BTN_SIZE, bg);
-
-        int bColor = hoveredBtn ? accent : 0x66a855f7;
-        context.fill(bx, btnY, bx + BTN_SIZE, btnY + 1, bColor);
-        context.fill(bx, btnY + BTN_SIZE - 1, bx + BTN_SIZE, btnY + BTN_SIZE, bColor);
-        context.fill(bx, btnY, bx + 1, btnY + BTN_SIZE, bColor);
-        context.fill(bx + BTN_SIZE - 1, btnY, bx + BTN_SIZE, btnY + BTN_SIZE, bColor);
-
-        drawHudIcon(context, bx + BTN_SIZE / 2, btnY + BTN_SIZE / 2, hoveredBtn, accent);
-
-        if (hoveredBtn) {
-            context.drawCenteredTextWithShadow(this.textRenderer, "HUD EDITOR", cx, btnY + BTN_SIZE + 10, accent);
+        // SCREENSHOTS button (rechts)
+        int bx2 = startX + BTN_SIZE + BTN_GAP;
+        hoveredScreenBtn = mouseX >= bx2 && mouseX <= bx2 + BTN_SIZE && mouseY >= btnY && mouseY <= btnY + BTN_SIZE;
+        drawSquareButton(context, bx2, btnY, BTN_SIZE, hoveredScreenBtn, accent, accentDark, accentBg);
+        drawCameraIcon(context, bx2 + BTN_SIZE / 2, btnY + BTN_SIZE / 2, hoveredScreenBtn, accent);
+        if (hoveredScreenBtn) {
+            context.drawCenteredTextWithShadow(this.textRenderer, "SCREENSHOTS", bx2 + BTN_SIZE / 2, btnY + BTN_SIZE + 10, accent);
         }
 
         super.render(context, mouseX, mouseY, delta);
+    }
+
+    private void drawSquareButton(DrawContext context, int x, int y, int size, boolean hovered, int accent, int accentDark, int accentBg) {
+        int bg = hovered ? accentBg : 0xCC1c1228;
+        context.fill(x, y, x + size, y + size, bg);
+
+        int bColor = hovered ? accent : (accentDark & 0x99FFFFFF);
+        context.fill(x, y, x + size, y + 1, bColor);
+        context.fill(x, y + size - 1, x + size, y + size, bColor);
+        context.fill(x, y, x + 1, y + size, bColor);
+        context.fill(x + size - 1, y, x + size, y + size, bColor);
     }
 
     private void drawTitle(DrawContext context, int cx, int cy, float pulse, int accent, int accentLight, int accentDark) {
@@ -173,6 +189,18 @@ public class ViperStartMenu extends Screen {
         context.fill(x + 8, y + 10, x + w - 6, y + 12, color);
     }
 
+    private void drawCameraIcon(DrawContext context, int cx, int cy, boolean hovered, int accent) {
+        int color = hovered ? accent : COLOR_WHITE;
+        int w = 20, h = 14;
+        int x = cx - w / 2, y = cy - h / 2;
+
+        context.fill(x, y + 1, x + w, y + h, color);
+        context.fill(x + 3, y, x + 8, y + 1, color);
+        context.fill(x + 7, y + 4, x + 13, y + 10, 0xFF1c1228);
+        context.fill(x + 9, y + 6, x + 11, y + 8, color);
+        context.fill(x + w - 3, y - 1, x + w, y, color);
+    }
+
     private void drawSoftVignette(DrawContext context) {
         int w = this.width;
         int h = this.height;
@@ -200,9 +228,18 @@ public class ViperStartMenu extends Screen {
         }
 
         int btnY = labelY + labelH + 22;
-        int bx = menuX - BTN_SIZE / 2;
-        if (mx >= bx && mx <= bx + BTN_SIZE && my >= btnY && my <= btnY + BTN_SIZE) {
+        int totalW = BTN_SIZE * 2 + BTN_GAP;
+        int startX = menuX - totalW / 2;
+
+        int bx1 = startX;
+        if (mx >= bx1 && mx <= bx1 + BTN_SIZE && my >= btnY && my <= btnY + BTN_SIZE) {
             if (this.client != null) this.client.setScreen(new HudEditorScreen());
+            return true;
+        }
+
+        int bx2 = startX + BTN_SIZE + BTN_GAP;
+        if (mx >= bx2 && mx <= bx2 + BTN_SIZE && my >= btnY && my <= btnY + BTN_SIZE) {
+            if (this.client != null) this.client.setScreen(new ScreenshotPickerScreen());
             return true;
         }
 

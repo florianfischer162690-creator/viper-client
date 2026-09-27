@@ -5,5 +5,6 @@
   "key.viper.toggle_sprint": "Toggle Sprint",
   "key.viper.fullbright": "Toggle Fullbright",
   "key.viper.no_fog": "Toggle No-Fog",
-  "key.viper.zoom": "Zoom"
+  "key.viper.zoom": "Zoom",
+  "key.viper.open_notepad": "Open Notepad"
 }
