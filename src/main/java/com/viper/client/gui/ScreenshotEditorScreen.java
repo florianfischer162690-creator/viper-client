@@ -124,7 +124,7 @@ public class ScreenshotEditorScreen extends Screen {
                         textureId,
                         previewX, previewY,
                         previewW, previewH,
-                        0f, 0f,
+                        0, 0,
                         textureW, textureH,
                         textureW, textureH
                 );

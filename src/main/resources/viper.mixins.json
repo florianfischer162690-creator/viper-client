@@ -5,7 +5,6 @@
   "client": [
     "InGameHudMixin",
     "FoodHoverMixin",
-    "NametagMixin",
     "ChatHudMixin",
     "TotemPopMixin",
     "ShulkerPreviewOverlayMixin",
