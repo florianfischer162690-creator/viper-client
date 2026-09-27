@@ -4,11 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "InGameHudMixin",
-    "ChatHudMixin",
-    "TotemPopMixin",
     "FoodHoverMixin",
-    "ShulkerPreviewMixin",
-    "NametagMixin"
+    "ShulkerPreviewMixin"
   ],
   "injectors": {
     "defaultRequire": 1
