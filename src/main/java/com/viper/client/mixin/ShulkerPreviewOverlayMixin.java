@@ -10,24 +10,22 @@ import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(HandledScreen.class)
 public abstract class ShulkerPreviewOverlayMixin {
 
-    @Shadow public abstract Slot getFocusedSlot();
-
     @Inject(method = "render", at = @At("TAIL"), require = 0)
     private void viper_shulkerOverlay(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         try {
             if (!Config.showShulkerPreview) return;
-            Slot focusedSlot = this.getFocusedSlot();
+            Slot focusedSlot = getFocusedSlotSafe(this);
             if (focusedSlot == null) return;
             ItemStack stack = focusedSlot.getStack();
             if (stack == null || stack.isEmpty()) return;
@@ -80,5 +78,22 @@ public abstract class ShulkerPreviewOverlayMixin {
             }
             context.drawText(tr, "§7" + items.size() + " items", px + padding, py + panelH - 10, 0xFF8A8A9C, false);
         } catch (Throwable ignored) {}
+    }
+
+    private static Slot getFocusedSlotSafe(Object screen) {
+        try {
+            for (Method m : screen.getClass().getMethods()) {
+                if (m.getName().equals("getFocusedSlot") && m.getParameterCount() == 0) {
+                    return (Slot) m.invoke(screen);
+                }
+            }
+            for (Method m : screen.getClass().getDeclaredMethods()) {
+                if (m.getName().equals("getFocusedSlot") && m.getParameterCount() == 0) {
+                    m.setAccessible(true);
+                    return (Slot) m.invoke(screen);
+                }
+            }
+        } catch (Throwable ignored) {}
+        return null;
     }
 }
