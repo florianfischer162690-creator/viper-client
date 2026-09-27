@@ -14,7 +14,6 @@ import com.viper.client.hud.element.PingElement;
 import com.viper.client.hud.element.PotionElement;
 import com.viper.client.hud.element.ReachElement;
 import com.viper.client.hud.element.SpeedElement;
-import com.viper.client.hud.element.TotemPopElement;
 import com.viper.client.hud.element.WatermarkElement;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -41,7 +40,6 @@ public class HudRenderer {
         ELEMENTS.add(new ComboElement());
         ELEMENTS.add(new DirectionElement());
         ELEMENTS.add(new SpeedElement());
-        ELEMENTS.add(new TotemPopElement());
         keystrokesElement = new KeystrokesElement();
         armorElement = new ArmorElement();
         inventoryElement = new InventoryHudElement();

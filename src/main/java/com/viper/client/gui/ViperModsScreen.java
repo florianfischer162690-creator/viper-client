@@ -130,7 +130,6 @@ public class ViperModsScreen extends Screen {
         titleCard.expandable = true;
         pvp.add(titleCard);
 
-        pvp.add(new ModCard("totempop", "TOTEM POP", "Show totem pop counter", () -> Config.showTotemPop, v -> Config.showTotemPop = v));
         pvp.add(new ModCard("appleskin", "APPLESKIN", "Food hover info", () -> Config.showAppleskin, v -> Config.showAppleskin = v));
         pvp.add(new ModCard("shulkerpreview", "SHULKER PREVIEW", "Show shulker contents", () -> Config.showShulkerPreview, v -> Config.showShulkerPreview = v));
         pvp.add(new ModCard("fullbright", "FULLBRIGHT", "Night vision (F8)", () -> Config.fullbright, v -> {

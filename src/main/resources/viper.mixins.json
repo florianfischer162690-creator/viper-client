@@ -5,8 +5,7 @@
   "client": [
     "InGameHudMixin",
     "FoodHoverMixin",
-    "ChatHudMixin",
-    "TotemPopMixin"
+    "ChatHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1
