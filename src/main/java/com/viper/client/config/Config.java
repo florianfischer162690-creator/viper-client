@@ -74,6 +74,19 @@ public class Config {
     public static boolean showTotemPop = true;
     public static boolean totemPopAnnounce = true;
 
+    // APPLESKIN
+    public static boolean showAppleskin = true;
+
+    // SHULKER PREVIEW
+    public static boolean showShulkerPreview = true;
+
+    // INVENTORY HUD
+    public static boolean showInventoryHud = true;
+
+    // TITLE SYSTEM
+    public static boolean showTitle = true;
+    public static String currentTitle = "viper";
+
     // KEYBINDS
     public static Map<String, Integer> keybinds = new HashMap<>();
 
@@ -129,7 +142,6 @@ public class Config {
         return t[2];
     }
 
-    /** sehr dunkle theme-farbe (20% des accents) — für hover-hintergründe */
     public static int getAccentBg() {
         int a = getAccent();
         int r = ((a >> 16) & 0xFF) * 20 / 100;
@@ -138,14 +150,8 @@ public class Config {
         return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 
-    /** theme-farbe mit 20% alpha — für sanftes hover */
     public static int getAccentHover() {
         return (getAccent() & 0x00FFFFFF) | 0x33000000;
-    }
-
-    /** theme-farbe mit 40% alpha — für stärkere betonung */
-    public static int getAccentSoft() {
-        return (getAccent() & 0x00FFFFFF) | 0x66000000;
     }
 
     public static int getEffectiveCrosshairColor() {
@@ -263,6 +269,11 @@ public class Config {
         chatTimestamps = d.chatTimestamps;
         showTotemPop = d.showTotemPop;
         totemPopAnnounce = d.totemPopAnnounce;
+        showAppleskin = d.showAppleskin;
+        showShulkerPreview = d.showShulkerPreview;
+        showInventoryHud = d.showInventoryHud;
+        showTitle = d.showTitle;
+        currentTitle = d.currentTitle != null ? d.currentTitle : "viper";
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -314,6 +325,11 @@ public class Config {
         d.chatTimestamps = chatTimestamps;
         d.showTotemPop = showTotemPop;
         d.totemPopAnnounce = totemPopAnnounce;
+        d.showAppleskin = showAppleskin;
+        d.showShulkerPreview = showShulkerPreview;
+        d.showInventoryHud = showInventoryHud;
+        d.showTitle = showTitle;
+        d.currentTitle = currentTitle;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -365,6 +381,11 @@ public class Config {
         boolean chatTimestamps = true;
         boolean showTotemPop = true;
         boolean totemPopAnnounce = true;
+        boolean showAppleskin = true;
+        boolean showShulkerPreview = true;
+        boolean showInventoryHud = true;
+        boolean showTitle = true;
+        String currentTitle = "viper";
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;

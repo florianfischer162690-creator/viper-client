@@ -8,6 +8,7 @@ import com.viper.client.hud.element.CoordsElement;
 import com.viper.client.hud.element.CpsElement;
 import com.viper.client.hud.element.DirectionElement;
 import com.viper.client.hud.element.FpsElement;
+import com.viper.client.hud.element.InventoryHudElement;
 import com.viper.client.hud.element.KeystrokesElement;
 import com.viper.client.hud.element.PingElement;
 import com.viper.client.hud.element.PotionElement;
@@ -26,6 +27,7 @@ public class HudRenderer {
     public static final List<HudElement> ELEMENTS = new ArrayList<>();
     public static KeystrokesElement keystrokesElement;
     public static ArmorElement armorElement;
+    public static InventoryHudElement inventoryElement;
 
     public static void init() {
         ELEMENTS.clear();
@@ -42,6 +44,7 @@ public class HudRenderer {
         ELEMENTS.add(new TotemPopElement());
         keystrokesElement = new KeystrokesElement();
         armorElement = new ArmorElement();
+        inventoryElement = new InventoryHudElement();
         ViperClient.LOGGER.info("[Viper] HUD initialized");
     }
 
@@ -50,9 +53,21 @@ public class HudRenderer {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.player == null) return;
 
+        int scaledW = mc.getWindow().getScaledWidth();
+        int scaledH = mc.getWindow().getScaledHeight();
+
         for (HudElement el : ELEMENTS) {
             if (!el.isEnabled()) continue;
             Config.ElementPos pos = Config.getPos(el.getId(), el.getDefaultX(), el.getDefaultY());
+
+            int elW = (int) (el.getWidth(mc) * pos.scale);
+            int elH = (int) (el.getHeight(mc) * pos.scale);
+
+            if (pos.x < 0) pos.x = 0;
+            if (pos.y < 0) pos.y = 0;
+            if (pos.x + elW > scaledW) pos.x = Math.max(0, scaledW - elW);
+            if (pos.y + elH > scaledH) pos.y = Math.max(0, scaledH - elH);
+
             context.getMatrices().pushMatrix();
             context.getMatrices().translate((float) pos.x, (float) pos.y);
             context.getMatrices().scale(pos.scale, pos.scale);
@@ -66,6 +81,15 @@ public class HudRenderer {
                     keystrokesElement.getDefaultX(mc),
                     keystrokesElement.getDefaultY(mc)
             );
+
+            int elW = (int) (keystrokesElement.getWidth(mc) * pos.scale);
+            int elH = (int) (keystrokesElement.getHeight(mc) * pos.scale);
+
+            if (pos.x < 0) pos.x = 0;
+            if (pos.y < 0) pos.y = 0;
+            if (pos.x + elW > scaledW) pos.x = Math.max(0, scaledW - elW);
+            if (pos.y + elH > scaledH) pos.y = Math.max(0, scaledH - elH);
+
             context.getMatrices().pushMatrix();
             context.getMatrices().translate((float) pos.x, (float) pos.y);
             context.getMatrices().scale(pos.scale, pos.scale);
@@ -73,9 +97,29 @@ public class HudRenderer {
             context.getMatrices().popMatrix();
         }
 
+        if (Config.showInventoryHud && inventoryElement.isEnabled()) {
+            Config.ElementPos pos = Config.getPos(
+                    inventoryElement.getId(),
+                    inventoryElement.getDefaultX(),
+                    inventoryElement.getDefaultY()
+            );
+
+            int elW = (int) (inventoryElement.getWidth(mc) * pos.scale);
+            int elH = (int) (inventoryElement.getHeight(mc) * pos.scale);
+
+            if (pos.x < 0) pos.x = 0;
+            if (pos.y < 0) pos.y = 0;
+            if (pos.x + elW > scaledW) pos.x = Math.max(0, scaledW - elW);
+            if (pos.y + elH > scaledH) pos.y = Math.max(0, scaledH - elH);
+
+            context.getMatrices().pushMatrix();
+            context.getMatrices().translate((float) pos.x, (float) pos.y);
+            context.getMatrices().scale(pos.scale, pos.scale);
+            inventoryElement.render(context, mc, 0, 0);
+            context.getMatrices().popMatrix();
+        }
+
         if (Config.showArmor && armorElement.isEnabled()) {
-            int scaledW = mc.getWindow().getScaledWidth();
-            int scaledH = mc.getWindow().getScaledHeight();
             int armorW = armorElement.getWidth(mc);
             int armorH = armorElement.getHeight(mc);
             int ax = (scaledW / 2) - 91 - 29 - armorW - 6;

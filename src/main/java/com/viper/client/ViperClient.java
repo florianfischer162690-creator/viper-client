@@ -158,7 +158,13 @@ public class ViperClient implements ClientModInitializer {
                         if (key <= 0) continue;
                         boolean isDown = GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS;
                         boolean wasDown = keyPressedState.getOrDefault(id, false);
-                        if (isDown && !wasDown) toggleModule(id);
+                        if (isDown && !wasDown) {
+                            if ("notepad".equals(id)) {
+                                client.setScreen(new NotepadScreen());
+                            } else {
+                                toggleModule(id);
+                            }
+                        }
                         keyPressedState.put(id, isDown);
                     }
                 }
@@ -214,6 +220,7 @@ public class ViperClient implements ClientModInitializer {
             case "speed": Config.showSpeed = !Config.showSpeed; break;
             case "hudtoggle": Config.hudEnabled = !Config.hudEnabled; break;
             case "lowhealth": Config.lowHealthWarning = !Config.lowHealthWarning; break;
+            case "inventoryhud": Config.showInventoryHud = !Config.showInventoryHud; break;
             case "togglesprint": Config.toggleSprint = !Config.toggleSprint; break;
             case "togglesneak": Config.toggleSneak = !Config.toggleSneak; break;
             case "customcrosshair": Config.showCustomCrosshair = !Config.showCustomCrosshair; break;
@@ -221,6 +228,8 @@ public class ViperClient implements ClientModInitializer {
             case "healthindicator": Config.showHealthIndicator = !Config.showHealthIndicator; break;
             case "hitmarker": Config.showHitMarker = !Config.showHitMarker; break;
             case "totempop": Config.showTotemPop = !Config.showTotemPop; break;
+            case "appleskin": Config.showAppleskin = !Config.showAppleskin; break;
+            case "shulkerpreview": Config.showShulkerPreview = !Config.showShulkerPreview; break;
             case "zoom": Config.zoomEnabled = !Config.zoomEnabled; break;
             case "fullbright":
                 Config.fullbright = !Config.fullbright;

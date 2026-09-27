@@ -1,6 +1,7 @@
 package com.viper.client.gui;
 
 import com.viper.client.config.Config;
+import com.viper.client.util.Titles;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
@@ -96,6 +97,12 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("speed", "SPEED", "Show movement speed", () -> Config.showSpeed, v -> Config.showSpeed = v));
         hud.add(new ModCard("hudtoggle", "HUD MASTER", "Toggle entire HUD (F4)", () -> Config.hudEnabled, v -> Config.hudEnabled = v));
         hud.add(new ModCard("lowhealth", "LOW HEALTH", "Red border on low HP", () -> Config.lowHealthWarning, v -> Config.lowHealthWarning = v));
+        hud.add(new ModCard("inventoryhud", "INVENTORY HUD", "Show inventory in HUD", () -> Config.showInventoryHud, v -> Config.showInventoryHud = v));
+
+        ModCard notepadCard = new ModCard("notepad", "NOTEPAD", "Click or keybind to open", () -> true, v -> {});
+        notepadCard.isAction = true;
+        hud.add(notepadCard);
+
         TAB_MODULES.add(hud);
 
         List<ModCard> pvp = new ArrayList<>();
@@ -119,7 +126,13 @@ public class ViperModsScreen extends Screen {
         hitmarkerCard.expandable = true;
         pvp.add(hitmarkerCard);
 
+        ModCard titleCard = new ModCard("title", "TITLE", "Click to select your title", () -> Config.showTitle, v -> Config.showTitle = v);
+        titleCard.expandable = true;
+        pvp.add(titleCard);
+
         pvp.add(new ModCard("totempop", "TOTEM POP", "Show totem pop counter", () -> Config.showTotemPop, v -> Config.showTotemPop = v));
+        pvp.add(new ModCard("appleskin", "APPLESKIN", "Food hover info", () -> Config.showAppleskin, v -> Config.showAppleskin = v));
+        pvp.add(new ModCard("shulkerpreview", "SHULKER PREVIEW", "Show shulker contents", () -> Config.showShulkerPreview, v -> Config.showShulkerPreview = v));
         pvp.add(new ModCard("fullbright", "FULLBRIGHT", "Night vision (F8)", () -> Config.fullbright, v -> {
             Config.fullbright = v;
             MinecraftClient mc = MinecraftClient.getInstance();
@@ -181,6 +194,7 @@ public class ViperModsScreen extends Screen {
             case "targetindicator":
             case "healthindicator":
             case "hitmarker": return 20 + 34;
+            case "title": return 24 + (Titles.ALL_TITLES.length * 18) + 10;
         }
         return 0;
     }
@@ -228,7 +242,6 @@ public class ViperModsScreen extends Screen {
         if (closeHover) context.fill(closeX, closeY, closeX + 20, closeY + 20, 0xFF3a1a2a);
         context.drawText(this.textRenderer, "§c✕", closeX + 6, closeY + 6, 0xFFFF5555, false);
 
-        // search-bar
         int sBorder = searchFocused ? accent : 0xFF2a1c3d;
         context.fill(searchX, searchY, searchX + searchW, searchY + searchH, 0xFF0a0a12);
         context.fill(searchX, searchY, searchX + searchW, searchY + 1, sBorder);
@@ -416,23 +429,31 @@ public class ViperModsScreen extends Screen {
 
     private void drawCardFull(DrawContext context, ModCard card, int x, int y, int w, int h, boolean hovered, int mouseX, int mouseY, int accent) {
         context.fill(x, y, x + w, y + h, hovered ? Config.getAccentBg() : 0xFF1c1228);
-        if (card.getter.get()) context.fill(x, y, x + 3, y + h, accent);
+        if (card.getter.get() || card.isAction) context.fill(x, y, x + 3, y + h, accent);
         if (hovered) {
             context.fill(x, y, x + w, y + 1, accent);
             context.fill(x, y + h - 1, x + w, y + h, accent);
             context.fill(x + w - 1, y, x + w, y + h, accent);
         }
 
-        context.fill(x + 14, y + 14, x + 26, y + 26, card.getter.get() ? accent : COLOR_MUTED);
+        context.fill(x + 14, y + 14, x + 26, y + 26, (card.getter.get() || card.isAction) ? accent : COLOR_MUTED);
         context.drawText(this.textRenderer, "§l" + card.title, x + 36, y + 12, COLOR_WHITE, false);
         context.drawText(this.textRenderer, "§7" + card.description, x + 36, y + 28, COLOR_MUTED, false);
 
-        int tw = 24, th = 12;
-        int tx = x + w - tw - 14;
-        int ty = y + 12;
-        context.fill(tx, ty, tx + tw, ty + th, card.getter.get() ? accent : COLOR_TOGGLE_OFF);
-        int dotX = card.getter.get() ? tx + tw - 10 : tx + 2;
-        context.fill(dotX, ty + 2, dotX + 8, ty + th - 2, COLOR_WHITE);
+        if (card.isAction) {
+            int ow = 44, oh = 14;
+            int ox = x + w - ow - 14;
+            int oy = y + 12;
+            context.fill(ox, oy, ox + ow, oy + oh, accent);
+            context.drawCenteredTextWithShadow(this.textRenderer, "OPEN", ox + ow / 2, oy + 3, COLOR_WHITE);
+        } else {
+            int tw = 24, th = 12;
+            int tx = x + w - tw - 14;
+            int ty = y + 12;
+            context.fill(tx, ty, tx + tw, ty + th, card.getter.get() ? accent : COLOR_TOGGLE_OFF);
+            int dotX = card.getter.get() ? tx + tw - 10 : tx + 2;
+            context.fill(dotX, ty + 2, dotX + 8, ty + th - 2, COLOR_WHITE);
+        }
 
         boolean expanded = expandedCard != null && expandedCard.equals(card.id) && card.expandable;
         if (!expanded) {
@@ -506,6 +527,33 @@ public class ViperModsScreen extends Screen {
         } else if (card.id.equals("hitmarker")) {
             context.drawText(this.textRenderer, "§lHIT MARKER COLOR", x + 14, y + 8, COLOR_WHITE, false);
             drawColorRowInline(context, x + 14, y + 22, accent, false, mouseX, mouseY);
+        } else if (card.id.equals("title")) {
+            drawTitleDropdown(context, x, y, w, accent, mouseX, mouseY);
+        }
+    }
+
+    private void drawTitleDropdown(DrawContext context, int x, int y, int w, int accent, int mouseX, int mouseY) {
+        context.drawText(this.textRenderer, "§lSELECT TITLE", x + 14, y + 8, COLOR_WHITE, false);
+
+        MinecraftClient mc = MinecraftClient.getInstance();
+        String username = mc.player != null ? mc.player.getName().getString() : null;
+
+        int rowH = 18;
+        int startY = y + 24;
+        for (int i = 0; i < Titles.ALL_TITLES.length; i++) {
+            Titles.Title t = Titles.ALL_TITLES[i];
+            int rowY = startY + i * rowH;
+            boolean hovered = mouseX >= x + 8 && mouseX <= x + w - 8 && mouseY >= rowY && mouseY <= rowY + rowH - 2;
+            boolean selected = t.id.equals(Config.currentTitle);
+            boolean unlocked = t.isUnlockedFor(username);
+
+            int rowBg = selected ? accent : (hovered && unlocked ? Config.getAccentBg() : 0x00000000);
+            if (rowBg != 0) context.fill(x + 8, rowY, x + w - 8, rowY + rowH - 2, rowBg);
+
+            String display = t.name.isEmpty() ? "(none)" : t.name;
+            int textColor = unlocked ? t.color : 0xFF5a5a6c;
+            String lock = unlocked ? "" : " §8[LOCKED]";
+            context.drawText(this.textRenderer, "§l" + display + lock, x + 16, rowY + 5, textColor, false);
         }
     }
 
@@ -759,14 +807,12 @@ public class ViperModsScreen extends Screen {
         int my = (int) click.y();
         int accent = Config.getAccent();
 
-        // search-bar
         if (mx >= searchX && mx <= searchX + searchW && my >= searchY && my <= searchY + searchH) {
             searchFocused = true;
             return true;
         }
         searchFocused = false;
 
-        // close
         int closeX = panelX + panelW - 28;
         int closeY = panelY + 8;
         if (mx >= closeX && mx <= closeX + 20 && my >= closeY && my <= closeY + 20) {
@@ -774,7 +820,6 @@ public class ViperModsScreen extends Screen {
             return true;
         }
 
-        // sidebar
         int iconSize = 40;
         int labelH = 12;
         int itemH = iconSize + labelH + 6;
@@ -790,7 +835,6 @@ public class ViperModsScreen extends Screen {
             }
         }
 
-        // tabs
         int tabsX = panelX + SIDEBAR_W + 12;
         int tx = tabsX;
         for (int i = 0; i < TABS.length; i++) {
@@ -801,7 +845,6 @@ public class ViperModsScreen extends Screen {
             tx += tw + 4;
         }
 
-        // theme tab
         if (activeTab == 2) {
             int x0 = panelX + SIDEBAR_W + 30;
             int y0 = panelY + TAB_H + 60;
@@ -820,7 +863,6 @@ public class ViperModsScreen extends Screen {
             return true;
         }
 
-        // config tab
         if (activeTab == 3) {
             int x0 = panelX + SIDEBAR_W + 30;
             int y0 = panelY + TAB_H + 60;
@@ -864,7 +906,6 @@ public class ViperModsScreen extends Screen {
             return true;
         }
 
-        // cards
         if (activeTab < TAB_MODULES.size()) {
             List<ModCard> cards = filterCards(TAB_MODULES.get(activeTab));
             int cardsStartX = panelX + SIDEBAR_W + 16;
@@ -917,6 +958,13 @@ public class ViperModsScreen extends Screen {
                             awaitingKeybindId = card.id;
                             return true;
                         }
+                    }
+
+                    if (card.isAction) {
+                        if ("notepad".equals(card.id)) {
+                            if (this.client != null) this.client.setScreen(new NotepadScreen());
+                        }
+                        return true;
                     }
 
                     int tw = 24, th = 12;
@@ -981,6 +1029,28 @@ public class ViperModsScreen extends Screen {
             return handleColorRowClick(x + 14, y + 22, false, mx, my);
         } else if (card.id.equals("hitmarker")) {
             return handleColorRowClick(x + 14, y + 22, false, mx, my);
+        } else if (card.id.equals("title")) {
+            return handleTitleClick(x, y, w, mx, my);
+        }
+        return false;
+    }
+
+    private boolean handleTitleClick(int x, int y, int w, int mx, int my) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        String username = mc.player != null ? mc.player.getName().getString() : null;
+
+        int rowH = 18;
+        int startY = y + 24;
+        for (int i = 0; i < Titles.ALL_TITLES.length; i++) {
+            Titles.Title t = Titles.ALL_TITLES[i];
+            int rowY = startY + i * rowH;
+            if (mx >= x + 8 && mx <= x + w - 8 && my >= rowY && my <= rowY + rowH - 2) {
+                if (t.isUnlockedFor(username)) {
+                    Config.currentTitle = t.id;
+                    Config.save();
+                }
+                return true;
+            }
         }
         return false;
     }
@@ -1016,6 +1086,7 @@ public class ViperModsScreen extends Screen {
     private static class ModCard {
         String id, title, description;
         boolean expandable = false;
+        boolean isAction = false;
         java.util.function.Supplier<Boolean> getter;
         java.util.function.Consumer<Boolean> setter;
         ModCard(String id, String title, String desc, java.util.function.Supplier<Boolean> getter, java.util.function.Consumer<Boolean> setter) {
