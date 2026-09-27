@@ -7,7 +7,9 @@
     "FoodHoverMixin",
     "NametagMixin",
     "ChatHudMixin",
-    "TotemPopMixin"
+    "TotemPopMixin",
+    "ShulkerPreviewOverlayMixin",
+    "F5NameMixin"
   ],
   "injectors": {
     "defaultRequire": 1

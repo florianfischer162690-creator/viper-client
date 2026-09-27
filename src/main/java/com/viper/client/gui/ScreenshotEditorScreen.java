@@ -71,6 +71,7 @@ public class ScreenshotEditorScreen extends Screen {
                 textureId = Identifier.of("viper", uniqueName.toLowerCase().replaceAll("[^a-z0-9_]", "_"));
 
                 NativeImageBackedTexture tex = new NativeImageBackedTexture(() -> texName, nativeImage);
+                tex.upload();
                 MinecraftClient.getInstance().getTextureManager().registerTexture(textureId, tex);
             }
         } catch (Exception e) {
@@ -123,7 +124,7 @@ public class ScreenshotEditorScreen extends Screen {
                         textureId,
                         previewX, previewY,
                         previewW, previewH,
-                        0, 0,
+                        0f, 0f,
                         textureW, textureH,
                         textureW, textureH
                 );

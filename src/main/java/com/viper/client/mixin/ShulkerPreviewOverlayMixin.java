@@ -38,7 +38,7 @@ public abstract class ShulkerPreviewOverlayMixin {
             if (items.isEmpty()) return;
 
             MinecraftClient mc = MinecraftClient.getInstance();
-            TextRenderer textRenderer = mc.textRenderer;
+            TextRenderer tr = mc.textRenderer;
             int accent = Config.getAccent();
 
             int cols = 9, rows = 3, slot = 18, padding = 6, titleH = 12;
@@ -47,10 +47,10 @@ public abstract class ShulkerPreviewOverlayMixin {
 
             int px = mouseX + 12;
             int py = mouseY - 12;
-            int screenW = context.getScaledWindowWidth();
-            int screenH = context.getScaledWindowHeight();
-            if (px + panelW > screenW) px = mouseX - panelW - 12;
-            if (py + panelH > screenH) py = screenH - panelH - 4;
+            int sw = context.getScaledWindowWidth();
+            int sh = context.getScaledWindowHeight();
+            if (px + panelW > sw) px = mouseX - panelW - 12;
+            if (py + panelH > sh) py = sh - panelH - 4;
             if (py < 4) py = 4;
             if (px < 4) px = 4;
 
@@ -60,7 +60,7 @@ public abstract class ShulkerPreviewOverlayMixin {
             context.fill(px, py, px + 1, py + panelH, accent);
             context.fill(px + panelW - 1, py, px + panelW, py + panelH, accent);
 
-            context.drawText(textRenderer, "§lSHULKER", px + padding, py + 3, accent, false);
+            context.drawText(tr, "§lSHULKER", px + padding, py + 3, accent, false);
 
             int gridX = px + padding;
             int gridY = py + titleH + padding;
@@ -76,9 +76,9 @@ public abstract class ShulkerPreviewOverlayMixin {
                 int sx = gridX + col * slot + 1, sy = gridY + row * slot + 1;
                 ItemStack item = items.get(i);
                 context.drawItem(item, sx, sy);
-                context.drawStackOverlay(textRenderer, item, sx, sy);
+                context.drawStackOverlay(tr, item, sx, sy);
             }
-            context.drawText(textRenderer, "§7" + items.size() + " items", px + padding, py + panelH - 10, 0xFF8A8A9C, false);
+            context.drawText(tr, "§7" + items.size() + " items", px + padding, py + panelH - 10, 0xFF8A8A9C, false);
         } catch (Throwable ignored) {}
     }
 }
