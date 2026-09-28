@@ -66,7 +66,6 @@ public class ViperModsScreen extends Screen {
     private boolean searchFocused = false;
     private int searchX, searchY, searchW, searchH;
 
-    // macro editing state
     private int editingMacroIndex = -1;
     private String macroEditBuffer = "";
 
@@ -143,11 +142,10 @@ public class ViperModsScreen extends Screen {
         pvp.add(new ModCard("nofog", "NO FOG", "Remove fog (F9)", () -> Config.noFog, v -> Config.noFog = v));
         pvp.add(new ModCard("fpsboost", "FPS BOOST", "Aggressive settings for max FPS", () -> Config.fpsBoost, v -> applyFpsBoost(v)));
         pvp.add(new ModCard("chattimestamps", "CHAT TIMESTAMPS", "Show time in chat", () -> Config.chatTimestamps, v -> Config.chatTimestamps = v));
+        pvp.add(new ModCard("crystaloptimizer", "CRYSTAL OPTIMIZER", "Fast crystal place (no render delay)", () -> Config.crystalOptimizer, v -> Config.crystalOptimizer = v));
         TAB_MODULES.add(pvp);
 
-        // ═══ MACROS tab (index 2) — wird dynamisch gerendert
         TAB_MODULES.add(new ArrayList<>());
-
         TAB_MODULES.add(new ArrayList<>());
         TAB_MODULES.add(new ArrayList<>());
     }
@@ -433,8 +431,6 @@ public class ViperModsScreen extends Screen {
         }
     }
 
-    /* ═══ MACROS TAB ═══ */
-
     private void renderMacrosTab(DrawContext context, int mouseX, int mouseY, int accent) {
         int x0 = panelX + SIDEBAR_W + 16;
         int y0 = panelY + TAB_H + 30;
@@ -452,7 +448,6 @@ public class ViperModsScreen extends Screen {
             String text = Config.macroTexts[i];
             if (text == null) text = "";
 
-            // row bg
             boolean rowHover = mouseX >= x0 && mouseX <= x0 + w && mouseY >= y && mouseY <= y + rowH;
             context.fill(x0, y, x0 + w, y + rowH, enabled ? 0xFF1c1228 : 0xFF14141c);
             if (enabled) context.fill(x0, y, x0 + 3, y + rowH, accent);
@@ -461,10 +456,8 @@ public class ViperModsScreen extends Screen {
                 context.fill(x0, y + rowH - 1, x0 + w, y + rowH, accent);
             }
 
-            // number
             context.drawText(this.textRenderer, "§7#" + (i + 1), x0 + 10, y + 6, COLOR_MUTED, false);
 
-            // toggle (klein, links unter der nummer)
             int tX = x0 + 10;
             int tY = y + 22;
             int tW = 14, tH = 14;
@@ -475,7 +468,6 @@ public class ViperModsScreen extends Screen {
                 context.fill(tX - 1, tY + tH, tX + tW + 1, tY + tH + 1, 0x88FFFFFF);
             }
 
-            // text input box
             int inputX = x0 + 34;
             int inputY = y + 10;
             int inputW = w - 34 - 90 - 16;
@@ -499,14 +491,12 @@ public class ViperModsScreen extends Screen {
             }
             context.drawText(this.textRenderer, display, inputX + 5, inputY + 5, COLOR_WHITE, false);
 
-            // clear-hint button (rechts im input)
             if (!text.isEmpty() && !editing) {
                 String hint = "§7×";
                 int hintW = this.textRenderer.getWidth("×");
                 context.drawText(this.textRenderer, hint, inputX + inputW - hintW - 4, inputY + 5, COLOR_MUTED, false);
             }
 
-            // keybind-slot (rechts)
             int kbX = x0 + w - 90 - 6;
             int kbY = y + 10;
             int kbW = 90;
@@ -527,7 +517,6 @@ public class ViperModsScreen extends Screen {
                 context.drawText(this.textRenderer, "§7key: §f" + keyName, kbX + 6, kbY + 5, COLOR_WHITE, false);
             }
 
-            // hint text unten
             context.drawText(this.textRenderer, "§8Sends the message to chat when pressed", x0 + 34, y + 32, 0x66FFFFFF, false);
         }
     }
@@ -941,7 +930,6 @@ public class ViperModsScreen extends Screen {
         int my = (int) click.y();
         int accent = Config.getAccent();
 
-        // macro-tab: wenn im edit-mode → click außerhalb beendet edit
         if (editingMacroIndex >= 0) {
             int x0 = panelX + SIDEBAR_W + 16;
             int y0 = panelY + TAB_H + 30;
@@ -958,7 +946,6 @@ public class ViperModsScreen extends Screen {
                     return true;
                 }
             }
-            // außerhalb → speichern
             Config.macroTexts[editingMacroIndex] = macroEditBuffer;
             Config.save();
             editingMacroIndex = -1;
@@ -1003,7 +990,6 @@ public class ViperModsScreen extends Screen {
             tx += tw + 4;
         }
 
-        // MACROS tab handling
         if (activeTab == 2) {
             int x0 = panelX + SIDEBAR_W + 16;
             int y0 = panelY + TAB_H + 30;
@@ -1013,7 +999,6 @@ public class ViperModsScreen extends Screen {
             for (int i = 0; i < 6; i++) {
                 int y = y0 + i * (rowH + gap2);
 
-                // toggle
                 int tX = x0 + 10;
                 int tY = y + 22;
                 int tW = 14, tH = 14;
@@ -1023,7 +1008,6 @@ public class ViperModsScreen extends Screen {
                     return true;
                 }
 
-                // input-box → edit-mode
                 int inputX = x0 + 34;
                 int inputY = y + 10;
                 int inputW = w - 34 - 90 - 16;
@@ -1034,14 +1018,12 @@ public class ViperModsScreen extends Screen {
                     return true;
                 }
 
-                // clear button (× rechts im input)
                 if (mx >= inputX + inputW - 14 && mx <= inputX + inputW - 2 && my >= inputY && my <= inputY + inputH) {
                     Config.macroTexts[i] = "";
                     Config.save();
                     return true;
                 }
 
-                // keybind-slot
                 int kbX = x0 + w - 90 - 6;
                 int kbY = y + 10;
                 int kbW = 90;

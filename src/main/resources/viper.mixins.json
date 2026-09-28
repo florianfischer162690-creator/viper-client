@@ -5,7 +5,8 @@
   "client": [
     "InGameHudMixin",
     "FoodHoverMixin",
-    "ChatHudMixin"
+    "ChatHudMixin",
+    "CrystalOptimizerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
