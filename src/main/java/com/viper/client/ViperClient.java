@@ -40,6 +40,10 @@ public class ViperClient implements ClientModInitializer {
     private static final Map<String, Boolean> keyPressedState = new HashMap<>();
     private static boolean zoomed = false;
 
+    // chat-macro key-pressed tracking
+    private static final boolean[] macroPressedState = new boolean[6];
+    private static final long[] macroLastSend = new long[6];
+
     @Override
     public void onInitializeClient() {
         LOGGER.info("[Viper V1] initializing...");
@@ -130,7 +134,7 @@ public class ViperClient implements ClientModInitializer {
             while (toggleFullbrightKey.wasPressed()) {
                 Config.fullbright = !Config.fullbright;
                 Config.save();
-                client.options.getGamma().setValue(Config.fullbright ? 10.0 : 1.0);
+                client.options.getGamma().setValue(Config.fullbright ? 1.0 : 0.5);
                 if (client.player != null) client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fFullbright " + (Config.fullbright ? "§aon" : "§coff")), true);
             }
 
@@ -167,6 +171,22 @@ public class ViperClient implements ClientModInitializer {
                         }
                         keyPressedState.put(id, isDown);
                     }
+
+                    // ═══ CHAT MACROS ═══
+                    for (int i = 0; i < 6; i++) {
+                        int key = Config.getKeybind("macro" + (i + 1));
+                        if (key <= 0) { macroPressedState[i] = false; continue; }
+                        boolean isDown = GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS;
+                        if (isDown && !macroPressedState[i]) {
+                            // 250ms cooldown damit nicht spammt
+                            long now = System.currentTimeMillis();
+                            if (now - macroLastSend[i] > 250) {
+                                sendMacro(client, i);
+                                macroLastSend[i] = now;
+                            }
+                        }
+                        macroPressedState[i] = isDown;
+                    }
                 }
             } catch (Throwable ignored) {}
 
@@ -192,16 +212,24 @@ public class ViperClient implements ClientModInitializer {
                 }
             } catch (Throwable ignored) {}
 
-            if (Config.fullbright && client.options.getGamma().getValue() < 10.0) {
-                client.options.getGamma().setValue(10.0);
-            }
-
             if (client.player != null && client.currentScreen == null) {
                 if (Config.toggleSprint) client.options.sprintKey.setPressed(true);
             }
         });
 
         LOGGER.info("[Viper V1] ready.");
+    }
+
+    private static void sendMacro(MinecraftClient client, int index) {
+        try {
+            if (client.player == null) return;
+            if (index < 0 || index >= 6) return;
+            if (!Config.macroEnabled[index]) return;
+            String text = Config.macroTexts[index];
+            if (text == null || text.isEmpty()) return;
+            if (client.player.networkHandler == null) return;
+            client.player.networkHandler.sendChatMessage(text);
+        } catch (Throwable ignored) {}
     }
 
     private static void toggleModule(String id) {
@@ -227,14 +255,13 @@ public class ViperClient implements ClientModInitializer {
             case "targetindicator": Config.showTargetIndicator = !Config.showTargetIndicator; break;
             case "healthindicator": Config.showHealthIndicator = !Config.showHealthIndicator; break;
             case "hitmarker": Config.showHitMarker = !Config.showHitMarker; break;
-            case "totempop": Config.showTotemPop = !Config.showTotemPop; break;
             case "appleskin": Config.showAppleskin = !Config.showAppleskin; break;
             case "shulkerpreview": Config.showShulkerPreview = !Config.showShulkerPreview; break;
             case "zoom": Config.zoomEnabled = !Config.zoomEnabled; break;
             case "fullbright":
                 Config.fullbright = !Config.fullbright;
                 MinecraftClient mc = MinecraftClient.getInstance();
-                if (mc != null && mc.options != null) mc.options.getGamma().setValue(Config.fullbright ? 10.0 : 1.0);
+                if (mc != null && mc.options != null) mc.options.getGamma().setValue(Config.fullbright ? 1.0 : 0.5);
                 break;
             case "nofog": Config.noFog = !Config.noFog; break;
             case "fpsboost": Config.fpsBoost = !Config.fpsBoost; break;

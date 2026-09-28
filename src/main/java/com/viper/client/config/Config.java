@@ -70,10 +70,6 @@ public class Config {
     // CHAT
     public static boolean chatTimestamps = true;
 
-    // TOTEM POP COUNTER
-    public static boolean showTotemPop = true;
-    public static boolean totemPopAnnounce = true;
-
     // APPLESKIN
     public static boolean showAppleskin = true;
 
@@ -86,6 +82,10 @@ public class Config {
     // TITLE SYSTEM
     public static boolean showTitle = true;
     public static String currentTitle = "viper";
+
+    // CHAT MACROS
+    public static String[] macroTexts = new String[]{"", "", "", "", "", ""};
+    public static boolean[] macroEnabled = new boolean[]{true, true, true, true, true, true};
 
     // KEYBINDS
     public static Map<String, Integer> keybinds = new HashMap<>();
@@ -267,13 +267,13 @@ public class Config {
         zoomFov = d.zoomFov;
         defaultFov = d.defaultFov;
         chatTimestamps = d.chatTimestamps;
-        showTotemPop = d.showTotemPop;
-        totemPopAnnounce = d.totemPopAnnounce;
         showAppleskin = d.showAppleskin;
         showShulkerPreview = d.showShulkerPreview;
         showInventoryHud = d.showInventoryHud;
         showTitle = d.showTitle;
         currentTitle = d.currentTitle != null ? d.currentTitle : "viper";
+        macroTexts = d.macroTexts != null && d.macroTexts.length == 6 ? d.macroTexts : new String[]{"", "", "", "", "", ""};
+        macroEnabled = d.macroEnabled != null && d.macroEnabled.length == 6 ? d.macroEnabled : new boolean[]{true, true, true, true, true, true};
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -323,13 +323,13 @@ public class Config {
         d.zoomFov = zoomFov;
         d.defaultFov = defaultFov;
         d.chatTimestamps = chatTimestamps;
-        d.showTotemPop = showTotemPop;
-        d.totemPopAnnounce = totemPopAnnounce;
         d.showAppleskin = showAppleskin;
         d.showShulkerPreview = showShulkerPreview;
         d.showInventoryHud = showInventoryHud;
         d.showTitle = showTitle;
         d.currentTitle = currentTitle;
+        d.macroTexts = macroTexts;
+        d.macroEnabled = macroEnabled;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -379,13 +379,13 @@ public class Config {
         int zoomFov = 30;
         int defaultFov = 70;
         boolean chatTimestamps = true;
-        boolean showTotemPop = true;
-        boolean totemPopAnnounce = true;
         boolean showAppleskin = true;
         boolean showShulkerPreview = true;
         boolean showInventoryHud = true;
         boolean showTitle = true;
         String currentTitle = "viper";
+        String[] macroTexts = new String[]{"", "", "", "", "", ""};
+        boolean[] macroEnabled = new boolean[]{true, true, true, true, true, true};
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;

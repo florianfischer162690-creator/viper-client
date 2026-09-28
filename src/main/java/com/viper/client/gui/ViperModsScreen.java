@@ -31,7 +31,7 @@ public class ViperModsScreen extends Screen {
 
     private int panelX, panelY, panelW, panelH;
     private int activeTab = 0;
-    private final String[] TABS = {"HUD", "PVP", "THEME", "CONFIG"};
+    private final String[] TABS = {"HUD", "PVP", "MACROS", "THEME", "CONFIG"};
 
     private final List<List<ModCard>> TAB_MODULES = new ArrayList<>();
     private static final String[] SIDEBAR_LABELS = {"COSMETICS", "SKINS", "EMOTES", "FRIENDS"};
@@ -65,6 +65,10 @@ public class ViperModsScreen extends Screen {
     private String searchQuery = "";
     private boolean searchFocused = false;
     private int searchX, searchY, searchW, searchH;
+
+    // macro editing state
+    private int editingMacroIndex = -1;
+    private String macroEditBuffer = "";
 
     public ViperModsScreen() { super(Text.literal("Viper V1 — Mods")); }
 
@@ -131,16 +135,18 @@ public class ViperModsScreen extends Screen {
         pvp.add(titleCard);
 
         pvp.add(new ModCard("appleskin", "APPLESKIN", "Food hover info", () -> Config.showAppleskin, v -> Config.showAppleskin = v));
-        pvp.add(new ModCard("shulkerpreview", "SHULKER PREVIEW", "Show shulker contents", () -> Config.showShulkerPreview, v -> Config.showShulkerPreview = v));
         pvp.add(new ModCard("fullbright", "FULLBRIGHT", "Night vision (F8)", () -> Config.fullbright, v -> {
             Config.fullbright = v;
             MinecraftClient mc = MinecraftClient.getInstance();
-            if (mc != null && mc.options != null) mc.options.getGamma().setValue(v ? 10.0 : 1.0);
+            if (mc != null && mc.options != null) mc.options.getGamma().setValue(v ? 1.0 : 0.5);
         }));
         pvp.add(new ModCard("nofog", "NO FOG", "Remove fog (F9)", () -> Config.noFog, v -> Config.noFog = v));
         pvp.add(new ModCard("fpsboost", "FPS BOOST", "Aggressive settings for max FPS", () -> Config.fpsBoost, v -> applyFpsBoost(v)));
         pvp.add(new ModCard("chattimestamps", "CHAT TIMESTAMPS", "Show time in chat", () -> Config.chatTimestamps, v -> Config.chatTimestamps = v));
         TAB_MODULES.add(pvp);
+
+        // ═══ MACROS tab (index 2) — wird dynamisch gerendert
+        TAB_MODULES.add(new ArrayList<>());
 
         TAB_MODULES.add(new ArrayList<>());
         TAB_MODULES.add(new ArrayList<>());
@@ -256,8 +262,9 @@ public class ViperModsScreen extends Screen {
 
         context.fill(panelX + SIDEBAR_W + 1, panelY + TAB_H + 18, panelX + panelW, panelY + TAB_H + 19, 0xFF2a1a3a);
 
-        if (activeTab == 2) renderThemeTab(context, mouseX, mouseY);
-        else if (activeTab == 3) renderConfigTab(context, mouseX, mouseY, accent);
+        if (activeTab == 2) renderMacrosTab(context, mouseX, mouseY, accent);
+        else if (activeTab == 3) renderThemeTab(context, mouseX, mouseY);
+        else if (activeTab == 4) renderConfigTab(context, mouseX, mouseY, accent);
         else if (activeTab < TAB_MODULES.size()) renderCardsTab(context, mouseX, mouseY, accent);
 
         if (awaitingKeybindId != null) {
@@ -424,6 +431,174 @@ public class ViperModsScreen extends Screen {
             int thumbY = barY + (int) ((barH - thumbH) * ((float) scrollOffset / maxScroll));
             context.fill(barX, thumbY, barX + 4, thumbY + thumbH, accent);
         }
+    }
+
+    /* ═══ MACROS TAB ═══ */
+
+    private void renderMacrosTab(DrawContext context, int mouseX, int mouseY, int accent) {
+        int x0 = panelX + SIDEBAR_W + 16;
+        int y0 = panelY + TAB_H + 30;
+        int w = panelX + panelW - x0 - 16;
+        int rowH = 56;
+        int gap = 6;
+
+        context.drawText(this.textRenderer, "§lCHAT MACROS", x0, y0 - 8, COLOR_WHITE, false);
+        context.drawText(this.textRenderer, "§7Click text to edit · click key to bind", x0 + 130, y0 - 8, COLOR_MUTED, false);
+
+        for (int i = 0; i < 6; i++) {
+            int y = y0 + i * (rowH + gap);
+            boolean enabled = Config.macroEnabled[i];
+            boolean editing = (editingMacroIndex == i);
+            String text = Config.macroTexts[i];
+            if (text == null) text = "";
+
+            // row bg
+            boolean rowHover = mouseX >= x0 && mouseX <= x0 + w && mouseY >= y && mouseY <= y + rowH;
+            context.fill(x0, y, x0 + w, y + rowH, enabled ? 0xFF1c1228 : 0xFF14141c);
+            if (enabled) context.fill(x0, y, x0 + 3, y + rowH, accent);
+            if (rowHover && !editing) {
+                context.fill(x0, y, x0 + w, y + 1, accent);
+                context.fill(x0, y + rowH - 1, x0 + w, y + rowH, accent);
+            }
+
+            // number
+            context.drawText(this.textRenderer, "§7#" + (i + 1), x0 + 10, y + 6, COLOR_MUTED, false);
+
+            // toggle (klein, links unter der nummer)
+            int tX = x0 + 10;
+            int tY = y + 22;
+            int tW = 14, tH = 14;
+            boolean tHover = mouseX >= tX && mouseX <= tX + tW && mouseY >= tY && mouseY <= tY + tH;
+            context.fill(tX, tY, tX + tW, tY + tH, enabled ? accent : COLOR_TOGGLE_OFF);
+            if (tHover) {
+                context.fill(tX - 1, tY - 1, tX + tW + 1, tY, 0x88FFFFFF);
+                context.fill(tX - 1, tY + tH, tX + tW + 1, tY + tH + 1, 0x88FFFFFF);
+            }
+
+            // text input box
+            int inputX = x0 + 34;
+            int inputY = y + 10;
+            int inputW = w - 34 - 90 - 16;
+            int inputH = 18;
+            boolean inputHover = mouseX >= inputX && mouseX <= inputX + inputW && mouseY >= inputY && mouseY <= inputY + inputH;
+
+            int inputBorder = editing ? accent : (inputHover ? accent : COLOR_KEYBORDER);
+            context.fill(inputX, inputY, inputX + inputW, inputY + inputH, COLOR_KEYBG);
+            context.fill(inputX, inputY, inputX + inputW, inputY + 1, inputBorder);
+            context.fill(inputX, inputY + inputH - 1, inputX + inputW, inputY + inputH, inputBorder);
+            context.fill(inputX, inputY, inputX + 1, inputY + inputH, inputBorder);
+            context.fill(inputX + inputW - 1, inputY, inputX + inputW, inputY + inputH, inputBorder);
+
+            String display;
+            if (editing) {
+                display = "§f" + macroEditBuffer + ((System.currentTimeMillis() / 500) % 2 == 0 ? "§f_" : "");
+            } else if (text.isEmpty()) {
+                display = "§7click to type...";
+            } else {
+                display = "§f" + text;
+            }
+            context.drawText(this.textRenderer, display, inputX + 5, inputY + 5, COLOR_WHITE, false);
+
+            // clear-hint button (rechts im input)
+            if (!text.isEmpty() && !editing) {
+                String hint = "§7×";
+                int hintW = this.textRenderer.getWidth("×");
+                context.drawText(this.textRenderer, hint, inputX + inputW - hintW - 4, inputY + 5, COLOR_MUTED, false);
+            }
+
+            // keybind-slot (rechts)
+            int kbX = x0 + w - 90 - 6;
+            int kbY = y + 10;
+            int kbW = 90;
+            int kbH = 18;
+            int key = Config.getKeybind("macro" + (i + 1));
+            String keyName = key > 0 ? getKeyName(key) : "NONE";
+            boolean isSetting = ("macro" + (i + 1)).equals(awaitingKeybindId);
+            boolean kbHover = mouseX >= kbX && mouseX <= kbX + kbW && mouseY >= kbY && mouseY <= kbY + kbH;
+            context.fill(kbX, kbY, kbX + kbW, kbY + kbH, isSetting ? 0xFF3a1a2a : COLOR_KEYBG);
+            int kbBorder = isSetting ? accent : (kbHover ? accent : COLOR_KEYBORDER);
+            context.fill(kbX, kbY, kbX + kbW, kbY + 1, kbBorder);
+            context.fill(kbX, kbY + kbH - 1, kbX + kbW, kbY + kbH, kbBorder);
+            context.fill(kbX, kbY, kbX + 1, kbY + kbH, kbBorder);
+            context.fill(kbX + kbW - 1, kbY, kbX + kbW, kbY + kbH, kbBorder);
+            if (isSetting) {
+                context.drawCenteredTextWithShadow(this.textRenderer, "§ePRESS...", kbX + kbW / 2, kbY + 5, 0xFFFFC107);
+            } else {
+                context.drawText(this.textRenderer, "§7key: §f" + keyName, kbX + 6, kbY + 5, COLOR_WHITE, false);
+            }
+
+            // hint text unten
+            context.drawText(this.textRenderer, "§8Sends the message to chat when pressed", x0 + 34, y + 32, 0x66FFFFFF, false);
+        }
+    }
+
+    private void renderThemeTab(DrawContext context, int mouseX, int mouseY) {
+        int accent = Config.getAccent();
+        int x = panelX + SIDEBAR_W + 30;
+        int y = panelY + TAB_H + 60;
+        int swatchSize = 60;
+        int gap = 12;
+
+        context.drawText(this.textRenderer, "§lSELECT THEME", x, y - 30, COLOR_WHITE, false);
+        int perRow = 4;
+        for (int i = 0; i < THEME_IDS.length; i++) {
+            int col = i % perRow;
+            int row = i / perRow;
+            int sx = x + col * (swatchSize + gap);
+            int sy = y + row * (swatchSize + 22 + gap);
+            boolean hovered = mouseX >= sx && mouseX <= sx + swatchSize && mouseY >= sy && mouseY <= sy + swatchSize;
+            boolean active = Config.theme.equals(THEME_IDS[i]);
+            context.fill(sx, sy, sx + swatchSize, sy + swatchSize, THEME_COLOR[i]);
+            if (active) {
+                context.fill(sx - 3, sy - 3, sx + swatchSize + 3, sy - 1, 0xFFFFFFFF);
+                context.fill(sx - 3, sy + swatchSize + 1, sx + swatchSize + 3, sy + swatchSize + 3, 0xFFFFFFFF);
+                context.fill(sx - 3, sy - 1, sx - 1, sy + swatchSize + 1, 0xFFFFFFFF);
+                context.fill(sx + swatchSize + 1, sy - 1, sx + swatchSize + 3, sy + swatchSize + 1, 0xFFFFFFFF);
+            } else if (hovered) {
+                context.fill(sx - 2, sy - 2, sx + swatchSize + 2, sy, 0xAAFFFFFF);
+                context.fill(sx - 2, sy + swatchSize, sx + swatchSize + 2, sy + swatchSize + 2, 0xAAFFFFFF);
+                context.fill(sx - 2, sy, sx, sy + swatchSize, 0xAAFFFFFF);
+                context.fill(sx + swatchSize, sy, sx + swatchSize + 2, sy + swatchSize, 0xAAFFFFFF);
+            }
+            context.drawCenteredTextWithShadow(this.textRenderer, THEME_NAMES[i], sx + swatchSize / 2, sy + swatchSize + 5, active ? accent : COLOR_MUTED);
+        }
+    }
+
+    private void renderConfigTab(DrawContext context, int mouseX, int mouseY, int accent) {
+        int x = panelX + SIDEBAR_W + 30;
+        int y = panelY + TAB_H + 50;
+
+        context.drawText(this.textRenderer, "§lCONFIG SHARE", x, y - 30, COLOR_WHITE, false);
+        context.drawText(this.textRenderer, "§7Share your settings with friends", x, y - 12, COLOR_MUTED, false);
+
+        int btnW = 240, btnH = 36;
+
+        int shareY = y + 10;
+        boolean shareHover = mouseX >= x && mouseX <= x + btnW && mouseY >= shareY && mouseY <= shareY + btnH;
+        context.fill(x, shareY, x + btnW, shareY + btnH, shareHover ? Config.getAccentBg() : COLOR_PANEL);
+        int borderShare = shareHover ? accent : 0xFF2a1c3d;
+        context.fill(x, shareY, x + btnW, shareY + 1, borderShare);
+        context.fill(x, shareY + btnH - 1, x + btnW, shareY + btnH, borderShare);
+        context.fill(x, shareY, x + 1, shareY + btnH, borderShare);
+        context.fill(x + btnW - 1, shareY, x + btnW, shareY + btnH, borderShare);
+        context.drawCenteredTextWithShadow(this.textRenderer, "§l📤 EXPORT CONFIG", x + btnW / 2, shareY + 12, accent);
+        context.drawText(this.textRenderer, "§7Copies your config string to clipboard", x, shareY + btnH + 6, COLOR_MUTED, false);
+
+        int importY = shareY + btnH + 30;
+        boolean importHover = mouseX >= x && mouseX <= x + btnW && mouseY >= importY && mouseY <= importY + btnH;
+        context.fill(x, importY, x + btnW, importY + btnH, importHover ? Config.getAccentBg() : COLOR_PANEL);
+        int borderImport = importHover ? accent : 0xFF2a1c3d;
+        context.fill(x, importY, x + btnW, importY + 1, borderImport);
+        context.fill(x, importY + btnH - 1, x + btnW, importY + btnH, borderImport);
+        context.fill(x, importY, x + 1, importY + btnH, borderImport);
+        context.fill(x + btnW - 1, importY, x + btnW, importY + btnH, borderImport);
+        context.drawCenteredTextWithShadow(this.textRenderer, "§l📥 IMPORT FROM CLIPBOARD", x + btnW / 2, importY + 12, accent);
+        context.drawText(this.textRenderer, "§7Reads config string from clipboard", x, importY + btnH + 6, COLOR_MUTED, false);
+
+        context.drawText(this.textRenderer, "§7How it works:", x, importY + btnH + 40, COLOR_WHITE, false);
+        context.drawText(this.textRenderer, "§71. Click EXPORT → config code is copied", x, importY + btnH + 56, COLOR_MUTED, false);
+        context.drawText(this.textRenderer, "§72. Send the code to a friend", x, importY + btnH + 70, COLOR_MUTED, false);
+        context.drawText(this.textRenderer, "§73. Friend copies it + clicks IMPORT", x, importY + btnH + 84, COLOR_MUTED, false);
     }
 
     private void drawCardFull(DrawContext context, ModCard card, int x, int y, int w, int h, boolean hovered, int mouseX, int mouseY, int accent) {
@@ -657,75 +832,6 @@ public class ViperModsScreen extends Screen {
         }
     }
 
-    private void renderThemeTab(DrawContext context, int mouseX, int mouseY) {
-        int accent = Config.getAccent();
-        int x = panelX + SIDEBAR_W + 30;
-        int y = panelY + TAB_H + 60;
-        int swatchSize = 60;
-        int gap = 12;
-
-        context.drawText(this.textRenderer, "§lSELECT THEME", x, y - 30, COLOR_WHITE, false);
-        int perRow = 4;
-        for (int i = 0; i < THEME_IDS.length; i++) {
-            int col = i % perRow;
-            int row = i / perRow;
-            int sx = x + col * (swatchSize + gap);
-            int sy = y + row * (swatchSize + 22 + gap);
-            boolean hovered = mouseX >= sx && mouseX <= sx + swatchSize && mouseY >= sy && mouseY <= sy + swatchSize;
-            boolean active = Config.theme.equals(THEME_IDS[i]);
-            context.fill(sx, sy, sx + swatchSize, sy + swatchSize, THEME_COLOR[i]);
-            if (active) {
-                context.fill(sx - 3, sy - 3, sx + swatchSize + 3, sy - 1, 0xFFFFFFFF);
-                context.fill(sx - 3, sy + swatchSize + 1, sx + swatchSize + 3, sy + swatchSize + 3, 0xFFFFFFFF);
-                context.fill(sx - 3, sy - 1, sx - 1, sy + swatchSize + 1, 0xFFFFFFFF);
-                context.fill(sx + swatchSize + 1, sy - 1, sx + swatchSize + 3, sy + swatchSize + 1, 0xFFFFFFFF);
-            } else if (hovered) {
-                context.fill(sx - 2, sy - 2, sx + swatchSize + 2, sy, 0xAAFFFFFF);
-                context.fill(sx - 2, sy + swatchSize, sx + swatchSize + 2, sy + swatchSize + 2, 0xAAFFFFFF);
-                context.fill(sx - 2, sy, sx, sy + swatchSize, 0xAAFFFFFF);
-                context.fill(sx + swatchSize, sy, sx + swatchSize + 2, sy + swatchSize, 0xAAFFFFFF);
-            }
-            context.drawCenteredTextWithShadow(this.textRenderer, THEME_NAMES[i], sx + swatchSize / 2, sy + swatchSize + 5, active ? accent : COLOR_MUTED);
-        }
-    }
-
-    private void renderConfigTab(DrawContext context, int mouseX, int mouseY, int accent) {
-        int x = panelX + SIDEBAR_W + 30;
-        int y = panelY + TAB_H + 50;
-
-        context.drawText(this.textRenderer, "§lCONFIG SHARE", x, y - 30, COLOR_WHITE, false);
-        context.drawText(this.textRenderer, "§7Share your settings with friends", x, y - 12, COLOR_MUTED, false);
-
-        int btnW = 240, btnH = 36;
-
-        int shareY = y + 10;
-        boolean shareHover = mouseX >= x && mouseX <= x + btnW && mouseY >= shareY && mouseY <= shareY + btnH;
-        context.fill(x, shareY, x + btnW, shareY + btnH, shareHover ? Config.getAccentBg() : COLOR_PANEL);
-        int borderShare = shareHover ? accent : 0xFF2a1c3d;
-        context.fill(x, shareY, x + btnW, shareY + 1, borderShare);
-        context.fill(x, shareY + btnH - 1, x + btnW, shareY + btnH, borderShare);
-        context.fill(x, shareY, x + 1, shareY + btnH, borderShare);
-        context.fill(x + btnW - 1, shareY, x + btnW, shareY + btnH, borderShare);
-        context.drawCenteredTextWithShadow(this.textRenderer, "§l📤 EXPORT CONFIG", x + btnW / 2, shareY + 12, accent);
-        context.drawText(this.textRenderer, "§7Copies your config string to clipboard", x, shareY + btnH + 6, COLOR_MUTED, false);
-
-        int importY = shareY + btnH + 30;
-        boolean importHover = mouseX >= x && mouseX <= x + btnW && mouseY >= importY && mouseY <= importY + btnH;
-        context.fill(x, importY, x + btnW, importY + btnH, importHover ? Config.getAccentBg() : COLOR_PANEL);
-        int borderImport = importHover ? accent : 0xFF2a1c3d;
-        context.fill(x, importY, x + btnW, importY + 1, borderImport);
-        context.fill(x, importY + btnH - 1, x + btnW, importY + btnH, borderImport);
-        context.fill(x, importY, x + 1, importY + btnH, borderImport);
-        context.fill(x + btnW - 1, importY, x + btnW, importY + btnH, borderImport);
-        context.drawCenteredTextWithShadow(this.textRenderer, "§l📥 IMPORT FROM CLIPBOARD", x + btnW / 2, importY + 12, accent);
-        context.drawText(this.textRenderer, "§7Reads config string from clipboard", x, importY + btnH + 6, COLOR_MUTED, false);
-
-        context.drawText(this.textRenderer, "§7How it works:", x, importY + btnH + 40, COLOR_WHITE, false);
-        context.drawText(this.textRenderer, "§71. Click EXPORT → config code is copied", x, importY + btnH + 56, COLOR_MUTED, false);
-        context.drawText(this.textRenderer, "§72. Send the code to a friend", x, importY + btnH + 70, COLOR_MUTED, false);
-        context.drawText(this.textRenderer, "§73. Friend copies it + clicks IMPORT", x, importY + btnH + 84, COLOR_MUTED, false);
-    }
-
     private String getKeyName(int key) {
         if (key <= 0) return "NONE";
         switch (key) {
@@ -753,6 +859,13 @@ public class ViperModsScreen extends Screen {
 
     @Override
     public boolean charTyped(CharInput input) {
+        if (editingMacroIndex >= 0) {
+            int cp = input.codepoint();
+            if (cp >= 32 && macroEditBuffer.length() < 80) {
+                macroEditBuffer += (char) cp;
+            }
+            return true;
+        }
         if (searchFocused && awaitingKeybindId == null) {
             int cp = input.codepoint();
             if (cp >= 32) {
@@ -765,6 +878,28 @@ public class ViperModsScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyInput input) {
+        if (editingMacroIndex >= 0) {
+            int keyCode = input.key();
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                Config.macroTexts[editingMacroIndex] = macroEditBuffer;
+                Config.save();
+                editingMacroIndex = -1;
+                macroEditBuffer = "";
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                editingMacroIndex = -1;
+                macroEditBuffer = "";
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+                if (macroEditBuffer.length() > 0) {
+                    macroEditBuffer = macroEditBuffer.substring(0, macroEditBuffer.length() - 1);
+                }
+                return true;
+            }
+            return true;
+        }
         if (awaitingKeybindId != null) {
             int keyCode = input.key();
             if (keyCode == GLFW.GLFW_KEY_ESCAPE) { awaitingKeybindId = null; return true; }
@@ -806,6 +941,30 @@ public class ViperModsScreen extends Screen {
         int my = (int) click.y();
         int accent = Config.getAccent();
 
+        // macro-tab: wenn im edit-mode → click außerhalb beendet edit
+        if (editingMacroIndex >= 0) {
+            int x0 = panelX + SIDEBAR_W + 16;
+            int y0 = panelY + TAB_H + 30;
+            int w = panelX + panelW - x0 - 16;
+            int rowH = 56;
+            int gap = 6;
+            for (int i = 0; i < 6; i++) {
+                int y = y0 + i * (rowH + gap);
+                int inputX = x0 + 34;
+                int inputY = y + 10;
+                int inputW = w - 34 - 90 - 16;
+                int inputH = 18;
+                if (mx >= inputX && mx <= inputX + inputW && my >= inputY && my <= inputY + inputH && editingMacroIndex == i) {
+                    return true;
+                }
+            }
+            // außerhalb → speichern
+            Config.macroTexts[editingMacroIndex] = macroEditBuffer;
+            Config.save();
+            editingMacroIndex = -1;
+            macroEditBuffer = "";
+        }
+
         if (mx >= searchX && mx <= searchX + searchW && my >= searchY && my <= searchY + searchH) {
             searchFocused = true;
             return true;
@@ -844,7 +1003,58 @@ public class ViperModsScreen extends Screen {
             tx += tw + 4;
         }
 
+        // MACROS tab handling
         if (activeTab == 2) {
+            int x0 = panelX + SIDEBAR_W + 16;
+            int y0 = panelY + TAB_H + 30;
+            int w = panelX + panelW - x0 - 16;
+            int rowH = 56;
+            int gap2 = 6;
+            for (int i = 0; i < 6; i++) {
+                int y = y0 + i * (rowH + gap2);
+
+                // toggle
+                int tX = x0 + 10;
+                int tY = y + 22;
+                int tW = 14, tH = 14;
+                if (mx >= tX && mx <= tX + tW && my >= tY && my <= tY + tH) {
+                    Config.macroEnabled[i] = !Config.macroEnabled[i];
+                    Config.save();
+                    return true;
+                }
+
+                // input-box → edit-mode
+                int inputX = x0 + 34;
+                int inputY = y + 10;
+                int inputW = w - 34 - 90 - 16;
+                int inputH = 18;
+                if (mx >= inputX && mx <= inputX + inputW && my >= inputY && my <= inputY + inputH) {
+                    editingMacroIndex = i;
+                    macroEditBuffer = Config.macroTexts[i] == null ? "" : Config.macroTexts[i];
+                    return true;
+                }
+
+                // clear button (× rechts im input)
+                if (mx >= inputX + inputW - 14 && mx <= inputX + inputW - 2 && my >= inputY && my <= inputY + inputH) {
+                    Config.macroTexts[i] = "";
+                    Config.save();
+                    return true;
+                }
+
+                // keybind-slot
+                int kbX = x0 + w - 90 - 6;
+                int kbY = y + 10;
+                int kbW = 90;
+                int kbH = 18;
+                if (mx >= kbX && mx <= kbX + kbW && my >= kbY && my <= kbY + kbH) {
+                    awaitingKeybindId = "macro" + (i + 1);
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        if (activeTab == 3) {
             int x0 = panelX + SIDEBAR_W + 30;
             int y0 = panelY + TAB_H + 60;
             int swatchSize = 60;
@@ -862,7 +1072,7 @@ public class ViperModsScreen extends Screen {
             return true;
         }
 
-        if (activeTab == 3) {
+        if (activeTab == 4) {
             int x0 = panelX + SIDEBAR_W + 30;
             int y0 = panelY + TAB_H + 60;
             int btnW = 240;
