@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -34,11 +36,38 @@ jobs:
           VERSION=$(grep '^mod_version=' gradle.properties | cut -d'=' -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Generate changelog from commits
+        id: changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="${PREV_TAG}..HEAD"
+          fi
+
+          {
+            echo "### ✨ Added"
+            git log $RANGE --pretty=format:"- %s" | grep -E "^- (feat|feature)" | sed 's/^- feat: /- /; s/^- feature: /- /' || true
+            echo ""
+            echo ""
+            echo "### 🔧 Fixed"
+            git log $RANGE --pretty=format:"- %s" | grep -E "^- fix" | sed 's/^- fix: /- /' || true
+            echo ""
+            echo ""
+            echo "### ⚙️ Changed"
+            git log $RANGE --pretty=format:"- %s" | grep -E "^- (chore|refactor|perf|docs|style)" | sed 's/^- chore: /- /; s/^- refactor: /- /; s/^- perf: /- /' || true
+            echo ""
+          } > release-notes.md
+
+          echo "--- release notes ---"
+          cat release-notes.md
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: Viper V1 v${{ steps.version.outputs.version }}
+          body_path: release-notes.md
           files: build/libs/viper-client-*.jar
-          generate_release_notes: true
           make_latest: true
