@@ -227,7 +227,7 @@ public class ViperClient implements ClientModInitializer {
             if (text == null || text.isEmpty()) return;
             if (client.player.networkHandler == null) return;
             if (text.startsWith("/")) {
-                client.player.networkHandler.sendCommand(text.substring(1));
+                client.player.networkHandler.sendChatCommand(text.substring(1));
             } else {
                 client.player.networkHandler.sendChatMessage(text);
             }
