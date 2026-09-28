@@ -16,6 +16,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.SimpleOption;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.glfw.GLFW;
@@ -29,7 +31,6 @@ public class ViperClient implements ClientModInitializer {
     public static final String MOD_ID = "viper";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    // cache der gamma-option damit mixin nicht rekursiv getGamma() ruft
     public static Object gammaOptionRef = null;
 
     private static KeyBinding toggleHudKey;
@@ -224,6 +225,29 @@ public class ViperClient implements ClientModInitializer {
             if (client.player != null && client.currentScreen == null) {
                 if (Config.toggleSprint) client.options.sprintKey.setPressed(true);
             }
+
+            // FULLBRIGHT via night-vision effect (client-side)
+            try {
+                if (client.player != null) {
+                    StatusEffectInstance existing = client.player.getStatusEffect(StatusEffects.NIGHT_VISION);
+                    if (Config.fullbright) {
+                        if (existing == null || existing.getDuration() < 200) {
+                            client.player.addStatusEffect(new StatusEffectInstance(
+                                    StatusEffects.NIGHT_VISION,
+                                    999999,
+                                    0,
+                                    false,
+                                    false,
+                                    false
+                            ));
+                        }
+                    } else {
+                        if (existing != null) {
+                            client.player.removeStatusEffect(StatusEffects.NIGHT_VISION);
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
         });
 
         LOGGER.info("[Viper V1] ready.");
@@ -271,9 +295,7 @@ public class ViperClient implements ClientModInitializer {
             case "appleskin": Config.showAppleskin = !Config.showAppleskin; break;
             case "shulkerpreview": Config.showShulkerPreview = !Config.showShulkerPreview; break;
             case "zoom": Config.zoomEnabled = !Config.zoomEnabled; break;
-            case "fullbright":
-                Config.fullbright = !Config.fullbright;
-                break;
+            case "fullbright": Config.fullbright = !Config.fullbright; break;
             case "nofog": Config.noFog = !Config.noFog; break;
             case "fpsboost": Config.fpsBoost = !Config.fpsBoost; break;
         }
