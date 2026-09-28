@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.option.SimpleOption;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3d;
@@ -27,6 +28,9 @@ import java.util.Map;
 public class ViperClient implements ClientModInitializer {
     public static final String MOD_ID = "viper";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
+    // cache der gamma-option damit mixin nicht rekursiv getGamma() ruft
+    public static Object gammaOptionRef = null;
 
     private static KeyBinding toggleHudKey;
     private static KeyBinding openMenuKey;
@@ -48,6 +52,14 @@ public class ViperClient implements ClientModInitializer {
         LOGGER.info("[Viper V1] initializing...");
 
         Config.load();
+
+        try {
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc != null && mc.options != null) {
+                gammaOptionRef = mc.options.getGamma();
+            }
+        } catch (Throwable ignored) {}
+
         HudRenderer.init();
 
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
@@ -133,7 +145,6 @@ public class ViperClient implements ClientModInitializer {
             while (toggleFullbrightKey.wasPressed()) {
                 Config.fullbright = !Config.fullbright;
                 Config.save();
-                client.options.getGamma().setValue(Config.fullbright ? 1.0 : 0.5);
                 if (client.player != null) client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fFullbright " + (Config.fullbright ? "§aon" : "§coff")), true);
             }
 
@@ -262,8 +273,6 @@ public class ViperClient implements ClientModInitializer {
             case "zoom": Config.zoomEnabled = !Config.zoomEnabled; break;
             case "fullbright":
                 Config.fullbright = !Config.fullbright;
-                MinecraftClient mc = MinecraftClient.getInstance();
-                if (mc != null && mc.options != null) mc.options.getGamma().setValue(Config.fullbright ? 1.0 : 0.5);
                 break;
             case "nofog": Config.noFog = !Config.noFog; break;
             case "fpsboost": Config.fpsBoost = !Config.fpsBoost; break;

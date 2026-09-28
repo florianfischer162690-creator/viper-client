@@ -8,7 +8,9 @@
     "ChatHudMixin",
     "CrystalOptimizerMixin",
     "CrystalHitMixin",
-    "CrystalPlaceMixin"
+    "CrystalPlaceMixin",
+    "AnchorOptimizerMixin",
+    "GammaMixin"
   ],
   "injectors": {
     "defaultRequire": 1

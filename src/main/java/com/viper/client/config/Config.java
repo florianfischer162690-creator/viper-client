@@ -90,6 +90,18 @@ public class Config {
     // CRYSTAL OPTIMIZER
     public static boolean crystalOptimizer = true;
 
+    // ANCHOR OPTIMIZER
+    public static boolean anchorOptimizer = true;
+
+    // BLOCK BREAK PROGRESS
+    public static boolean showBlockBreakProgress = true;
+
+    // SATURATION BAR
+    public static boolean showSaturationBar = true;
+
+    // ABSORPTION HEART INDICATOR
+    public static boolean showAbsorptionHearts = true;
+
     // KEYBINDS
     public static Map<String, Integer> keybinds = new HashMap<>();
 
@@ -278,6 +290,10 @@ public class Config {
         macroTexts = d.macroTexts != null && d.macroTexts.length == 6 ? d.macroTexts : new String[]{"", "", "", "", "", ""};
         macroEnabled = d.macroEnabled != null && d.macroEnabled.length == 6 ? d.macroEnabled : new boolean[]{true, true, true, true, true, true};
         crystalOptimizer = d.crystalOptimizer;
+        anchorOptimizer = d.anchorOptimizer;
+        showBlockBreakProgress = d.showBlockBreakProgress;
+        showSaturationBar = d.showSaturationBar;
+        showAbsorptionHearts = d.showAbsorptionHearts;
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -335,6 +351,10 @@ public class Config {
         d.macroTexts = macroTexts;
         d.macroEnabled = macroEnabled;
         d.crystalOptimizer = crystalOptimizer;
+        d.anchorOptimizer = anchorOptimizer;
+        d.showBlockBreakProgress = showBlockBreakProgress;
+        d.showSaturationBar = showSaturationBar;
+        d.showAbsorptionHearts = showAbsorptionHearts;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -392,6 +412,10 @@ public class Config {
         String[] macroTexts = new String[]{"", "", "", "", "", ""};
         boolean[] macroEnabled = new boolean[]{true, true, true, true, true, true};
         boolean crystalOptimizer = true;
+        boolean anchorOptimizer = true;
+        boolean showBlockBreakProgress = true;
+        boolean showSaturationBar = true;
+        boolean showAbsorptionHearts = true;
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;

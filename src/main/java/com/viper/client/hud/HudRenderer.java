@@ -2,7 +2,9 @@ package com.viper.client.hud;
 
 import com.viper.client.ViperClient;
 import com.viper.client.config.Config;
+import com.viper.client.hud.element.AbsorptionElement;
 import com.viper.client.hud.element.ArmorElement;
+import com.viper.client.hud.element.BlockBreakProgressElement;
 import com.viper.client.hud.element.ComboElement;
 import com.viper.client.hud.element.CoordsElement;
 import com.viper.client.hud.element.CpsElement;
@@ -13,6 +15,7 @@ import com.viper.client.hud.element.KeystrokesElement;
 import com.viper.client.hud.element.PingElement;
 import com.viper.client.hud.element.PotionElement;
 import com.viper.client.hud.element.ReachElement;
+import com.viper.client.hud.element.SaturationElement;
 import com.viper.client.hud.element.SpeedElement;
 import com.viper.client.hud.element.WatermarkElement;
 import net.minecraft.client.MinecraftClient;
@@ -40,6 +43,9 @@ public class HudRenderer {
         ELEMENTS.add(new ComboElement());
         ELEMENTS.add(new DirectionElement());
         ELEMENTS.add(new SpeedElement());
+        ELEMENTS.add(new BlockBreakProgressElement());
+        ELEMENTS.add(new SaturationElement());
+        ELEMENTS.add(new AbsorptionElement());
         keystrokesElement = new KeystrokesElement();
         armorElement = new ArmorElement();
         inventoryElement = new InventoryHudElement();
