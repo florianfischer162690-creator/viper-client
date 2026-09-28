@@ -251,6 +251,16 @@ public class ViperClient implements ClientModInitializer {
             // FREECAM movement
             try {
                 if (Config.freecamEnabled && client.player != null) {
+                    // spieler-input blocken
+                    if (client.player.input != null) {
+                        client.player.input.movementForward = 0;
+                        client.player.input.movementSideways = 0;
+                        client.player.input.jumping = false;
+                        client.player.input.sneaking = false;
+                    }
+                    client.player.setVelocity(0, client.player.getVelocity().y, 0);
+                    client.player.setSprinting(false);
+
                     long window = client.getWindow().getHandle();
                     double speed = 0.5;
                     if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_CONTROL) == GLFW.GLFW_PRESS) speed = 0.15;

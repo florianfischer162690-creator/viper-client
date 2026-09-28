@@ -11,7 +11,8 @@
     "CrystalPlaceMixin",
     "AnchorOptimizerMixin",
     "GammaMixin",
-    "FreecamMixin"
+    "FreecamMixin",
+    "NametagMixin"
   ],
   "injectors": {
     "defaultRequire": 1
