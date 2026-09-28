@@ -6,7 +6,8 @@
     "InGameHudMixin",
     "FoodHoverMixin",
     "ChatHudMixin",
-    "CrystalOptimizerMixin"
+    "CrystalOptimizerMixin",
+    "CrystalHitMixin"
   ],
   "injectors": {
     "defaultRequire": 1
