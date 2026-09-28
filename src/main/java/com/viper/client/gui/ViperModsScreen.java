@@ -85,7 +85,6 @@ public class ViperModsScreen extends Screen {
 
         TAB_MODULES.clear();
 
-        // ═══ HUD tab ═══
         List<ModCard> hud = new ArrayList<>();
         hud.add(new ModCard("watermark", "WATERMARK", "Show Viper V1 logo", () -> Config.showWatermark, v -> Config.showWatermark = v));
         hud.add(new ModCard("fps", "FPS", "Show FPS counter", () -> Config.showFps, v -> Config.showFps = v));
@@ -110,6 +109,7 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("blockbreakprogress", "BLOCK BREAK", "Show mining progress bar", () -> Config.showBlockBreakProgress, v -> Config.showBlockBreakProgress = v));
         hud.add(new ModCard("saturation", "SATURATION", "Show saturation level", () -> Config.showSaturationBar, v -> Config.showSaturationBar = v));
         hud.add(new ModCard("absorption", "ABSORPTION", "Show absorption hearts", () -> Config.showAbsorptionHearts, v -> Config.showAbsorptionHearts = v));
+        hud.add(new ModCard("shieldstatus", "SHIELD STATUS", "Show if enemy is blocking", () -> Config.showShieldStatus, v -> Config.showShieldStatus = v));
 
         ModCard titleCard = new ModCard("title", "TITLE", "Click to select your title", () -> Config.showTitle, v -> Config.showTitle = v);
         titleCard.expandable = true;
@@ -117,7 +117,6 @@ public class ViperModsScreen extends Screen {
 
         TAB_MODULES.add(hud);
 
-        // ═══ PVP tab ═══
         List<ModCard> pvp = new ArrayList<>();
         pvp.add(new ModCard("togglesprint", "TOGGLE SPRINT", "Auto-sprint (R)", () -> Config.toggleSprint, v -> Config.toggleSprint = v));
         pvp.add(new ModCard("togglesneak", "TOGGLE SNEAK", "Auto-sneak", () -> Config.toggleSneak, v -> Config.toggleSneak = v));
@@ -146,6 +145,17 @@ public class ViperModsScreen extends Screen {
         pvp.add(new ModCard("chattimestamps", "CHAT TIMESTAMPS", "Show time in chat", () -> Config.chatTimestamps, v -> Config.chatTimestamps = v));
         pvp.add(new ModCard("crystaloptimizer", "CRYSTAL OPTIMIZER", "Fast crystal place (no render delay)", () -> Config.crystalOptimizer, v -> Config.crystalOptimizer = v));
         pvp.add(new ModCard("anchoroptimizer", "ANCHOR OPTIMIZER", "Fast anchor place (no render delay)", () -> Config.anchorOptimizer, v -> Config.anchorOptimizer = v));
+        pvp.add(new ModCard("freecam", "FREECAM", "Camera detaches (F6)", () -> Config.freecamEnabled, v -> {
+            Config.freecamEnabled = v;
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (v && mc.player != null) {
+                Config.freecamX = mc.player.getX();
+                Config.freecamY = mc.player.getEyeY();
+                Config.freecamZ = mc.player.getZ();
+                Config.freecamYaw = mc.player.getYaw();
+                Config.freecamPitch = mc.player.getPitch();
+            }
+        }));
 
         ModCard macrosCard = new ModCard("chatmacros", "CHAT MACROS", "Click to edit presets", () -> true, v -> {});
         macrosCard.expandable = true;

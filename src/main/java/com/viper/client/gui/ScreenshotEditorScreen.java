@@ -123,9 +123,8 @@ public class ScreenshotEditorScreen extends Screen {
                         net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED,
                         textureId,
                         previewX, previewY,
+                        0.0f, 0.0f,
                         previewW, previewH,
-                        0, 0,
-                        textureW, textureH,
                         textureW, textureH
                 );
             } catch (Throwable t) {

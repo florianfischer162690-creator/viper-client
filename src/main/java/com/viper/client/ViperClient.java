@@ -39,6 +39,7 @@ public class ViperClient implements ClientModInitializer {
     private static KeyBinding toggleFullbrightKey;
     private static KeyBinding noFogKey;
     private static KeyBinding openNotepadKey;
+    private static KeyBinding freecamKey;
 
     private static boolean lastLeftDown = false;
     private static boolean lastRightDown = false;
@@ -83,6 +84,16 @@ public class ViperClient implements ClientModInitializer {
 
         HudRenderCallback.EVENT.register((context, tickCounter) -> {
             try {
+                if (Config.freecamEnabled) {
+                    MinecraftClient mc = MinecraftClient.getInstance();
+                    if (mc.player != null) {
+                        Config.freecamYaw = mc.player.getYaw();
+                        Config.freecamPitch = mc.player.getPitch();
+                    }
+                }
+            } catch (Throwable ignored) {}
+
+            try {
                 long window = MinecraftClient.getInstance().getWindow().getHandle();
                 boolean leftDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
                 boolean rightDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
@@ -123,6 +134,8 @@ public class ViperClient implements ClientModInitializer {
                 "key.viper.no_fog", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F9, KeyBinding.Category.MISC));
         openNotepadKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.viper.open_notepad", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F7, KeyBinding.Category.MISC));
+        freecamKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.viper.freecam", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F6, KeyBinding.Category.MISC));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleHudKey.wasPressed()) {
@@ -161,6 +174,19 @@ public class ViperClient implements ClientModInitializer {
                 } else {
                     client.setScreen(new NotepadScreen());
                 }
+            }
+
+            while (freecamKey.wasPressed()) {
+                Config.freecamEnabled = !Config.freecamEnabled;
+                if (Config.freecamEnabled && client.player != null) {
+                    Config.freecamX = client.player.getX();
+                    Config.freecamY = client.player.getEyeY();
+                    Config.freecamZ = client.player.getZ();
+                    Config.freecamYaw = client.player.getYaw();
+                    Config.freecamPitch = client.player.getPitch();
+                }
+                if (client.player != null) client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fFreecam " + (Config.freecamEnabled ? "§aon" : "§coff")), true);
+                Config.save();
             }
 
             try {
@@ -222,11 +248,41 @@ public class ViperClient implements ClientModInitializer {
                 }
             } catch (Throwable ignored) {}
 
+            // FREECAM movement
+            try {
+                if (Config.freecamEnabled && client.player != null) {
+                    long window = client.getWindow().getHandle();
+                    double speed = 0.5;
+                    if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_CONTROL) == GLFW.GLFW_PRESS) speed = 0.15;
+
+                    double yawRad = Math.toRadians(Config.freecamYaw);
+                    double pitchRad = Math.toRadians(Config.freecamPitch);
+
+                    double forwardX = -Math.sin(yawRad);
+                    double forwardZ = Math.cos(yawRad);
+                    double forwardY = -Math.sin(pitchRad);
+
+                    double rightX = Math.cos(yawRad);
+                    double rightZ = Math.sin(yawRad);
+
+                    double dx = 0, dy = 0, dz = 0;
+                    if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_W) == GLFW.GLFW_PRESS) { dx += forwardX * speed; dy += forwardY * speed; dz += forwardZ * speed; }
+                    if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_S) == GLFW.GLFW_PRESS) { dx -= forwardX * speed; dy -= forwardY * speed; dz -= forwardZ * speed; }
+                    if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_A) == GLFW.GLFW_PRESS) { dx -= rightX * speed; dz -= rightZ * speed; }
+                    if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_D) == GLFW.GLFW_PRESS) { dx += rightX * speed; dz += rightZ * speed; }
+                    if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_SPACE) == GLFW.GLFW_PRESS) dy += speed;
+                    if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS) dy -= speed;
+
+                    Config.freecamX += dx;
+                    Config.freecamY += dy;
+                    Config.freecamZ += dz;
+                }
+            } catch (Throwable ignored) {}
+
             if (client.player != null && client.currentScreen == null) {
                 if (Config.toggleSprint) client.options.sprintKey.setPressed(true);
             }
 
-            // FULLBRIGHT via night-vision effect (client-side)
             try {
                 if (client.player != null) {
                     StatusEffectInstance existing = client.player.getStatusEffect(StatusEffects.NIGHT_VISION);

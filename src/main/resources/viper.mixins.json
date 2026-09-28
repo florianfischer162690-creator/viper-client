@@ -10,7 +10,8 @@
     "CrystalHitMixin",
     "CrystalPlaceMixin",
     "AnchorOptimizerMixin",
-    "GammaMixin"
+    "GammaMixin",
+    "FreecamMixin"
   ],
   "injectors": {
     "defaultRequire": 1

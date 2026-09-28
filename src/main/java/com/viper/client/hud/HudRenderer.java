@@ -16,6 +16,7 @@ import com.viper.client.hud.element.PingElement;
 import com.viper.client.hud.element.PotionElement;
 import com.viper.client.hud.element.ReachElement;
 import com.viper.client.hud.element.SaturationElement;
+import com.viper.client.hud.element.ShieldStatusElement;
 import com.viper.client.hud.element.SpeedElement;
 import com.viper.client.hud.element.WatermarkElement;
 import net.minecraft.client.MinecraftClient;
@@ -46,6 +47,7 @@ public class HudRenderer {
         ELEMENTS.add(new BlockBreakProgressElement());
         ELEMENTS.add(new SaturationElement());
         ELEMENTS.add(new AbsorptionElement());
+        ELEMENTS.add(new ShieldStatusElement());
         keystrokesElement = new KeystrokesElement();
         armorElement = new ArmorElement();
         inventoryElement = new InventoryHudElement();

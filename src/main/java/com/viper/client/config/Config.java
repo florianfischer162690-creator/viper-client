@@ -102,6 +102,20 @@ public class Config {
     // ABSORPTION HEART INDICATOR
     public static boolean showAbsorptionHearts = true;
 
+    // SHIELD STATUS
+    public static boolean showShieldStatus = true;
+
+    // ENCHANT GLINT COLOR
+    public static boolean customGlintColor = true;
+
+    // FREECAM
+    public static boolean freecamEnabled = false;
+    public static double freecamX = 0;
+    public static double freecamY = 0;
+    public static double freecamZ = 0;
+    public static float freecamYaw = 0;
+    public static float freecamPitch = 0;
+
     // KEYBINDS
     public static Map<String, Integer> keybinds = new HashMap<>();
 
@@ -294,6 +308,14 @@ public class Config {
         showBlockBreakProgress = d.showBlockBreakProgress;
         showSaturationBar = d.showSaturationBar;
         showAbsorptionHearts = d.showAbsorptionHearts;
+        showShieldStatus = d.showShieldStatus;
+        customGlintColor = d.customGlintColor;
+        freecamEnabled = d.freecamEnabled;
+        freecamX = d.freecamX;
+        freecamY = d.freecamY;
+        freecamZ = d.freecamZ;
+        freecamYaw = d.freecamYaw;
+        freecamPitch = d.freecamPitch;
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -355,6 +377,14 @@ public class Config {
         d.showBlockBreakProgress = showBlockBreakProgress;
         d.showSaturationBar = showSaturationBar;
         d.showAbsorptionHearts = showAbsorptionHearts;
+        d.showShieldStatus = showShieldStatus;
+        d.customGlintColor = customGlintColor;
+        d.freecamEnabled = freecamEnabled;
+        d.freecamX = freecamX;
+        d.freecamY = freecamY;
+        d.freecamZ = freecamZ;
+        d.freecamYaw = freecamYaw;
+        d.freecamPitch = freecamPitch;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -416,6 +446,14 @@ public class Config {
         boolean showBlockBreakProgress = true;
         boolean showSaturationBar = true;
         boolean showAbsorptionHearts = true;
+        boolean showShieldStatus = true;
+        boolean customGlintColor = true;
+        boolean freecamEnabled = false;
+        double freecamX = 0;
+        double freecamY = 0;
+        double freecamZ = 0;
+        float freecamYaw = 0;
+        float freecamPitch = 0;
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;
