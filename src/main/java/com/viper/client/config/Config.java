@@ -87,6 +87,9 @@ public class Config {
     public static String[] macroTexts = new String[]{"", "", "", "", "", ""};
     public static boolean[] macroEnabled = new boolean[]{true, true, true, true, true, true};
 
+    // CRYSTAL OPTIMIZER
+    public static boolean crystalOptimizer = true;
+
     // KEYBINDS
     public static Map<String, Integer> keybinds = new HashMap<>();
 
@@ -274,6 +277,7 @@ public class Config {
         currentTitle = d.currentTitle != null ? d.currentTitle : "viper";
         macroTexts = d.macroTexts != null && d.macroTexts.length == 6 ? d.macroTexts : new String[]{"", "", "", "", "", ""};
         macroEnabled = d.macroEnabled != null && d.macroEnabled.length == 6 ? d.macroEnabled : new boolean[]{true, true, true, true, true, true};
+        crystalOptimizer = d.crystalOptimizer;
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -330,6 +334,7 @@ public class Config {
         d.currentTitle = currentTitle;
         d.macroTexts = macroTexts;
         d.macroEnabled = macroEnabled;
+        d.crystalOptimizer = crystalOptimizer;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -386,6 +391,7 @@ public class Config {
         String currentTitle = "viper";
         String[] macroTexts = new String[]{"", "", "", "", "", ""};
         boolean[] macroEnabled = new boolean[]{true, true, true, true, true, true};
+        boolean crystalOptimizer = true;
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;
