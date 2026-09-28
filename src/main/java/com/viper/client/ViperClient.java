@@ -40,7 +40,6 @@ public class ViperClient implements ClientModInitializer {
     private static final Map<String, Boolean> keyPressedState = new HashMap<>();
     private static boolean zoomed = false;
 
-    // chat-macro key-pressed tracking
     private static final boolean[] macroPressedState = new boolean[6];
     private static final long[] macroLastSend = new long[6];
 
@@ -158,6 +157,7 @@ public class ViperClient implements ClientModInitializer {
                     for (Map.Entry<String, Integer> entry : new HashMap<>(Config.keybinds).entrySet()) {
                         String id = entry.getKey();
                         if ("zoom".equals(id)) continue;
+                        if (id.startsWith("macro")) continue;
                         int key = entry.getValue();
                         if (key <= 0) continue;
                         boolean isDown = GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS;
@@ -172,13 +172,11 @@ public class ViperClient implements ClientModInitializer {
                         keyPressedState.put(id, isDown);
                     }
 
-                    // ═══ CHAT MACROS ═══
                     for (int i = 0; i < 6; i++) {
                         int key = Config.getKeybind("macro" + (i + 1));
                         if (key <= 0) { macroPressedState[i] = false; continue; }
                         boolean isDown = GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS;
                         if (isDown && !macroPressedState[i]) {
-                            // 250ms cooldown damit nicht spammt
                             long now = System.currentTimeMillis();
                             if (now - macroLastSend[i] > 250) {
                                 sendMacro(client, i);
@@ -228,7 +226,11 @@ public class ViperClient implements ClientModInitializer {
             String text = Config.macroTexts[index];
             if (text == null || text.isEmpty()) return;
             if (client.player.networkHandler == null) return;
-            client.player.networkHandler.sendChatMessage(text);
+            if (text.startsWith("/")) {
+                client.player.networkHandler.sendCommand(text.substring(1));
+            } else {
+                client.player.networkHandler.sendChatMessage(text);
+            }
         } catch (Throwable ignored) {}
     }
 
