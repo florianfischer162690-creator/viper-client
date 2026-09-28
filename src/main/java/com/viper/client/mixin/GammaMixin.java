@@ -11,13 +11,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(SimpleOption.class)
 public class GammaMixin {
 
-    @Inject(method = "getValue", at = @At("RETURN"), cancellable = true, require = 0)
+    @Inject(method = "getValue()Ljava/lang/Object;", at = @At("RETURN"), cancellable = true, require = 0)
     private void viper_fullbrightGamma(CallbackInfoReturnable<Object> cir) {
         try {
             if (!Config.fullbright) return;
             if (ViperClient.gammaOptionRef == null) return;
             if ((Object) this != ViperClient.gammaOptionRef) return;
-            cir.setReturnValue(20.0);
+            cir.setReturnValue(10.0);
         } catch (Throwable ignored) {}
     }
 }
