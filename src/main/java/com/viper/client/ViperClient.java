@@ -251,13 +251,13 @@ public class ViperClient implements ClientModInitializer {
             // FREECAM movement
             try {
                 if (Config.freecamEnabled && client.player != null) {
-                    // spieler-input blocken
-                    if (client.player.input != null) {
-                        client.player.input.movementForward = 0;
-                        client.player.input.movementSideways = 0;
-                        client.player.input.jumping = false;
-                        client.player.input.sneaking = false;
-                    }
+                    // spieler-input blocken via keybindings
+                    client.options.forwardKey.setPressed(false);
+                    client.options.backKey.setPressed(false);
+                    client.options.leftKey.setPressed(false);
+                    client.options.rightKey.setPressed(false);
+                    client.options.jumpKey.setPressed(false);
+
                     client.player.setVelocity(0, client.player.getVelocity().y, 0);
                     client.player.setSprinting(false);
 
