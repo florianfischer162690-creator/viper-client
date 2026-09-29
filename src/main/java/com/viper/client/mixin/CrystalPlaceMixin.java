@@ -28,4 +28,19 @@ public class CrystalPlaceMixin {
             this.attackCooldown = 0;
         } catch (Throwable ignored) {}
     }
+
+    // jede tick auf 0 → kein 4-tick delay
+    @Inject(method = "tick", at = @At("HEAD"), require = 0)
+    private void viper_crystalTick(CallbackInfo ci) {
+        try {
+            if (!Config.crystalOptimizer) return;
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc.player == null) return;
+            if (mc.player.getMainHandStack().isOf(Items.END_CRYSTAL)
+                    || mc.player.getOffHandStack().isOf(Items.END_CRYSTAL)) {
+                if (this.itemUseCooldown > 0) this.itemUseCooldown = 0;
+                if (this.attackCooldown > 0) this.attackCooldown = 0;
+            }
+        } catch (Throwable ignored) {}
+    }
 }
