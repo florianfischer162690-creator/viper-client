@@ -225,18 +225,13 @@ public class ViperClient implements ClientModInitializer {
 
             // Freelook — halten → aktiv, loslassen → zurück
             try {
-                long window = client.getWindow().getHandle();
-                boolean freelookHeld = GLFW.glfwGetKey(window,
-                        InputUtil.fromTranslationKey(freelookKey.getTranslationKey()).getCode()) == GLFW.GLFW_PRESS;
+                boolean freelookHeld = freelookKey.isPressed();
                 if (freelookHeld && client.player != null && !Config.freelookActive) {
                     Config.freelookActive = true;
                     Config.freelookYaw = client.player.getYaw();
                     Config.freelookPitch = client.player.getPitch();
                 } else if (!freelookHeld && Config.freelookActive) {
                     Config.freelookActive = false;
-                }
-                if (Config.freelookActive && client.player != null) {
-                    // yaw/pitch bleiben wo sie sind — spieler bewegt sich nicht mit
                 }
             } catch (Throwable ignored) {}
 
