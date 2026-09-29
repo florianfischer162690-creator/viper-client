@@ -17,7 +17,16 @@
     "FullbrightShadowsMixin",
     "ChatCommandMixin",
     "BlockRotationMixin",
-    "HugoInvseeMixin"
+    "HugoInvseeMixin",
+    "TabListMixin",
+    "BlockOutlineMixin",
+    "FreelookMixin",
+    "WeatherChangerMixin",
+    "TimeChangerMixin",
+    "FogCustomizerMixin",
+    "ChatTabsMixin",
+    "ChatHeadsMixin",
+    "CustomF3Mixin"
   ],
   "injectors": {
     "defaultRequire": 1

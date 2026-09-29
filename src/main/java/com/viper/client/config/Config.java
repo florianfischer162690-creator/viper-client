@@ -91,7 +91,6 @@ public class Config {
 
     // DONUTSMP
     public static boolean donutAdminHud = true;
-    public static boolean donutTabDetector = true;
     public static boolean donutCoordSnapper = true;
     public static boolean donutRegionMap = true;
     public static boolean donutBalanceTracker = true;
@@ -104,6 +103,75 @@ public class Config {
     // WAYPOINTS
     public static boolean showWaypoints = true;
     public static Map<String, WaypointData> waypoints = new HashMap<>();
+
+    // STOPWATCH
+    public static boolean showStopwatch = true;
+
+    // CLOCK
+    public static boolean showClock = true;
+
+    // DAY COUNTER
+    public static boolean showDayCounter = true;
+
+    // PLAYTIME
+    public static boolean showPlaytime = true;
+
+    // MEMORY
+    public static boolean showMemory = true;
+
+    // SERVER ADDRESS
+    public static boolean showServerAddress = true;
+
+    // PING GRAPH
+    public static boolean showPingGraph = true;
+
+    // COOLDOWN
+    public static boolean showCooldown = true;
+    public static boolean showCooldownIdle = false;
+
+    // TNT COUNTDOWN
+    public static boolean showTntCountdown = true;
+
+    // BLOCK OUTLINE
+    public static boolean thickBlockOutline = true;
+    public static int blockOutlineExpansion = 25;
+
+    // FREELOOK
+    public static boolean freelookActive = false;
+    public static float freelookYaw = 0;
+    public static float freelookPitch = 0;
+
+    // WEATHER CHANGER
+    public static boolean weatherChanger = false;
+    public static String weatherType = "off";
+
+    // TIME CHANGER
+    public static boolean timeChanger = false;
+    public static int timeValue = -1;
+
+    // FOG CUSTOMIZER
+    public static boolean fogCustomizer = false;
+    public static float fogStart = 10.0f;
+    public static float fogEnd = 200.0f;
+
+    // CHAT TABS
+    public static boolean chatTabs = false;
+    public static String activeChatTab = "all";
+
+    // CHAT HEADS
+    public static boolean chatHeads = false;
+
+    // CUSTOM F3
+    public static boolean customF3 = false;
+    public static boolean f3ShowChunk = true;
+    public static boolean f3ShowBiome = true;
+    public static boolean f3ShowLight = true;
+    public static boolean f3ShowEntities = true;
+    public static boolean f3ShowLooking = true;
+    public static boolean f3ShowSounds = true;
+    public static boolean f3ShowPing = true;
+    public static boolean f3ShowMem = true;
+    public static boolean f3ShowSystemInfo = true;
 
     public static class WaypointData {
         public String name;
@@ -315,7 +383,6 @@ public class Config {
         hugoAutoInvsee = d.hugoAutoInvsee;
         antiBlockRotation = d.antiBlockRotation;
         donutAdminHud = d.donutAdminHud;
-        donutTabDetector = d.donutTabDetector;
         donutCoordSnapper = d.donutCoordSnapper;
         donutRegionMap = d.donutRegionMap;
         donutBalanceTracker = d.donutBalanceTracker;
@@ -324,8 +391,43 @@ public class Config {
         donutChestFilter = d.donutChestFilter;
         donutAntiScam = d.donutAntiScam;
         donutSpawnerNotifier = d.donutSpawnerNotifier;
-        showWaypoints = d.showWaypoints;
+        showWaypoints = d.showWaypoints != null ? d.showWaypoints : true;
         waypoints = d.waypoints != null ? d.waypoints : new HashMap<>();
+        showStopwatch = d.showStopwatch;
+        showClock = d.showClock;
+        showDayCounter = d.showDayCounter;
+        showPlaytime = d.showPlaytime;
+        showMemory = d.showMemory;
+        showServerAddress = d.showServerAddress;
+        showPingGraph = d.showPingGraph;
+        showCooldown = d.showCooldown;
+        showCooldownIdle = d.showCooldownIdle;
+        showTntCountdown = d.showTntCountdown;
+        thickBlockOutline = d.thickBlockOutline;
+        blockOutlineExpansion = d.blockOutlineExpansion;
+        freelookActive = d.freelookActive;
+        freelookYaw = d.freelookYaw;
+        freelookPitch = d.freelookPitch;
+        weatherChanger = d.weatherChanger;
+        weatherType = d.weatherType != null ? d.weatherType : "off";
+        timeChanger = d.timeChanger;
+        timeValue = d.timeValue;
+        fogCustomizer = d.fogCustomizer;
+        fogStart = d.fogStart;
+        fogEnd = d.fogEnd;
+        chatTabs = d.chatTabs;
+        activeChatTab = d.activeChatTab != null ? d.activeChatTab : "all";
+        chatHeads = d.chatHeads;
+        customF3 = d.customF3;
+        f3ShowChunk = d.f3ShowChunk;
+        f3ShowBiome = d.f3ShowBiome;
+        f3ShowLight = d.f3ShowLight;
+        f3ShowEntities = d.f3ShowEntities;
+        f3ShowLooking = d.f3ShowLooking;
+        f3ShowSounds = d.f3ShowSounds;
+        f3ShowPing = d.f3ShowPing;
+        f3ShowMem = d.f3ShowMem;
+        f3ShowSystemInfo = d.f3ShowSystemInfo;
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -398,7 +500,6 @@ public class Config {
         d.hugoAutoInvsee = hugoAutoInvsee;
         d.antiBlockRotation = antiBlockRotation;
         d.donutAdminHud = donutAdminHud;
-        d.donutTabDetector = donutTabDetector;
         d.donutCoordSnapper = donutCoordSnapper;
         d.donutRegionMap = donutRegionMap;
         d.donutBalanceTracker = donutBalanceTracker;
@@ -409,6 +510,41 @@ public class Config {
         d.donutSpawnerNotifier = donutSpawnerNotifier;
         d.showWaypoints = showWaypoints;
         d.waypoints = waypoints;
+        d.showStopwatch = showStopwatch;
+        d.showClock = showClock;
+        d.showDayCounter = showDayCounter;
+        d.showPlaytime = showPlaytime;
+        d.showMemory = showMemory;
+        d.showServerAddress = showServerAddress;
+        d.showPingGraph = showPingGraph;
+        d.showCooldown = showCooldown;
+        d.showCooldownIdle = showCooldownIdle;
+        d.showTntCountdown = showTntCountdown;
+        d.thickBlockOutline = thickBlockOutline;
+        d.blockOutlineExpansion = blockOutlineExpansion;
+        d.freelookActive = freelookActive;
+        d.freelookYaw = freelookYaw;
+        d.freelookPitch = freelookPitch;
+        d.weatherChanger = weatherChanger;
+        d.weatherType = weatherType;
+        d.timeChanger = timeChanger;
+        d.timeValue = timeValue;
+        d.fogCustomizer = fogCustomizer;
+        d.fogStart = fogStart;
+        d.fogEnd = fogEnd;
+        d.chatTabs = chatTabs;
+        d.activeChatTab = activeChatTab;
+        d.chatHeads = chatHeads;
+        d.customF3 = customF3;
+        d.f3ShowChunk = f3ShowChunk;
+        d.f3ShowBiome = f3ShowBiome;
+        d.f3ShowLight = f3ShowLight;
+        d.f3ShowEntities = f3ShowEntities;
+        d.f3ShowLooking = f3ShowLooking;
+        d.f3ShowSounds = f3ShowSounds;
+        d.f3ShowPing = f3ShowPing;
+        d.f3ShowMem = f3ShowMem;
+        d.f3ShowSystemInfo = f3ShowSystemInfo;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -481,7 +617,6 @@ public class Config {
         boolean hugoAutoInvsee = true;
         boolean antiBlockRotation = true;
         boolean donutAdminHud = true;
-        boolean donutTabDetector = true;
         boolean donutCoordSnapper = true;
         boolean donutRegionMap = true;
         boolean donutBalanceTracker = true;
@@ -490,8 +625,43 @@ public class Config {
         boolean donutChestFilter = true;
         boolean donutAntiScam = true;
         boolean donutSpawnerNotifier = true;
-        boolean showWaypoints = true;
+        Boolean showWaypoints = true;
         Map<String, WaypointData> waypoints = new HashMap<>();
+        boolean showStopwatch = true;
+        boolean showClock = true;
+        boolean showDayCounter = true;
+        boolean showPlaytime = true;
+        boolean showMemory = true;
+        boolean showServerAddress = true;
+        boolean showPingGraph = true;
+        boolean showCooldown = true;
+        boolean showCooldownIdle = false;
+        boolean showTntCountdown = true;
+        boolean thickBlockOutline = true;
+        int blockOutlineExpansion = 25;
+        boolean freelookActive = false;
+        float freelookYaw = 0;
+        float freelookPitch = 0;
+        boolean weatherChanger = false;
+        String weatherType = "off";
+        boolean timeChanger = false;
+        int timeValue = -1;
+        boolean fogCustomizer = false;
+        float fogStart = 10.0f;
+        float fogEnd = 200.0f;
+        boolean chatTabs = false;
+        String activeChatTab = "all";
+        boolean chatHeads = false;
+        boolean customF3 = false;
+        boolean f3ShowChunk = true;
+        boolean f3ShowBiome = true;
+        boolean f3ShowLight = true;
+        boolean f3ShowEntities = true;
+        boolean f3ShowLooking = true;
+        boolean f3ShowSounds = true;
+        boolean f3ShowPing = true;
+        boolean f3ShowMem = true;
+        boolean f3ShowSystemInfo = true;
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;

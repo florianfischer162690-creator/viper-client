@@ -111,6 +111,15 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("absorption", "ABSORPTION", "Show absorption hearts", () -> Config.showAbsorptionHearts, v -> Config.showAbsorptionHearts = v));
         hud.add(new ModCard("shieldstatus", "SHIELD STATUS", "Show if enemy is blocking", () -> Config.showShieldStatus, v -> Config.showShieldStatus = v));
         hud.add(new ModCard("waypoints", "WAYPOINTS", "Show closest waypoint (/wp set <name>)", () -> Config.showWaypoints, v -> Config.showWaypoints = v));
+        hud.add(new ModCard("stopwatch", "STOPWATCH", "Toggle with keybind (K)", () -> Config.showStopwatch, v -> Config.showStopwatch = v));
+        hud.add(new ModCard("clock", "CLOCK", "Show world time", () -> Config.showClock, v -> Config.showClock = v));
+        hud.add(new ModCard("daycounter", "DAY COUNTER", "Days since world start", () -> Config.showDayCounter, v -> Config.showDayCounter = v));
+        hud.add(new ModCard("playtime", "PLAYTIME", "Time since game start", () -> Config.showPlaytime, v -> Config.showPlaytime = v));
+        hud.add(new ModCard("memory", "MEMORY", "Show RAM usage", () -> Config.showMemory, v -> Config.showMemory = v));
+        hud.add(new ModCard("serveraddress", "SERVER IP", "Show server address", () -> Config.showServerAddress, v -> Config.showServerAddress = v));
+        hud.add(new ModCard("pinggraph", "PING GRAPH", "Show ping history graph", () -> Config.showPingGraph, v -> Config.showPingGraph = v));
+        hud.add(new ModCard("cooldown", "COOLDOWN", "Show item cooldowns", () -> Config.showCooldown, v -> Config.showCooldown = v));
+        hud.add(new ModCard("tntcountdown", "TNT COUNTDOWN", "Show TNT fuse timer", () -> Config.showTntCountdown, v -> Config.showTntCountdown = v));
 
         ModCard titleCard = new ModCard("title", "TITLE", "Click to select your title", () -> Config.showTitle, v -> Config.showTitle = v);
         titleCard.expandable = true;
@@ -158,6 +167,10 @@ public class ViperModsScreen extends Screen {
             }
         }));
 
+        // Block 2 mixins
+        pvp.add(new ModCard("blockoutline", "BLOCK OUTLINE", "Thicker block selection outline", () -> Config.thickBlockOutline, v -> Config.thickBlockOutline = v));
+        pvp.add(new ModCard("freelook", "FREELOOK", "Hold key to look around freely", () -> Config.freelookActive, v -> Config.freelookActive = v));
+
         ModCard macrosCard = new ModCard("chatmacros", "CHAT MACROS", "Click to edit presets", () -> true, v -> {});
         macrosCard.expandable = true;
         macrosCard.isAction = true;
@@ -173,24 +186,29 @@ public class ViperModsScreen extends Screen {
 
         // DONUTSMP tab
         List<ModCard> donut = new ArrayList<>();
-        donut.add(new ModCard("donut-adminhud", "ADMIN HUD", "Show when staff is online", () -> Config.donutAdminHud, v -> Config.donutAdminHud = v));
-        donut.add(new ModCard("donut-tabdetector", "TAB DETECTOR", "Notify when players join/leave", () -> Config.donutTabDetector, v -> Config.donutTabDetector = v));
-        donut.add(new ModCard("donut-coordsnapper", "COORD SNAPPER", "Copy coordinates to clipboard", () -> Config.donutCoordSnapper, v -> Config.donutCoordSnapper = v));
-        donut.add(new ModCard("donut-regionmap", "REGION MAP", "Show DonutSMP region overlay", () -> Config.donutRegionMap, v -> Config.donutRegionMap = v));
-        donut.add(new ModCard("donut-balancetracker", "BALANCE TRACKER", "Show player balance on look", () -> Config.donutBalanceTracker, v -> Config.donutBalanceTracker = v));
-        donut.add(new ModCard("donut-echestviewer", "ENDER CHEST VIEWER", "Remember ender chest contents", () -> Config.donutEchestViewer, v -> Config.donutEchestViewer = v));
-        donut.add(new ModCard("donut-totemwarning", "TOTEM WARNING", "Warn when no totem equipped", () -> Config.donutTotemWarning, v -> Config.donutTotemWarning = v));
-        donut.add(new ModCard("donut-chestfilter", "CHEST FILTER", "Highlight valuable items in chests", () -> Config.donutChestFilter, v -> Config.donutChestFilter = v));
-        donut.add(new ModCard("donut-antiscam", "ANTI-SCAM", "Filter scam messages from chat", () -> Config.donutAntiScam, v -> Config.donutAntiScam = v));
-        donut.add(new ModCard("donut-spawnernotifier", "SPAWNER NOTIFIER", "Warn when spawner is nearby", () -> Config.donutSpawnerNotifier, v -> Config.donutSpawnerNotifier = v));
+        donut.add(new ModCard("adminhud", "ADMIN HUD", "Show when staff is online", () -> Config.donutAdminHud, v -> Config.donutAdminHud = v));
+        donut.add(new ModCard("coordsnapper", "COORD SNAPPER", "Copy coordinates to clipboard (J)", () -> Config.donutCoordSnapper, v -> Config.donutCoordSnapper = v));
+        donut.add(new ModCard("regionmap", "REGION MAP", "Show DonutSMP region overlay", () -> Config.donutRegionMap, v -> Config.donutRegionMap = v));
+        donut.add(new ModCard("balancetracker", "BALANCE TRACKER", "Show player balance on look", () -> Config.donutBalanceTracker, v -> Config.donutBalanceTracker = v));
+        donut.add(new ModCard("echestviewer", "ENDER CHEST VIEWER", "Remember ender chest contents", () -> Config.donutEchestViewer, v -> Config.donutEchestViewer = v));
+        donut.add(new ModCard("totemwarning", "TOTEM WARNING", "Warn when no totem equipped", () -> Config.donutTotemWarning, v -> Config.donutTotemWarning = v));
+        donut.add(new ModCard("chestfilter", "CHEST FILTER", "Highlight valuable items in chests", () -> Config.donutChestFilter, v -> Config.donutChestFilter = v));
+        donut.add(new ModCard("antiscam", "ANTI-SCAM", "Filter scam messages from chat", () -> Config.donutAntiScam, v -> Config.donutAntiScam = v));
+        donut.add(new ModCard("spawnernotifier", "SPAWNER NOTIFIER", "Warn when spawner is nearby", () -> Config.donutSpawnerNotifier, v -> Config.donutSpawnerNotifier = v));
         TAB_MODULES.add(donut);
 
-        // CUSTOM tab
+        // CUSTOM tab — mixins/visuals
         List<ModCard> custom = new ArrayList<>();
+        custom.add(new ModCard("weatherchanger", "WEATHER CHANGER", "Client-side weather override", () -> Config.weatherChanger, v -> Config.weatherChanger = v));
+        custom.add(new ModCard("timechanger", "TIME CHANGER", "Client-side time override", () -> Config.timeChanger, v -> Config.timeChanger = v));
+        custom.add(new ModCard("fogcustomizer", "FOG CUSTOMIZER", "Custom fog distance", () -> Config.fogCustomizer, v -> Config.fogCustomizer = v));
+        custom.add(new ModCard("chattabs", "CHAT TABS", "Filter chat by tab", () -> Config.chatTabs, v -> Config.chatTabs = v));
+        custom.add(new ModCard("chatheads", "CHAT HEADS", "Show player prefix in chat", () -> Config.chatHeads, v -> Config.chatHeads = v));
+        custom.add(new ModCard("customf3", "CUSTOM F3", "Customize debug screen", () -> Config.customF3, v -> Config.customF3 = v));
         TAB_MODULES.add(custom);
 
-        TAB_MODULES.add(new ArrayList<>());
-        TAB_MODULES.add(new ArrayList<>());
+        TAB_MODULES.add(new ArrayList<>()); // THEME
+        TAB_MODULES.add(new ArrayList<>()); // CONFIG
     }
 
     private void applyFpsBoost(boolean enable) {

@@ -5,6 +5,7 @@ import com.viper.client.gui.NotepadScreen;
 import com.viper.client.gui.ViperStartMenu;
 import com.viper.client.hud.HudRenderer;
 import com.viper.client.hud.element.CrosshairElement;
+import com.viper.client.hud.element.StopwatchElement;
 import com.viper.client.util.AttackTracker;
 import com.viper.client.util.ClickTracker;
 import net.fabricmc.api.ClientModInitializer;
@@ -41,6 +42,9 @@ public class ViperClient implements ClientModInitializer {
     private static KeyBinding noFogKey;
     private static KeyBinding openNotepadKey;
     private static KeyBinding freecamKey;
+    private static KeyBinding coordSnapperKey;
+    private static KeyBinding stopwatchKey;
+    private static KeyBinding freelookKey;
 
     private static boolean lastLeftDown = false;
     private static boolean lastRightDown = false;
@@ -137,6 +141,12 @@ public class ViperClient implements ClientModInitializer {
                 "key.viper.open_notepad", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F7, KeyBinding.Category.MISC));
         freecamKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.viper.freecam", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F6, KeyBinding.Category.MISC));
+        coordSnapperKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.viper.coord_snapper", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_J, KeyBinding.Category.MISC));
+        stopwatchKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.viper.stopwatch", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_K, KeyBinding.Category.MISC));
+        freelookKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.viper.freelook", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, KeyBinding.Category.MISC));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleHudKey.wasPressed()) {
@@ -190,7 +200,46 @@ public class ViperClient implements ClientModInitializer {
                 Config.save();
             }
 
-            // Waypoint chat-command
+            while (coordSnapperKey.wasPressed()) {
+                try {
+                    if (!Config.donutCoordSnapper) continue;
+                    if (client.player == null) continue;
+                    int x = (int) client.player.getX();
+                    int y = (int) client.player.getY();
+                    int z = (int) client.player.getZ();
+                    String coords = "/coords " + x + " " + y + " " + z;
+                    if (client.keyboard != null) {
+                        client.keyboard.setClipboard(coords);
+                    }
+                    client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fCoords copied: §f" + x + " " + y + " " + z), false);
+                } catch (Throwable ignored) {}
+            }
+
+            while (stopwatchKey.wasPressed()) {
+                StopwatchElement.toggle();
+                if (client.player != null) {
+                    client.player.sendMessage(net.minecraft.text.Text.literal(
+                            "§a[Viper] §fStopwatch " + (StopwatchElement.isRunning() ? "§astarted" : "§cpaused")), true);
+                }
+            }
+
+            // Freelook — halten → aktiv, loslassen → zurück
+            try {
+                long window = client.getWindow().getHandle();
+                boolean freelookHeld = GLFW.glfwGetKey(window,
+                        InputUtil.fromTranslationKey(freelookKey.getTranslationKey()).getCode()) == GLFW.GLFW_PRESS;
+                if (freelookHeld && client.player != null && !Config.freelookActive) {
+                    Config.freelookActive = true;
+                    Config.freelookYaw = client.player.getYaw();
+                    Config.freelookPitch = client.player.getPitch();
+                } else if (!freelookHeld && Config.freelookActive) {
+                    Config.freelookActive = false;
+                }
+                if (Config.freelookActive && client.player != null) {
+                    // yaw/pitch bleiben wo sie sind — spieler bewegt sich nicht mit
+                }
+            } catch (Throwable ignored) {}
+
             try {
                 if (client.player != null) {
                     String pending = pendingChatCommand;
@@ -208,6 +257,8 @@ public class ViperClient implements ClientModInitializer {
                         String id = entry.getKey();
                         if ("zoom".equals(id)) continue;
                         if (id.startsWith("macro")) continue;
+                        if ("stopwatch".equals(id)) continue;
+                        if ("freelook".equals(id)) continue;
                         int key = entry.getValue();
                         if (key <= 0) continue;
                         boolean isDown = GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS;
@@ -429,6 +480,22 @@ public class ViperClient implements ClientModInitializer {
             case "fullbright": Config.fullbright = !Config.fullbright; break;
             case "nofog": Config.noFog = !Config.noFog; break;
             case "fpsboost": Config.fpsBoost = !Config.fpsBoost; break;
+            case "stopwatch": Config.showStopwatch = !Config.showStopwatch; break;
+            case "clock": Config.showClock = !Config.showClock; break;
+            case "daycounter": Config.showDayCounter = !Config.showDayCounter; break;
+            case "playtime": Config.showPlaytime = !Config.showPlaytime; break;
+            case "memory": Config.showMemory = !Config.showMemory; break;
+            case "serveraddress": Config.showServerAddress = !Config.showServerAddress; break;
+            case "pinggraph": Config.showPingGraph = !Config.showPingGraph; break;
+            case "cooldown": Config.showCooldown = !Config.showCooldown; break;
+            case "tntcountdown": Config.showTntCountdown = !Config.showTntCountdown; break;
+            case "blockoutline": Config.thickBlockOutline = !Config.thickBlockOutline; break;
+            case "weatherchanger": Config.weatherChanger = !Config.weatherChanger; break;
+            case "timechanger": Config.timeChanger = !Config.timeChanger; break;
+            case "fogcustomizer": Config.fogCustomizer = !Config.fogCustomizer; break;
+            case "chattabs": Config.chatTabs = !Config.chatTabs; break;
+            case "chatheads": Config.chatHeads = !Config.chatHeads; break;
+            case "customf3": Config.customF3 = !Config.customF3; break;
         }
         Config.save();
         MinecraftClient client = MinecraftClient.getInstance();
