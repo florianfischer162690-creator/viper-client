@@ -12,6 +12,7 @@
     "AnchorOptimizerMixin",
     "GammaMixin",
     "FreecamMixin",
+    "FreecamInputMixin",
     "NametagMixin"
   ],
   "injectors": {
