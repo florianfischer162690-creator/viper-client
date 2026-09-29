@@ -5,6 +5,7 @@ import com.viper.client.util.Titles;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.state.EntityRenderState;
+import net.minecraft.entity.Entity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,10 +14,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityRenderer.class)
-public abstract class NametagMixin<T, S extends EntityRenderState> {
+public abstract class NametagMixin {
 
     @Inject(method = "updateRenderState", at = @At("TAIL"), require = 0)
-    private void viper_addTitle(T entity, S state, float tickDelta, CallbackInfo ci) {
+    private void viper_addTitle(Entity entity, EntityRenderState state, float tickDelta, CallbackInfo ci) {
         try {
             if (!Config.showTitle) return;
             if (state == null || state.displayName == null) return;
