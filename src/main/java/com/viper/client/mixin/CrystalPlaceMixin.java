@@ -15,7 +15,10 @@ public class CrystalPlaceMixin {
     @Shadow private int itemUseCooldown;
     @Shadow private int attackCooldown;
 
-    @Inject(method = "doItemUse", at = @At("HEAD"), require = 0)
+    private static int placeTicker = 0;
+    private static final int MIN_TICKS_BETWEEN_PLACES = 2; // 100ms
+
+    @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true, require = 0)
     private void viper_crystalPlace(CallbackInfo ci) {
         try {
             if (!Config.crystalOptimizer) return;
@@ -24,23 +27,22 @@ public class CrystalPlaceMixin {
             if (!(mc.player.getMainHandStack().isOf(Items.END_CRYSTAL)
                     || mc.player.getOffHandStack().isOf(Items.END_CRYSTAL))) return;
 
+            // zu schnell → blocken
+            if (placeTicker > 0) {
+                ci.cancel();
+                return;
+            }
+            placeTicker = MIN_TICKS_BETWEEN_PLACES;
+
             this.itemUseCooldown = 0;
             this.attackCooldown = 0;
         } catch (Throwable ignored) {}
     }
 
-    // jede tick auf 0 → kein 4-tick delay
     @Inject(method = "tick", at = @At("HEAD"), require = 0)
     private void viper_crystalTick(CallbackInfo ci) {
         try {
-            if (!Config.crystalOptimizer) return;
-            MinecraftClient mc = MinecraftClient.getInstance();
-            if (mc.player == null) return;
-            if (mc.player.getMainHandStack().isOf(Items.END_CRYSTAL)
-                    || mc.player.getOffHandStack().isOf(Items.END_CRYSTAL)) {
-                if (this.itemUseCooldown > 0) this.itemUseCooldown = 0;
-                if (this.attackCooldown > 0) this.attackCooldown = 0;
-            }
+            if (placeTicker > 0) placeTicker--;
         } catch (Throwable ignored) {}
     }
 }
