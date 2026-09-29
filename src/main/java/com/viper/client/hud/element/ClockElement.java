@@ -26,14 +26,14 @@ public class ClockElement extends HudElement {
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
         int accent = Config.getAccent();
 
-        long worldTime = 0;
+        long ticks = 0L;
         if (mc.world != null) {
-            worldTime = mc.world.getTimeOfDay() % 24000L;
+            ticks = mc.world.getTimeOfDay();
         }
 
-        long totalMinutes = ((worldTime + 6000L) % 24000L) * 60L / 1000L;
-        int hh = (int) (totalMinutes / 60);
-        int mm = (int) (totalMinutes % 60);
+        long totalTicks = (ticks + 6000L) % 24000L;
+        int hh = (int) (totalTicks / 1000L);
+        int mm = (int) ((totalTicks % 1000L) * 60L / 1000L);
 
         String label = "TIME";
         String value = String.format("%02d:%02d", hh, mm);

@@ -1,5 +1,6 @@
 package com.viper.client.mixin;
 
+import com.viper.client.util.ServerTabs;
 import com.viper.client.util.StaffTracker;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
@@ -19,6 +20,8 @@ public class TabListMixin {
     @Inject(method = "onPlayerList", at = @At("TAIL"), require = 0)
     private void viper_onPlayerList(PlayerListS2CPacket packet, CallbackInfo ci) {
         try {
+            if (!ServerTabs.showDonutTab()) return;
+
             ClientPlayNetworkHandler handler = (ClientPlayNetworkHandler) (Object) this;
             Collection<PlayerListEntry> entries = handler.getPlayerList();
             List<String> names = new ArrayList<>();

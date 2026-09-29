@@ -2,6 +2,7 @@ package com.viper.client.hud.element;
 
 import com.viper.client.config.Config;
 import com.viper.client.hud.HudRenderer.HudElement;
+import com.viper.client.util.ServerTabs;
 import com.viper.client.util.StaffTracker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -26,6 +27,8 @@ public class AdminHudElement extends HudElement {
 
     @Override
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
+        if (!ServerTabs.showDonutTab()) return 0;
+
         List<String> staff = StaffTracker.getStaffOnline();
         if (staff.isEmpty()) return 0;
 

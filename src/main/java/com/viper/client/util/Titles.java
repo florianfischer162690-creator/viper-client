@@ -14,9 +14,7 @@ public class Titles {
 
     private static final Set<String> BETA_TESTERS = new HashSet<>(Arrays.asList(
             "Vipez20",
-            "bloodywinterd",
-            "Test1",
-            "Test2"
+            "bloodywinterd"
     ));
 
     private static final Set<String> STAFF_USERS = new HashSet<>(Arrays.asList(
@@ -28,17 +26,16 @@ public class Titles {
             "Vipez20"
     ));
 
+    private static final Set<String> SUPPORTER_USERS = new HashSet<>(Arrays.asList(
+            "Vipez20"
+    ));
+
     public static final Title[] ALL_TITLES = {
             new Title("none",            "",                   0xFFFFFFFF, null),
             new Title("viper",           "VIPER",              0xFFA855F7, null),
             new Title("viper_pro",       "VIPER PRO",          0xFFC084FC, null),
             new Title("viper_legend",    "VIPER LEGEND",       0xFFFACC15, null),
-            new Title("viper_og",        "VIPER OG",           0xFFFF9E3D, null),
-            new Title("viper_supporter", "VIPER SUPPORTER",    0xFF23A55A, null),
-            new Title("pvp_god",         "PVP GOD",            0xFFFF3B30, null),
-            new Title("sweat",           "SWEAT",              0xFF3498DB, null),
-            new Title("king",            "KING",               0xFFFFC107, null),
-            new Title("legend",          "LEGEND",             0xFFFF69B4, null),
+            new Title("viper_supporter", "VIPER SUPPORTER",    0xFF23A55A, "supporter"),
             new Title("viper_alpha",     "VIPER ALPHA",        0xFF00FFFF, "alpha"),
             new Title("viper_beta",      "VIPER BETA TESTER",  0xFF7C3AED, "beta"),
             new Title("viper_staff",     "VIPER STAFF",        0xFF2ECC71, "staff"),
@@ -68,9 +65,15 @@ public class Titles {
                 case "staff": return STAFF_USERS.contains(username);
                 case "alpha": return BETA_TESTERS.contains(username) || DEV_USERS.contains(username);
                 case "owner": return OWNER_USERS.contains(username);
+                case "supporter": return SUPPORTER_USERS.contains(username);
             }
             return false;
         }
+    }
+
+    public static boolean isDevOrOwner(String username) {
+        if (username == null) return false;
+        return DEV_USERS.contains(username) || OWNER_USERS.contains(username);
     }
 
     public static Title getById(String id) {

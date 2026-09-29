@@ -19,7 +19,6 @@
     "BlockRotationMixin",
     "HugoInvseeMixin",
     "TabListMixin",
-    "FreelookMixin",
     "WeatherChangerMixin",
     "TimeChangerMixin",
     "ChatTabsMixin",

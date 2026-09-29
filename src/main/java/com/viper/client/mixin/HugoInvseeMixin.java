@@ -2,6 +2,7 @@ package com.viper.client.mixin;
 
 import com.viper.client.ViperClient;
 import com.viper.client.config.Config;
+import com.viper.client.util.ServerTabs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.text.Text;
@@ -17,16 +18,15 @@ public class HugoInvseeMixin {
     private void viper_hugoInvsee(Text message, CallbackInfo ci) {
         try {
             if (!Config.hugoAutoInvsee) return;
+            if (!ServerTabs.showHugoTab()) return;
             if (message == null) return;
 
             String text = message.getString();
             if (!text.contains("Gegner gefunden:")) return;
 
-            // format: "[HugoSMP] Gegner gefunden: <name>. Welt: ..."
             int idx = text.indexOf("Gegner gefunden:");
             if (idx < 0) return;
             String after = text.substring(idx + "Gegner gefunden:".length()).trim();
-            // bis zum ersten "." oder " " oder "," oder ende
             StringBuilder name = new StringBuilder();
             for (int i = 0; i < after.length(); i++) {
                 char c = after.charAt(i);
@@ -36,7 +36,6 @@ public class HugoInvseeMixin {
             String opponent = name.toString().trim();
             if (opponent.isEmpty()) return;
 
-            // in ~300ms invsee senden (verzögerung damit server ready ist)
             final String opponentName = opponent;
             new Thread(() -> {
                 try { Thread.sleep(300); } catch (InterruptedException ignored) {}

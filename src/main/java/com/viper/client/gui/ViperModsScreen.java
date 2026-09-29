@@ -19,6 +19,7 @@ public class ViperModsScreen extends Screen {
     private static final int SIDEBAR_W = 78;
     private static final int TAB_H = 28;
     private static final int CARD_H = 96;
+    private static final int CARD_H_TALL = 120;
     private static final int CARD_GAP = 8;
 
     private static final int COLOR_WHITE = 0xFFFFFFFF;
@@ -31,7 +32,7 @@ public class ViperModsScreen extends Screen {
 
     private int panelX, panelY, panelW, panelH;
     private int activeTab = 0;
-    private final String[] TABS = {"HUD", "PVP", "HUGOSMP", "DONUTSMP", "CUSTOM", "THEME", "CONFIG"};
+    private final String[] TABS = {"HUD", "PVP", "HUGOSMP", "DONUTSMP", "THEME", "CONFIG"};
 
     private final List<List<ModCard>> TAB_MODULES = new ArrayList<>();
     private static final String[] SIDEBAR_LABELS = {"COSMETICS", "SKINS", "EMOTES", "FRIENDS"};
@@ -98,7 +99,7 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("combo", "COMBO", "Show hit combo", () -> Config.showCombo, v -> Config.showCombo = v));
         hud.add(new ModCard("direction", "DIRECTION", "Show compass direction", () -> Config.showDirection, v -> Config.showDirection = v));
         hud.add(new ModCard("speed", "SPEED", "Show movement speed", () -> Config.showSpeed, v -> Config.showSpeed = v));
-        hud.add(new ModCard("hudtoggle", "HUD MASTER", "Toggle entire HUD (F4)", () -> Config.hudEnabled, v -> Config.hudEnabled = v));
+        hud.add(new ModCard("hudtoggle", "HUD MASTER", "Toggle entire HUD", () -> Config.hudEnabled, v -> Config.hudEnabled = v));
         hud.add(new ModCard("lowhealth", "LOW HEALTH", "Red border on low HP", () -> Config.lowHealthWarning, v -> Config.lowHealthWarning = v));
         hud.add(new ModCard("inventoryhud", "INVENTORY HUD", "Show inventory in HUD", () -> Config.showInventoryHud, v -> Config.showInventoryHud = v));
 
@@ -111,7 +112,11 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("absorption", "ABSORPTION", "Show absorption hearts", () -> Config.showAbsorptionHearts, v -> Config.showAbsorptionHearts = v));
         hud.add(new ModCard("shieldstatus", "SHIELD STATUS", "Show if enemy is blocking", () -> Config.showShieldStatus, v -> Config.showShieldStatus = v));
         hud.add(new ModCard("waypoints", "WAYPOINTS", "Show closest waypoint (/wp set <name>)", () -> Config.showWaypoints, v -> Config.showWaypoints = v));
-        hud.add(new ModCard("stopwatch", "STOPWATCH", "Toggle with keybind (K)", () -> Config.showStopwatch, v -> Config.showStopwatch = v));
+
+        ModCard stopwatchCard = new ModCard("stopwatch", "STOPWATCH", "Toggle + reset with keybinds", () -> Config.showStopwatch, v -> Config.showStopwatch = v);
+        stopwatchCard.tall = true;
+        hud.add(stopwatchCard);
+
         hud.add(new ModCard("clock", "CLOCK", "Show world time", () -> Config.showClock, v -> Config.showClock = v));
         hud.add(new ModCard("daycounter", "DAY COUNTER", "Days since world start", () -> Config.showDayCounter, v -> Config.showDayCounter = v));
         hud.add(new ModCard("playtime", "PLAYTIME", "Time since game start", () -> Config.showPlaytime, v -> Config.showPlaytime = v));
@@ -120,6 +125,8 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("pinggraph", "PING GRAPH", "Show ping history graph", () -> Config.showPingGraph, v -> Config.showPingGraph = v));
         hud.add(new ModCard("cooldown", "COOLDOWN", "Show item cooldowns", () -> Config.showCooldown, v -> Config.showCooldown = v));
         hud.add(new ModCard("tntcountdown", "TNT COUNTDOWN", "Show TNT fuse timer", () -> Config.showTntCountdown, v -> Config.showTntCountdown = v));
+        hud.add(new ModCard("chattabs", "CHAT TABS", "Filter chat by tab", () -> Config.chatTabs, v -> Config.chatTabs = v));
+        hud.add(new ModCard("chatheads", "CHAT HEADS", "Show player prefix in chat", () -> Config.chatHeads, v -> Config.chatHeads = v));
 
         ModCard titleCard = new ModCard("title", "TITLE", "Click to select your title", () -> Config.showTitle, v -> Config.showTitle = v);
         titleCard.expandable = true;
@@ -128,7 +135,7 @@ public class ViperModsScreen extends Screen {
         TAB_MODULES.add(hud);
 
         List<ModCard> pvp = new ArrayList<>();
-        pvp.add(new ModCard("togglesprint", "TOGGLE SPRINT", "Auto-sprint (R)", () -> Config.toggleSprint, v -> Config.toggleSprint = v));
+        pvp.add(new ModCard("togglesprint", "TOGGLE SPRINT", "Auto-sprint", () -> Config.toggleSprint, v -> Config.toggleSprint = v));
         pvp.add(new ModCard("togglesneak", "TOGGLE SNEAK", "Auto-sneak", () -> Config.toggleSneak, v -> Config.toggleSneak = v));
         pvp.add(new ModCard("zoom", "ZOOM", "Hold key to zoom", () -> Config.zoomEnabled, v -> Config.zoomEnabled = v));
 
@@ -149,13 +156,13 @@ public class ViperModsScreen extends Screen {
         pvp.add(hitmarkerCard);
 
         pvp.add(new ModCard("appleskin", "APPLESKIN", "Food hover info", () -> Config.showAppleskin, v -> Config.showAppleskin = v));
-        pvp.add(new ModCard("fullbright", "FULLBRIGHT", "Night vision (F8)", () -> Config.fullbright, v -> Config.fullbright = v));
-        pvp.add(new ModCard("nofog", "NO FOG", "Remove fog (F9)", () -> Config.noFog, v -> Config.noFog = v));
+        pvp.add(new ModCard("fullbright", "FULLBRIGHT", "Night vision", () -> Config.fullbright, v -> Config.fullbright = v));
+        pvp.add(new ModCard("nofog", "NO FOG", "Remove fog", () -> Config.noFog, v -> Config.noFog = v));
         pvp.add(new ModCard("fpsboost", "FPS BOOST", "Aggressive settings for max FPS", () -> Config.fpsBoost, v -> applyFpsBoost(v)));
         pvp.add(new ModCard("chattimestamps", "CHAT TIMESTAMPS", "Show time in chat", () -> Config.chatTimestamps, v -> Config.chatTimestamps = v));
         pvp.add(new ModCard("crystaloptimizer", "CRYSTAL OPTIMIZER", "Fast crystal place (no render delay)", () -> Config.crystalOptimizer, v -> Config.crystalOptimizer = v));
         pvp.add(new ModCard("anchoroptimizer", "ANCHOR OPTIMIZER", "Fast anchor place (no render delay)", () -> Config.anchorOptimizer, v -> Config.anchorOptimizer = v));
-        pvp.add(new ModCard("freecam", "FREECAM", "Camera detaches (F6)", () -> Config.freecamEnabled, v -> {
+        pvp.add(new ModCard("freecam", "FREECAM", "Camera detaches", () -> Config.freecamEnabled, v -> {
             Config.freecamEnabled = v;
             MinecraftClient mc = MinecraftClient.getInstance();
             if (v && mc.player != null) {
@@ -167,9 +174,12 @@ public class ViperModsScreen extends Screen {
             }
         }));
 
-        // Block 2 mixins
         pvp.add(new ModCard("blockoutline", "BLOCK OUTLINE", "Thicker block selection outline", () -> Config.thickBlockOutline, v -> Config.thickBlockOutline = v));
-        pvp.add(new ModCard("freelook", "FREELOOK", "Hold key to look around freely", () -> Config.freelookActive, v -> Config.freelookActive = v));
+        pvp.add(new ModCard("totemwarning", "TOTEM WARNING", "Warn when no totem equipped", () -> Config.donutTotemWarning, v -> Config.donutTotemWarning = v));
+        pvp.add(new ModCard("weatherchanger", "WEATHER CHANGER", "Client-side weather override", () -> Config.weatherChanger, v -> Config.weatherChanger = v));
+        pvp.add(new ModCard("timechanger", "TIME CHANGER", "Client-side time override", () -> Config.timeChanger, v -> Config.timeChanger = v));
+        pvp.add(new ModCard("fogcustomizer", "FOG CUSTOMIZER", "Custom fog distance", () -> Config.fogCustomizer, v -> Config.fogCustomizer = v));
+        pvp.add(new ModCard("customf3", "CUSTOM F3", "Customize debug screen", () -> Config.customF3, v -> Config.customF3 = v));
 
         ModCard macrosCard = new ModCard("chatmacros", "CHAT MACROS", "Click to edit presets", () -> true, v -> {});
         macrosCard.expandable = true;
@@ -187,25 +197,14 @@ public class ViperModsScreen extends Screen {
         // DONUTSMP tab
         List<ModCard> donut = new ArrayList<>();
         donut.add(new ModCard("adminhud", "ADMIN HUD", "Show when staff is online", () -> Config.donutAdminHud, v -> Config.donutAdminHud = v));
-        donut.add(new ModCard("coordsnapper", "COORD SNAPPER", "Copy coordinates to clipboard (J)", () -> Config.donutCoordSnapper, v -> Config.donutCoordSnapper = v));
+        donut.add(new ModCard("coordsnapper", "COORD SNAPPER", "Copy coordinates to clipboard", () -> Config.donutCoordSnapper, v -> Config.donutCoordSnapper = v));
         donut.add(new ModCard("regionmap", "REGION MAP", "Show DonutSMP region overlay", () -> Config.donutRegionMap, v -> Config.donutRegionMap = v));
         donut.add(new ModCard("balancetracker", "BALANCE TRACKER", "Show player balance on look", () -> Config.donutBalanceTracker, v -> Config.donutBalanceTracker = v));
         donut.add(new ModCard("echestviewer", "ENDER CHEST VIEWER", "Remember ender chest contents", () -> Config.donutEchestViewer, v -> Config.donutEchestViewer = v));
-        donut.add(new ModCard("totemwarning", "TOTEM WARNING", "Warn when no totem equipped", () -> Config.donutTotemWarning, v -> Config.donutTotemWarning = v));
         donut.add(new ModCard("chestfilter", "CHEST FILTER", "Highlight valuable items in chests", () -> Config.donutChestFilter, v -> Config.donutChestFilter = v));
         donut.add(new ModCard("antiscam", "ANTI-SCAM", "Filter scam messages from chat", () -> Config.donutAntiScam, v -> Config.donutAntiScam = v));
         donut.add(new ModCard("spawnernotifier", "SPAWNER NOTIFIER", "Warn when spawner is nearby", () -> Config.donutSpawnerNotifier, v -> Config.donutSpawnerNotifier = v));
         TAB_MODULES.add(donut);
-
-        // CUSTOM tab — mixins/visuals
-        List<ModCard> custom = new ArrayList<>();
-        custom.add(new ModCard("weatherchanger", "WEATHER CHANGER", "Client-side weather override", () -> Config.weatherChanger, v -> Config.weatherChanger = v));
-        custom.add(new ModCard("timechanger", "TIME CHANGER", "Client-side time override", () -> Config.timeChanger, v -> Config.timeChanger = v));
-        custom.add(new ModCard("fogcustomizer", "FOG CUSTOMIZER", "Custom fog distance", () -> Config.fogCustomizer, v -> Config.fogCustomizer = v));
-        custom.add(new ModCard("chattabs", "CHAT TABS", "Filter chat by tab", () -> Config.chatTabs, v -> Config.chatTabs = v));
-        custom.add(new ModCard("chatheads", "CHAT HEADS", "Show player prefix in chat", () -> Config.chatHeads, v -> Config.chatHeads = v));
-        custom.add(new ModCard("customf3", "CUSTOM F3", "Customize debug screen", () -> Config.customF3, v -> Config.customF3 = v));
-        TAB_MODULES.add(custom);
 
         TAB_MODULES.add(new ArrayList<>()); // THEME
         TAB_MODULES.add(new ArrayList<>()); // CONFIG
@@ -249,6 +248,7 @@ public class ViperModsScreen extends Screen {
         if (expandedCard != null && expandedCard.equals(card.id) && card.expandable) {
             return CARD_H + dropdownHeight(card);
         }
+        if (card.tall) return CARD_H_TALL;
         return CARD_H;
     }
 
@@ -290,7 +290,10 @@ public class ViperModsScreen extends Screen {
             String tab = TABS[i];
             int tw = this.textRenderer.getWidth(tab) + 20;
             boolean active = (i == activeTab);
-            int textColor = active ? COLOR_WHITE : COLOR_MUTED;
+            boolean locked = false;
+            if (i == 2 && !com.viper.client.util.ServerTabs.showHugoTab()) locked = true;
+            if (i == 3 && !com.viper.client.util.ServerTabs.showDonutTab()) locked = true;
+            int textColor = locked ? 0xFF4a4a5a : (active ? COLOR_WHITE : COLOR_MUTED);
             if (active) {
                 context.fill(tx, panelY + 8, tx + tw, panelY + 32, accentBg);
                 context.drawText(this.textRenderer, "§l" + tab, tx + 10, panelY + 16, textColor, false);
@@ -322,8 +325,8 @@ public class ViperModsScreen extends Screen {
 
         context.fill(panelX + SIDEBAR_W + 1, panelY + TAB_H + 18, panelX + panelW, panelY + TAB_H + 19, 0xFF2a1a3a);
 
-        if (activeTab == 5) renderThemeTab(context, mouseX, mouseY);
-        else if (activeTab == 6) renderConfigTab(context, mouseX, mouseY, accent);
+        if (activeTab == 4) renderThemeTab(context, mouseX, mouseY);
+        else if (activeTab == 5) renderConfigTab(context, mouseX, mouseY, accent);
         else if (activeTab < TAB_MODULES.size()) renderCardsTab(context, mouseX, mouseY, accent);
 
         if (awaitingKeybindId != null) {
@@ -595,24 +598,64 @@ public class ViperModsScreen extends Screen {
 
         boolean expanded = expandedCard != null && expandedCard.equals(card.id) && card.expandable;
         if (!expanded && !card.expandable) {
-            int kbY = y + h - 26;
-            int kbH = 18;
-            int kbX = x + 14;
-            int kbW = w - 28;
-            int key = Config.getKeybind(card.id);
-            String keyName = key > 0 ? getKeyName(key) : "NONE";
-            boolean isSetting = card.id.equals(awaitingKeybindId);
-            boolean kbHovered = mouseX >= kbX && mouseX <= kbX + kbW && mouseY >= kbY && mouseY <= kbY + kbH;
-            context.fill(kbX, kbY, kbX + kbW, kbY + kbH, isSetting ? 0xFF3a1a2a : COLOR_KEYBG);
-            int kbBorder = isSetting ? accent : (kbHovered ? accent : COLOR_KEYBORDER);
-            context.fill(kbX, kbY, kbX + kbW, kbY + 1, kbBorder);
-            context.fill(kbX, kbY + kbH - 1, kbX + kbW, kbY + kbH, kbBorder);
-            context.fill(kbX, kbY, kbX + 1, kbY + kbH, kbBorder);
-            context.fill(kbX + kbW - 1, kbY, kbX + kbW, kbY + kbH, kbBorder);
-            if (isSetting) {
-                context.drawCenteredTextWithShadow(this.textRenderer, "§ePRESS A KEY...", kbX + kbW / 2, kbY + 5, 0xFFFFC107);
+            if (card.tall && card.id.equals("stopwatch")) {
+                int kbY1 = y + h - 52;
+                int kbY2 = y + h - 26;
+                int kbH = 18;
+                int kbX = x + 14;
+                int kbW = w - 28;
+
+                int key1 = Config.getKeybind("stopwatch");
+                String keyName1 = key1 > 0 ? getKeyName(key1) : "NONE";
+                boolean isSetting1 = "stopwatch".equals(awaitingKeybindId);
+                boolean kbHovered1 = mouseX >= kbX && mouseX <= kbX + kbW && mouseY >= kbY1 && mouseY <= kbY1 + kbH;
+                context.fill(kbX, kbY1, kbX + kbW, kbY1 + kbH, isSetting1 ? 0xFF3a1a2a : COLOR_KEYBG);
+                int kbBorder1 = isSetting1 ? accent : (kbHovered1 ? accent : COLOR_KEYBORDER);
+                context.fill(kbX, kbY1, kbX + kbW, kbY1 + 1, kbBorder1);
+                context.fill(kbX, kbY1 + kbH - 1, kbX + kbW, kbY1 + kbH, kbBorder1);
+                context.fill(kbX, kbY1, kbX + 1, kbY1 + kbH, kbBorder1);
+                context.fill(kbX + kbW - 1, kbY1, kbX + kbW, kbY1 + kbH, kbBorder1);
+                if (isSetting1) {
+                    context.drawCenteredTextWithShadow(this.textRenderer, "§ePRESS A KEY...", kbX + kbW / 2, kbY1 + 5, 0xFFFFC107);
+                } else {
+                    context.drawText(this.textRenderer, "§7TOGGLE: §f" + keyName1, kbX + 8, kbY1 + 5, COLOR_WHITE, false);
+                }
+
+                int key2 = Config.getKeybind("stopwatch_reset");
+                String keyName2 = key2 > 0 ? getKeyName(key2) : "NONE";
+                boolean isSetting2 = "stopwatch_reset".equals(awaitingKeybindId);
+                boolean kbHovered2 = mouseX >= kbX && mouseX <= kbX + kbW && mouseY >= kbY2 && mouseY <= kbY2 + kbH;
+                context.fill(kbX, kbY2, kbX + kbW, kbY2 + kbH, isSetting2 ? 0xFF3a1a2a : COLOR_KEYBG);
+                int kbBorder2 = isSetting2 ? accent : (kbHovered2 ? accent : COLOR_KEYBORDER);
+                context.fill(kbX, kbY2, kbX + kbW, kbY2 + 1, kbBorder2);
+                context.fill(kbX, kbY2 + kbH - 1, kbX + kbW, kbY2 + kbH, kbBorder2);
+                context.fill(kbX, kbY2, kbX + 1, kbY2 + kbH, kbBorder2);
+                context.fill(kbX + kbW - 1, kbY2, kbX + kbW, kbY2 + kbH, kbBorder2);
+                if (isSetting2) {
+                    context.drawCenteredTextWithShadow(this.textRenderer, "§ePRESS A KEY...", kbX + kbW / 2, kbY2 + 5, 0xFFFFC107);
+                } else {
+                    context.drawText(this.textRenderer, "§7RESET: §f" + keyName2, kbX + 8, kbY2 + 5, COLOR_WHITE, false);
+                }
             } else {
-                context.drawText(this.textRenderer, "§7key: §f" + keyName, kbX + 8, kbY + 5, COLOR_WHITE, false);
+                int kbY = y + h - 26;
+                int kbH = 18;
+                int kbX = x + 14;
+                int kbW = w - 28;
+                int key = Config.getKeybind(card.id);
+                String keyName = key > 0 ? getKeyName(key) : "NONE";
+                boolean isSetting = card.id.equals(awaitingKeybindId);
+                boolean kbHovered = mouseX >= kbX && mouseX <= kbX + kbW && mouseY >= kbY && mouseY <= kbY + kbH;
+                context.fill(kbX, kbY, kbX + kbW, kbY + kbH, isSetting ? 0xFF3a1a2a : COLOR_KEYBG);
+                int kbBorder = isSetting ? accent : (kbHovered ? accent : COLOR_KEYBORDER);
+                context.fill(kbX, kbY, kbX + kbW, kbY + 1, kbBorder);
+                context.fill(kbX, kbY + kbH - 1, kbX + kbW, kbY + kbH, kbBorder);
+                context.fill(kbX, kbY, kbX + 1, kbY + kbH, kbBorder);
+                context.fill(kbX + kbW - 1, kbY, kbX + kbW, kbY + kbH, kbBorder);
+                if (isSetting) {
+                    context.drawCenteredTextWithShadow(this.textRenderer, "§ePRESS A KEY...", kbX + kbW / 2, kbY + 5, 0xFFFFC107);
+                } else {
+                    context.drawText(this.textRenderer, "§7key: §f" + keyName, kbX + 8, kbY + 5, COLOR_WHITE, false);
+                }
             }
         } else if (expanded) {
             drawDropdown(context, card, x, y + CARD_H, w, accent, mouseX, mouseY);
@@ -947,7 +990,7 @@ public class ViperModsScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (awaitingKeybindId != null) return false;
-        if (activeTab >= 5) return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        if (activeTab >= 4) return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         if (maxScroll > 0) {
             scrollOffset -= (int) (verticalAmount * 20);
             if (scrollOffset < 0) scrollOffset = 0;
@@ -1006,12 +1049,16 @@ public class ViperModsScreen extends Screen {
         for (int i = 0; i < TABS.length; i++) {
             int tw = this.textRenderer.getWidth(TABS[i]) + 20;
             if (mx >= tx && mx <= tx + tw && my >= panelY + 8 && my <= panelY + 32) {
+                boolean blocked = false;
+                if (i == 2 && !com.viper.client.util.ServerTabs.showHugoTab()) blocked = true;
+                if (i == 3 && !com.viper.client.util.ServerTabs.showDonutTab()) blocked = true;
+                if (blocked) return true;
                 activeTab = i; scrollOffset = 0; expandedCard = null; return true;
             }
             tx += tw + 4;
         }
 
-        if (activeTab == 5) {
+        if (activeTab == 4) {
             int x0 = panelX + SIDEBAR_W + 30;
             int y0 = panelY + TAB_H + 60;
             int swatchSize = 60;
@@ -1029,7 +1076,7 @@ public class ViperModsScreen extends Screen {
             return true;
         }
 
-        if (activeTab == 6) {
+        if (activeTab == 5) {
             int x0 = panelX + SIDEBAR_W + 30;
             int y0 = panelY + TAB_H + 60;
             int btnW = 240;
@@ -1124,13 +1171,29 @@ public class ViperModsScreen extends Screen {
                         return true;
                     }
 
-                    int kbY = cellY + CARD_H - 26;
-                    int kbH = 18;
-                    int kbX = cellX + 14;
-                    int kbW = cw - 28;
-                    if (my >= kbY && my <= kbY + kbH && mx >= kbX && mx <= kbX + kbW) {
-                        awaitingKeybindId = card.id;
-                        return true;
+                    if (card.tall && card.id.equals("stopwatch")) {
+                        int kbY1 = cellY + ch - 52;
+                        int kbY2 = cellY + ch - 26;
+                        int kbH = 18;
+                        int kbX = cellX + 14;
+                        int kbW = cw - 28;
+                        if (my >= kbY1 && my <= kbY1 + kbH && mx >= kbX && mx <= kbX + kbW) {
+                            awaitingKeybindId = "stopwatch";
+                            return true;
+                        }
+                        if (my >= kbY2 && my <= kbY2 + kbH && mx >= kbX && mx <= kbX + kbW) {
+                            awaitingKeybindId = "stopwatch_reset";
+                            return true;
+                        }
+                    } else {
+                        int kbY = cellY + CARD_H - 26;
+                        int kbH = 18;
+                        int kbX = cellX + 14;
+                        int kbW = cw - 28;
+                        if (my >= kbY && my <= kbY + kbH && mx >= kbX && mx <= kbX + kbW) {
+                            awaitingKeybindId = card.id;
+                            return true;
+                        }
                     }
 
                     if (card.isAction) {
@@ -1291,6 +1354,7 @@ public class ViperModsScreen extends Screen {
         String id, title, description;
         boolean expandable = false;
         boolean isAction = false;
+        boolean tall = false;
         java.util.function.Supplier<Boolean> getter;
         java.util.function.Consumer<Boolean> setter;
         ModCard(String id, String title, String desc, java.util.function.Supplier<Boolean> getter, java.util.function.Consumer<Boolean> setter) {

@@ -1,6 +1,7 @@
 package com.viper.client.mixin;
 
 import com.viper.client.config.Config;
+import com.viper.client.util.ServerTabs;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.render.block.BlockModelRenderer;
@@ -31,6 +32,7 @@ public class BlockRotationMixin {
             CallbackInfo ci) {
         try {
             if (!Config.antiBlockRotation) return;
+            if (!ServerTabs.showHugoTab()) return;
             if (state == null || pos == null) return;
             if (!isRotationBlock(state)) return;
 
@@ -57,6 +59,7 @@ public class BlockRotationMixin {
             CallbackInfo ci) {
         try {
             if (!Config.antiBlockRotation) return;
+            if (!ServerTabs.showHugoTab()) return;
             if (state == null || pos == null) return;
             if (!isRotationBlock(state)) return;
 

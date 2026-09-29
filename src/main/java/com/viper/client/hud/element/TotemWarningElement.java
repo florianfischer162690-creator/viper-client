@@ -26,11 +26,9 @@ public class TotemWarningElement extends HudElement {
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
         if (mc.player == null) return 0;
 
-        // hat der spieler totem in offhand?
         boolean hasTotem = mc.player.getOffHandStack().isOf(Items.TOTEM_OF_UNDYING);
         if (hasTotem) return 0;
 
-        // blinken
         long t = System.currentTimeMillis();
         float pulse = (float) (Math.sin(t / 200.0) * 0.5 + 0.5);
         int alpha = (int) (120 + pulse * 135);

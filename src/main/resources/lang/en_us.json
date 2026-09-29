@@ -7,6 +7,8 @@
   "key.viper.no_fog": "Toggle No-Fog",
   "key.viper.zoom": "Zoom",
   "key.viper.open_notepad": "Open Notepad",
-  "key.viper.freecam": "Freecam"
+  "key.viper.freecam": "Freecam",
   "key.viper.coord_snapper": "Coord Snapper",
+  "key.viper.stopwatch": "Stopwatch Toggle",
+  "key.viper.stopwatch_reset": "Stopwatch Reset"
 }
