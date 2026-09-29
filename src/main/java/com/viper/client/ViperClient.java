@@ -1,10 +1,14 @@
 package com.viper.client;
 
 import com.viper.client.config.Config;
+import com.viper.client.gui.ChatTabsUI;
 import com.viper.client.gui.NotepadScreen;
 import com.viper.client.gui.ViperStartMenu;
 import com.viper.client.hud.HudRenderer;
+import com.viper.client.hud.element.AttackIndicatorElement;
+import com.viper.client.hud.element.BlockOutlineRenderer;
 import com.viper.client.hud.element.CrosshairElement;
+import com.viper.client.hud.element.DamageTintRenderer;
 import com.viper.client.hud.element.StopwatchElement;
 import com.viper.client.util.AttackTracker;
 import com.viper.client.util.ClickTracker;
@@ -14,8 +18,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.ActionResult;
@@ -42,8 +44,6 @@ public class ViperClient implements ClientModInitializer {
     private static final boolean[] macroPressedState = new boolean[6];
     private static final long[] macroLastSend = new long[6];
 
-    private static final long[] actionLastSend = new long[16];
-
     @Override
     public void onInitializeClient() {
         LOGGER.info("[Viper V1] initializing...");
@@ -58,6 +58,9 @@ public class ViperClient implements ClientModInitializer {
         } catch (Throwable ignored) {}
 
         HudRenderer.init();
+        BlockOutlineRenderer.register();
+        DamageTintRenderer.register();
+        ChatTabsUI.register();
 
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             try {
@@ -72,6 +75,15 @@ public class ViperClient implements ClientModInitializer {
                     double reach = Math.sqrt(dx * dx + dy * dy + dz * dz);
                     AttackTracker.registerHit(reach);
                     CrosshairElement.triggerHitMarker();
+
+                    boolean crit = player.fallDistance > 0.0f && !player.isOnGround() && !player.isClimbing() && !player.isTouchingWater();
+                    boolean sweep = false;
+                    try {
+                        sweep = player.getMainHandStack().getItem() instanceof net.minecraft.item.SwordItem
+                                && player.getAttackCooldownProgress(0.5f) >= 1.0f
+                                && !crit;
+                    } catch (Throwable ignored) {}
+                    AttackIndicatorElement.registerAttack(crit, sweep);
                 }
             } catch (Throwable ignored) {}
             return ActionResult.PASS;
@@ -119,7 +131,6 @@ public class ViperClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             try {
-                // Mod-menu öffnen — FEST auf RIGHT SHIFT
                 long window = client.getWindow().getHandle();
                 boolean menuDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
                 boolean menuWasDown = keyPressedState.getOrDefault("__open_menu__", false);
@@ -133,7 +144,6 @@ public class ViperClient implements ClientModInitializer {
             try {
                 long window = client.getWindow().getHandle();
                 if (client.currentScreen == null) {
-                    // alle keybinds aus Config prüfen
                     for (Map.Entry<String, Integer> entry : new HashMap<>(Config.keybinds).entrySet()) {
                         String id = entry.getKey();
                         int key = entry.getValue();
@@ -143,7 +153,6 @@ public class ViperClient implements ClientModInitializer {
                         boolean wasDown = keyPressedState.getOrDefault(id, false);
 
                         if (isDown && !wasDown) {
-                            // aktionen
                             switch (id) {
                                 case "notepad":
                                     client.setScreen(new NotepadScreen());
@@ -407,6 +416,7 @@ public class ViperClient implements ClientModInitializer {
             case "fullbright": Config.fullbright = !Config.fullbright; break;
             case "nofog": Config.noFog = !Config.noFog; break;
             case "fpsboost": Config.fpsBoost = !Config.fpsBoost; break;
+            case "stopwatch": Config.showStopwatch = !Config.showStopwatch; break;
             case "clock": Config.showClock = !Config.showClock; break;
             case "daycounter": Config.showDayCounter = !Config.showDayCounter; break;
             case "playtime": Config.showPlaytime = !Config.showPlaytime; break;
@@ -415,10 +425,13 @@ public class ViperClient implements ClientModInitializer {
             case "pinggraph": Config.showPingGraph = !Config.showPingGraph; break;
             case "cooldown": Config.showCooldown = !Config.showCooldown; break;
             case "tntcountdown": Config.showTntCountdown = !Config.showTntCountdown; break;
+            case "attackindicator": Config.showAttackIndicator = !Config.showAttackIndicator; break;
+            case "deathinfo": Config.showDeathInfo = !Config.showDeathInfo; break;
             case "blockoutline": Config.thickBlockOutline = !Config.thickBlockOutline; break;
+            case "damagetint": Config.damageTint = !Config.damageTint; break;
+            case "itemphysics": Config.itemPhysics = !Config.itemPhysics; break;
             case "weatherchanger": Config.weatherChanger = !Config.weatherChanger; break;
             case "timechanger": Config.timeChanger = !Config.timeChanger; break;
-            case "fogcustomizer": Config.fogCustomizer = !Config.fogCustomizer; break;
             case "chattabs": Config.chatTabs = !Config.chatTabs; break;
             case "chatheads": Config.chatHeads = !Config.chatHeads; break;
             case "customf3": Config.customF3 = !Config.customF3; break;
@@ -426,7 +439,6 @@ public class ViperClient implements ClientModInitializer {
             case "hugoinvsee": Config.hugoAutoInvsee = !Config.hugoAutoInvsee; break;
             case "antirotation": Config.antiBlockRotation = !Config.antiBlockRotation; break;
             case "adminhud": Config.donutAdminHud = !Config.donutAdminHud; break;
-            case "coordsnapper-toggle": Config.donutCoordSnapper = !Config.donutCoordSnapper; break;
         }
         Config.save();
         MinecraftClient client = MinecraftClient.getInstance();

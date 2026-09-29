@@ -27,8 +27,7 @@ public class ChatTabsMixin {
             boolean matches = false;
             switch (tab) {
                 case "party":
-                    matches = raw.contains("[Party]") || raw.contains("§9[Party]")
-                            || raw.toLowerCase().contains("party >");
+                    matches = raw.contains("[Party]") || raw.toLowerCase().contains("party >");
                     break;
                 case "guild":
                     matches = raw.contains("[Guild]") || raw.contains("[Clan]")
@@ -36,9 +35,8 @@ public class ChatTabsMixin {
                             || raw.toLowerCase().contains("clan >");
                     break;
                 case "whisper":
-                    matches = raw.contains("→ you") || raw.contains("-> you")
-                            || raw.contains("whispers") || raw.contains("[MSG]")
-                            || raw.contains("§7[§d");
+                    matches = raw.contains("whispers") || raw.contains("[MSG]")
+                            || raw.contains("→ you") || raw.contains("-> you");
                     break;
                 case "public":
                     matches = !raw.contains("[Party]") && !raw.contains("[Guild]")

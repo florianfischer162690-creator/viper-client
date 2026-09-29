@@ -76,7 +76,6 @@ public class Config {
     public static boolean showSaturationBar = true;
     public static boolean showAbsorptionHearts = true;
     public static boolean showShieldStatus = true;
-    public static boolean customGlintColor = true;
 
     public static boolean freecamEnabled = false;
     public static double freecamX = 0;
@@ -104,64 +103,36 @@ public class Config {
     public static boolean showWaypoints = true;
     public static Map<String, WaypointData> waypoints = new HashMap<>();
 
-    // STOPWATCH
+    // HUD ELEMENTS
     public static boolean showStopwatch = true;
-
-    // CLOCK
     public static boolean showClock = true;
-
-    // DAY COUNTER
     public static boolean showDayCounter = true;
-
-    // PLAYTIME
     public static boolean showPlaytime = true;
-
-    // MEMORY
     public static boolean showMemory = true;
-
-    // SERVER ADDRESS
     public static boolean showServerAddress = true;
-
-    // PING GRAPH
     public static boolean showPingGraph = true;
-
-    // COOLDOWN
     public static boolean showCooldown = true;
     public static boolean showCooldownIdle = false;
-
-    // TNT COUNTDOWN
     public static boolean showTntCountdown = true;
+    public static boolean showAttackIndicator = true;
+    public static boolean showDeathInfo = true;
 
-    // BLOCK OUTLINE
+    // MIXIN-VISUALS
     public static boolean thickBlockOutline = true;
     public static int blockOutlineExpansion = 25;
-
-    // FREELOOK
-    public static boolean freelookActive = false;
-    public static float freelookYaw = 0;
-    public static float freelookPitch = 0;
-
-    // WEATHER CHANGER
+    public static boolean damageTint = true;
+    public static int damageTintIntensity = 120;
+    public static boolean itemPhysics = false;
     public static boolean weatherChanger = false;
     public static String weatherType = "off";
-
-    // TIME CHANGER
     public static boolean timeChanger = false;
     public static int timeValue = -1;
-
-    // FOG CUSTOMIZER
     public static boolean fogCustomizer = false;
     public static float fogStart = 10.0f;
     public static float fogEnd = 200.0f;
-
-    // CHAT TABS
     public static boolean chatTabs = false;
     public static String activeChatTab = "all";
-
-    // CHAT HEADS
     public static boolean chatHeads = false;
-
-    // CUSTOM F3
     public static boolean customF3 = false;
     public static boolean f3ShowChunk = true;
     public static boolean f3ShowBiome = true;
@@ -172,6 +143,11 @@ public class Config {
     public static boolean f3ShowPing = true;
     public static boolean f3ShowMem = true;
     public static boolean f3ShowSystemInfo = true;
+
+    // SCOREBOARD
+    public static boolean hideScoreboard = false;
+    public static boolean fakeScoreboard = false;
+    public static String scoreboardFakeText = "Viper V1|Kills: 0|Rank: Owner";
 
     public static class WaypointData {
         public String name;
@@ -373,7 +349,6 @@ public class Config {
         showSaturationBar = d.showSaturationBar;
         showAbsorptionHearts = d.showAbsorptionHearts;
         showShieldStatus = d.showShieldStatus;
-        customGlintColor = d.customGlintColor;
         freecamEnabled = d.freecamEnabled;
         freecamX = d.freecamX;
         freecamY = d.freecamY;
@@ -403,11 +378,13 @@ public class Config {
         showCooldown = d.showCooldown;
         showCooldownIdle = d.showCooldownIdle;
         showTntCountdown = d.showTntCountdown;
+        showAttackIndicator = d.showAttackIndicator;
+        showDeathInfo = d.showDeathInfo;
         thickBlockOutline = d.thickBlockOutline;
         blockOutlineExpansion = d.blockOutlineExpansion;
-        freelookActive = d.freelookActive;
-        freelookYaw = d.freelookYaw;
-        freelookPitch = d.freelookPitch;
+        damageTint = d.damageTint;
+        damageTintIntensity = d.damageTintIntensity;
+        itemPhysics = d.itemPhysics;
         weatherChanger = d.weatherChanger;
         weatherType = d.weatherType != null ? d.weatherType : "off";
         timeChanger = d.timeChanger;
@@ -428,6 +405,9 @@ public class Config {
         f3ShowPing = d.f3ShowPing;
         f3ShowMem = d.f3ShowMem;
         f3ShowSystemInfo = d.f3ShowSystemInfo;
+        hideScoreboard = d.hideScoreboard;
+        fakeScoreboard = d.fakeScoreboard;
+        scoreboardFakeText = d.scoreboardFakeText != null ? d.scoreboardFakeText : "Viper V1|Kills: 0|Rank: Owner";
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -490,7 +470,6 @@ public class Config {
         d.showSaturationBar = showSaturationBar;
         d.showAbsorptionHearts = showAbsorptionHearts;
         d.showShieldStatus = showShieldStatus;
-        d.customGlintColor = customGlintColor;
         d.freecamEnabled = freecamEnabled;
         d.freecamX = freecamX;
         d.freecamY = freecamY;
@@ -520,11 +499,13 @@ public class Config {
         d.showCooldown = showCooldown;
         d.showCooldownIdle = showCooldownIdle;
         d.showTntCountdown = showTntCountdown;
+        d.showAttackIndicator = showAttackIndicator;
+        d.showDeathInfo = showDeathInfo;
         d.thickBlockOutline = thickBlockOutline;
         d.blockOutlineExpansion = blockOutlineExpansion;
-        d.freelookActive = freelookActive;
-        d.freelookYaw = freelookYaw;
-        d.freelookPitch = freelookPitch;
+        d.damageTint = damageTint;
+        d.damageTintIntensity = damageTintIntensity;
+        d.itemPhysics = itemPhysics;
         d.weatherChanger = weatherChanger;
         d.weatherType = weatherType;
         d.timeChanger = timeChanger;
@@ -545,6 +526,9 @@ public class Config {
         d.f3ShowPing = f3ShowPing;
         d.f3ShowMem = f3ShowMem;
         d.f3ShowSystemInfo = f3ShowSystemInfo;
+        d.hideScoreboard = hideScoreboard;
+        d.fakeScoreboard = fakeScoreboard;
+        d.scoreboardFakeText = scoreboardFakeText;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -607,7 +591,6 @@ public class Config {
         boolean showSaturationBar = true;
         boolean showAbsorptionHearts = true;
         boolean showShieldStatus = true;
-        boolean customGlintColor = true;
         boolean freecamEnabled = false;
         double freecamX = 0;
         double freecamY = 0;
@@ -637,11 +620,13 @@ public class Config {
         boolean showCooldown = true;
         boolean showCooldownIdle = false;
         boolean showTntCountdown = true;
+        boolean showAttackIndicator = true;
+        boolean showDeathInfo = true;
         boolean thickBlockOutline = true;
         int blockOutlineExpansion = 25;
-        boolean freelookActive = false;
-        float freelookYaw = 0;
-        float freelookPitch = 0;
+        boolean damageTint = true;
+        int damageTintIntensity = 120;
+        boolean itemPhysics = false;
         boolean weatherChanger = false;
         String weatherType = "off";
         boolean timeChanger = false;
@@ -662,6 +647,9 @@ public class Config {
         boolean f3ShowPing = true;
         boolean f3ShowMem = true;
         boolean f3ShowSystemInfo = true;
+        boolean hideScoreboard = false;
+        boolean fakeScoreboard = false;
+        String scoreboardFakeText = "Viper V1|Kills: 0|Rank: Owner";
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;

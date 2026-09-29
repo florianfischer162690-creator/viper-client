@@ -22,8 +22,12 @@
     "WeatherChangerMixin",
     "TimeChangerMixin",
     "ChatTabsMixin",
+    "ChatScreenTabsMixin",
     "ChatHeadsMixin",
-    "CustomF3Mixin"
+    "CustomF3Mixin",
+    "ItemPhysicsMixin",
+    "DeathInfoMixin",
+    "ScoreboardMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftClient.class)
 public class CrystalPlaceMixin {
@@ -39,17 +40,14 @@ public class CrystalPlaceMixin {
                 return;
             }
 
-            // crosshair muss auf block zeigen
             HitResult hit = mc.crosshairTarget;
             if (!(hit instanceof BlockHitResult bhr)) return;
             if (hit.getType() != HitResult.Type.BLOCK) return;
 
-            // direktes packet senden ohne vanilla item-use cooldown
             Hand hand = mc.player.getMainHandStack().isOf(Items.END_CRYSTAL) ? Hand.MAIN_HAND : Hand.OFF_HAND;
             BlockPos pos = bhr.getBlockPos();
             Direction side = bhr.getSide();
 
-            // packet: block-place
             PlayerInteractBlockC2SPacket packet = new PlayerInteractBlockC2SPacket(
                     hand,
                     new BlockHitResult(bhr.getPos(), side, pos, false),
@@ -64,6 +62,22 @@ public class CrystalPlaceMixin {
             this.attackCooldown = 0;
 
             ci.cancel();
+        } catch (Throwable ignored) {}
+    }
+
+    // NEU: nach einem spieler-hit → attackCooldown sofort resetten wenn crystal in hand
+    @Inject(method = "doAttack", at = @At("HEAD"), require = 0)
+    private void viper_resetAttackAfterHit(CallbackInfoReturnable<Boolean> cir) {
+        try {
+            if (!Config.crystalOptimizer) return;
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc.player == null) return;
+
+            if (mc.player.getMainHandStack().isOf(Items.END_CRYSTAL)
+                    || mc.player.getOffHandStack().isOf(Items.END_CRYSTAL)) {
+                this.attackCooldown = 0;
+                this.itemUseCooldown = 0;
+            }
         } catch (Throwable ignored) {}
     }
 

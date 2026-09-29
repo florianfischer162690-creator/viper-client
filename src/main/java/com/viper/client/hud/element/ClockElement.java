@@ -5,11 +5,16 @@ import com.viper.client.hud.HudRenderer.HudElement;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 public class ClockElement extends HudElement {
 
     private static final int COLOR_BG    = 0x66000000;
     private static final int COLOR_VALUE = 0xFFE6E6E6;
     private static final int PADDING = 3;
+
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     @Override
     public String getId() { return "clock"; }
@@ -26,18 +31,14 @@ public class ClockElement extends HudElement {
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
         int accent = Config.getAccent();
 
-        long ticks = 0L;
-        if (mc.world != null) {
-            ticks = mc.world.getTimeOfDay();
+        String value;
+        try {
+            value = LocalTime.now().format(FMT);
+        } catch (Throwable t) {
+            value = "--:--:--";
         }
 
-        long totalTicks = (ticks + 6000L) % 24000L;
-        int hh = (int) (totalTicks / 1000L);
-        int mm = (int) ((totalTicks % 1000L) * 60L / 1000L);
-
         String label = "TIME";
-        String value = String.format("%02d:%02d", hh, mm);
-
         int labelW = mc.textRenderer.getWidth(label);
         int valueW = mc.textRenderer.getWidth(value);
         int width = labelW + 6 + valueW + PADDING * 2;
@@ -54,6 +55,6 @@ public class ClockElement extends HudElement {
 
     @Override
     public int getWidth(MinecraftClient mc) {
-        return mc.textRenderer.getWidth("TIME") + 6 + mc.textRenderer.getWidth("00:00") + PADDING * 2;
+        return mc.textRenderer.getWidth("TIME") + 6 + mc.textRenderer.getWidth("00:00:00") + PADDING * 2;
     }
 }
