@@ -25,7 +25,14 @@
     "ChatScreenTabsMixin",
     "ChatHeadsMixin",
     "CustomF3Mixin",
-    "DeathInfoMixin"
+    "DeathInfoMixin",
+    "ChestFilterMixin",
+    "AntiScamMixin",
+    "ItemPriceTooltipMixin",
+    "RegionMapMixin",
+    "BalanceTrackerMixin",
+    "EchestViewerMixin",
+    "RtpTimerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

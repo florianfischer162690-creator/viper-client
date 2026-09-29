@@ -193,6 +193,9 @@ public class ViperModsScreen extends Screen {
         List<ModCard> hugo = new ArrayList<>();
         hugo.add(new ModCard("hugoinvsee", "AUTO INVSEE", "Auto /invsee on 1v1 match", () -> Config.hugoAutoInvsee, v -> Config.hugoAutoInvsee = v));
         hugo.add(new ModCard("antirotation", "ANTI BLOCK ROTATION", "Scramble block rotations (base-hide)", () -> Config.antiBlockRotation, v -> Config.antiBlockRotation = v));
+        hugo.add(new ModCard("combattimer", "COMBAT TIMER", "Show if in combat", () -> Config.showCombatTimer, v -> Config.showCombatTimer = v));
+        hugo.add(new ModCard("itempricetooltip", "ITEM PRICE TOOLTIP", "Show item value in tooltip", () -> Config.itemPriceTooltip, v -> Config.itemPriceTooltip = v));
+        hugo.add(new ModCard("rtptimer", "RTP TIMER", "Show /rtp cooldown", () -> Config.showRtpTimer, v -> Config.showRtpTimer = v));
         TAB_MODULES.add(hugo);
 
         // DONUTSMP tab

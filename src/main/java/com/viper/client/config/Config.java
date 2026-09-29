@@ -87,6 +87,9 @@ public class Config {
     // HUGOSMP
     public static boolean hugoAutoInvsee = true;
     public static boolean antiBlockRotation = true;
+    public static boolean showCombatTimer = true;
+    public static boolean itemPriceTooltip = true;
+    public static boolean showRtpTimer = true;
 
     // DONUTSMP
     public static boolean donutAdminHud = true;
@@ -122,14 +125,10 @@ public class Config {
     public static int blockOutlineExpansion = 25;
     public static boolean damageTint = true;
     public static int damageTintIntensity = 120;
-    public static boolean itemPhysics = false;
     public static boolean weatherChanger = false;
     public static String weatherType = "off";
     public static boolean timeChanger = false;
     public static int timeValue = -1;
-    public static boolean fogCustomizer = false;
-    public static float fogStart = 10.0f;
-    public static float fogEnd = 200.0f;
     public static boolean chatTabs = false;
     public static String activeChatTab = "all";
     public static boolean chatHeads = false;
@@ -143,11 +142,6 @@ public class Config {
     public static boolean f3ShowPing = true;
     public static boolean f3ShowMem = true;
     public static boolean f3ShowSystemInfo = true;
-
-    // SCOREBOARD
-    public static boolean hideScoreboard = false;
-    public static boolean fakeScoreboard = false;
-    public static String scoreboardFakeText = "Viper V1|Kills: 0|Rank: Owner";
 
     public static class WaypointData {
         public String name;
@@ -357,6 +351,9 @@ public class Config {
         freecamPitch = d.freecamPitch;
         hugoAutoInvsee = d.hugoAutoInvsee;
         antiBlockRotation = d.antiBlockRotation;
+        showCombatTimer = d.showCombatTimer;
+        itemPriceTooltip = d.itemPriceTooltip;
+        showRtpTimer = d.showRtpTimer;
         donutAdminHud = d.donutAdminHud;
         donutCoordSnapper = d.donutCoordSnapper;
         donutRegionMap = d.donutRegionMap;
@@ -384,14 +381,10 @@ public class Config {
         blockOutlineExpansion = d.blockOutlineExpansion;
         damageTint = d.damageTint;
         damageTintIntensity = d.damageTintIntensity;
-        itemPhysics = d.itemPhysics;
         weatherChanger = d.weatherChanger;
         weatherType = d.weatherType != null ? d.weatherType : "off";
         timeChanger = d.timeChanger;
         timeValue = d.timeValue;
-        fogCustomizer = d.fogCustomizer;
-        fogStart = d.fogStart;
-        fogEnd = d.fogEnd;
         chatTabs = d.chatTabs;
         activeChatTab = d.activeChatTab != null ? d.activeChatTab : "all";
         chatHeads = d.chatHeads;
@@ -405,9 +398,6 @@ public class Config {
         f3ShowPing = d.f3ShowPing;
         f3ShowMem = d.f3ShowMem;
         f3ShowSystemInfo = d.f3ShowSystemInfo;
-        hideScoreboard = d.hideScoreboard;
-        fakeScoreboard = d.fakeScoreboard;
-        scoreboardFakeText = d.scoreboardFakeText != null ? d.scoreboardFakeText : "Viper V1|Kills: 0|Rank: Owner";
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -478,6 +468,9 @@ public class Config {
         d.freecamPitch = freecamPitch;
         d.hugoAutoInvsee = hugoAutoInvsee;
         d.antiBlockRotation = antiBlockRotation;
+        d.showCombatTimer = showCombatTimer;
+        d.itemPriceTooltip = itemPriceTooltip;
+        d.showRtpTimer = showRtpTimer;
         d.donutAdminHud = donutAdminHud;
         d.donutCoordSnapper = donutCoordSnapper;
         d.donutRegionMap = donutRegionMap;
@@ -505,14 +498,10 @@ public class Config {
         d.blockOutlineExpansion = blockOutlineExpansion;
         d.damageTint = damageTint;
         d.damageTintIntensity = damageTintIntensity;
-        d.itemPhysics = itemPhysics;
         d.weatherChanger = weatherChanger;
         d.weatherType = weatherType;
         d.timeChanger = timeChanger;
         d.timeValue = timeValue;
-        d.fogCustomizer = fogCustomizer;
-        d.fogStart = fogStart;
-        d.fogEnd = fogEnd;
         d.chatTabs = chatTabs;
         d.activeChatTab = activeChatTab;
         d.chatHeads = chatHeads;
@@ -526,9 +515,6 @@ public class Config {
         d.f3ShowPing = f3ShowPing;
         d.f3ShowMem = f3ShowMem;
         d.f3ShowSystemInfo = f3ShowSystemInfo;
-        d.hideScoreboard = hideScoreboard;
-        d.fakeScoreboard = fakeScoreboard;
-        d.scoreboardFakeText = scoreboardFakeText;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -599,6 +585,9 @@ public class Config {
         float freecamPitch = 0;
         boolean hugoAutoInvsee = true;
         boolean antiBlockRotation = true;
+        boolean showCombatTimer = true;
+        boolean itemPriceTooltip = true;
+        boolean showRtpTimer = true;
         boolean donutAdminHud = true;
         boolean donutCoordSnapper = true;
         boolean donutRegionMap = true;
@@ -626,14 +615,10 @@ public class Config {
         int blockOutlineExpansion = 25;
         boolean damageTint = true;
         int damageTintIntensity = 120;
-        boolean itemPhysics = false;
         boolean weatherChanger = false;
         String weatherType = "off";
         boolean timeChanger = false;
         int timeValue = -1;
-        boolean fogCustomizer = false;
-        float fogStart = 10.0f;
-        float fogEnd = 200.0f;
         boolean chatTabs = false;
         String activeChatTab = "all";
         boolean chatHeads = false;
@@ -647,9 +632,6 @@ public class Config {
         boolean f3ShowPing = true;
         boolean f3ShowMem = true;
         boolean f3ShowSystemInfo = true;
-        boolean hideScoreboard = false;
-        boolean fakeScoreboard = false;
-        String scoreboardFakeText = "Viper V1|Kills: 0|Rank: Owner";
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;

@@ -6,6 +6,7 @@ import com.viper.client.gui.NotepadScreen;
 import com.viper.client.gui.ViperStartMenu;
 import com.viper.client.hud.HudRenderer;
 import com.viper.client.hud.element.AttackIndicatorElement;
+import com.viper.client.hud.element.CombatTimerElement;
 import com.viper.client.hud.element.CrosshairElement;
 import com.viper.client.hud.element.DamageTintRenderer;
 import com.viper.client.hud.element.StopwatchElement;
@@ -39,6 +40,7 @@ public class ViperClient implements ClientModInitializer {
     private static boolean lastRightDown = false;
     private static final Map<String, Boolean> keyPressedState = new HashMap<>();
     private static boolean zoomed = false;
+    private static float lastHealth = 20.0f;
 
     private static final boolean[] macroPressedState = new boolean[6];
     private static final long[] macroLastSend = new long[6];
@@ -89,6 +91,17 @@ public class ViperClient implements ClientModInitializer {
         });
 
         HudRenderCallback.EVENT.register((context, tickCounter) -> {
+            try {
+                MinecraftClient mc2 = MinecraftClient.getInstance();
+                if (mc2.player != null) {
+                    float h = mc2.player.getHealth();
+                    if (lastHealth > 0 && h < lastHealth) {
+                        CombatTimerElement.registerCombat();
+                    }
+                    lastHealth = h;
+                }
+            } catch (Throwable ignored) {}
+
             try {
                 if (Config.freecamEnabled) {
                     MinecraftClient mc = MinecraftClient.getInstance();
@@ -436,6 +449,9 @@ public class ViperClient implements ClientModInitializer {
             case "hugoinvsee": Config.hugoAutoInvsee = !Config.hugoAutoInvsee; break;
             case "antirotation": Config.antiBlockRotation = !Config.antiBlockRotation; break;
             case "adminhud": Config.donutAdminHud = !Config.donutAdminHud; break;
+            case "combattimer": Config.showCombatTimer = !Config.showCombatTimer; break;
+            case "itempricetooltip": Config.itemPriceTooltip = !Config.itemPriceTooltip; break;
+            case "rtptimer": Config.showRtpTimer = !Config.showRtpTimer; break;
         }
         Config.save();
         MinecraftClient client = MinecraftClient.getInstance();
