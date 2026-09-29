@@ -25,8 +25,6 @@ public class TabListMixin {
             for (PlayerListEntry entry : entries) {
                 if (entry.getDisplayName() != null) {
                     names.add(entry.getDisplayName().getString());
-                } else {
-                    names.add(entry.getProfile().getName());
                 }
             }
             StaffTracker.update(names);
