@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class FreecamInputMixin extends Input {
 
     @Inject(method = "tick", at = @At("TAIL"), require = 0)
-    private void viper_freecamBlockInput(boolean slowDown, float slowDownFactor, CallbackInfo ci) {
+    private void viper_freecamBlockInput(CallbackInfo ci) {
         try {
             if (!Config.freecamEnabled) return;
             this.playerInput = new PlayerInput(false, false, false, false, false, false, false);
