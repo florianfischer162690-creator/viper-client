@@ -6,7 +6,6 @@ import com.viper.client.gui.NotepadScreen;
 import com.viper.client.gui.ViperStartMenu;
 import com.viper.client.hud.HudRenderer;
 import com.viper.client.hud.element.AttackIndicatorElement;
-import com.viper.client.hud.element.BlockOutlineRenderer;
 import com.viper.client.hud.element.CrosshairElement;
 import com.viper.client.hud.element.DamageTintRenderer;
 import com.viper.client.hud.element.StopwatchElement;
@@ -58,7 +57,6 @@ public class ViperClient implements ClientModInitializer {
         } catch (Throwable ignored) {}
 
         HudRenderer.init();
-        BlockOutlineRenderer.register();
         DamageTintRenderer.register();
         ChatTabsUI.register();
 
@@ -79,7 +77,8 @@ public class ViperClient implements ClientModInitializer {
                     boolean crit = player.fallDistance > 0.0f && !player.isOnGround() && !player.isClimbing() && !player.isTouchingWater();
                     boolean sweep = false;
                     try {
-                        sweep = player.getMainHandStack().getItem() instanceof net.minecraft.item.SwordItem
+                        sweep = player.getMainHandStack() != null
+                                && !player.getMainHandStack().isEmpty()
                                 && player.getAttackCooldownProgress(0.5f) >= 1.0f
                                 && !crit;
                     } catch (Throwable ignored) {}
@@ -427,7 +426,6 @@ public class ViperClient implements ClientModInitializer {
             case "tntcountdown": Config.showTntCountdown = !Config.showTntCountdown; break;
             case "attackindicator": Config.showAttackIndicator = !Config.showAttackIndicator; break;
             case "deathinfo": Config.showDeathInfo = !Config.showDeathInfo; break;
-            case "blockoutline": Config.thickBlockOutline = !Config.thickBlockOutline; break;
             case "damagetint": Config.damageTint = !Config.damageTint; break;
             case "itemphysics": Config.itemPhysics = !Config.itemPhysics; break;
             case "weatherchanger": Config.weatherChanger = !Config.weatherChanger; break;

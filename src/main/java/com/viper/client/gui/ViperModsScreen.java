@@ -184,7 +184,6 @@ public class ViperModsScreen extends Screen {
             }
         }));
 
-        pvp.add(new ModCard("blockoutline", "BLOCK OUTLINE", "Thicker block outline", () -> Config.thickBlockOutline, v -> Config.thickBlockOutline = v));
         pvp.add(new ModCard("damagetint", "DAMAGE TINT", "Red screen edge on damage", () -> Config.damageTint, v -> Config.damageTint = v));
         pvp.add(new ModCard("itemphysics", "ITEM PHYSICS", "Dropped items lie flat", () -> Config.itemPhysics, v -> Config.itemPhysics = v));
         pvp.add(new ModCard("totemwarning", "TOTEM WARNING", "Warn when no totem equipped", () -> Config.donutTotemWarning, v -> Config.donutTotemWarning = v));
