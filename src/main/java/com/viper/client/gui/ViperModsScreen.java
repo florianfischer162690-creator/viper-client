@@ -20,7 +20,6 @@ public class ViperModsScreen extends Screen {
     private static final int TAB_H = 28;
     private static final int CARD_H = 96;
     private static final int CARD_H_TALL = 120;
-    private static final int CARD_H_SCOREBOARD = 130;
     private static final int CARD_GAP = 8;
 
     private static final int COLOR_WHITE = 0xFFFFFFFF;
@@ -70,9 +69,6 @@ public class ViperModsScreen extends Screen {
 
     private int editingMacroIndex = -1;
     private String macroEditBuffer = "";
-
-    private boolean editingScoreboardText = false;
-    private String scoreboardBuffer = "";
 
     public ViperModsScreen() { super(Text.literal("Viper V1 — Mods")); }
 
@@ -133,10 +129,6 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("deathinfo", "DEATH INFO", "Show last death coords", () -> Config.showDeathInfo, v -> Config.showDeathInfo = v));
         hud.add(new ModCard("chatheads", "CHAT HEADS", "Show player prefix in chat", () -> Config.chatHeads, v -> Config.chatHeads = v));
         hud.add(new ModCard("chattabs", "CHAT TABS", "Filter chat by tab", () -> Config.chatTabs, v -> Config.chatTabs = v));
-
-        ModCard sbCard = new ModCard("scoreboard", "SCOREBOARD", "Hide or fake the sidebar", () -> true, v -> {});
-        sbCard.isAction = true;
-        hud.add(sbCard);
 
         ModCard titleCard = new ModCard("title", "TITLE", "Click to select your title", () -> Config.showTitle, v -> Config.showTitle = v);
         titleCard.expandable = true;
@@ -258,7 +250,6 @@ public class ViperModsScreen extends Screen {
         if (expandedCard != null && expandedCard.equals(card.id) && card.expandable) {
             return CARD_H + dropdownHeight(card);
         }
-        if ("scoreboard".equals(card.id)) return CARD_H_SCOREBOARD;
         if (card.tall) return CARD_H_TALL;
         return CARD_H;
     }
@@ -576,10 +567,6 @@ public class ViperModsScreen extends Screen {
     }
 
     private void drawCardFull(DrawContext context, ModCard card, int x, int y, int w, int h, boolean hovered, int mouseX, int mouseY, int accent) {
-        if ("scoreboard".equals(card.id)) {
-            drawScoreboardCard(context, card, x, y, w, h, hovered, mouseX, mouseY, accent);
-            return;
-        }
         context.fill(x, y, x + w, y + h, hovered ? Config.getAccentBg() : 0xFF1c1228);
         if (card.getter.get() || card.isAction) context.fill(x, y, x + 3, y + h, accent);
         if (hovered) {
@@ -675,71 +662,6 @@ public class ViperModsScreen extends Screen {
         } else if (expanded) {
             drawDropdown(context, card, x, y + CARD_H, w, accent, mouseX, mouseY);
         }
-    }
-
-    private void drawScoreboardCard(DrawContext context, ModCard card, int x, int y, int w, int h, boolean hovered, int mouseX, int mouseY, int accent) {
-        context.fill(x, y, x + w, y + h, hovered ? Config.getAccentBg() : 0xFF1c1228);
-        context.fill(x, y, x + 3, y + h, accent);
-        if (hovered) {
-            context.fill(x, y, x + w, y + 1, accent);
-            context.fill(x, y + h - 1, x + w, y + h, accent);
-            context.fill(x + w - 1, y, x + w, y + h, accent);
-        }
-
-        context.fill(x + 14, y + 14, x + 26, y + 26, accent);
-        context.drawText(this.textRenderer, "§lSCOREBOARD", x + 36, y + 12, COLOR_WHITE, false);
-        context.drawText(this.textRenderer, "§7Hide or fake the sidebar", x + 36, y + 28, COLOR_MUTED, false);
-
-        int t1x = x + 14;
-        int t1y = y + 44;
-        int tw = (w - 42) / 2;
-        int th = 22;
-        drawCheckbox(context, t1x, t1y, tw, th, "HIDE", Config.hideScoreboard, mouseX, mouseY, accent);
-
-        int t2x = t1x + tw + 14;
-        drawCheckbox(context, t2x, t1y, tw, th, "FAKE", Config.fakeScoreboard, mouseX, mouseY, accent);
-
-        int inputX = x + 14;
-        int inputY = y + 74;
-        int inputW = w - 28;
-        int inputH = 40;
-
-        context.fill(inputX, inputY, inputX + inputW, inputY + inputH, COLOR_KEYBG);
-        context.fill(inputX, inputY, inputX + inputW, inputY + 1, editingScoreboardText ? accent : COLOR_KEYBORDER);
-        context.fill(inputX, inputY + inputH - 1, inputX + inputW, inputY + inputH, editingScoreboardText ? accent : COLOR_KEYBORDER);
-        context.fill(inputX, inputY, inputX + 1, inputY + inputH, editingScoreboardText ? accent : COLOR_KEYBORDER);
-        context.fill(inputX + inputW - 1, inputY, inputX + inputW, inputY + inputH, editingScoreboardText ? accent : COLOR_KEYBORDER);
-
-        String display;
-        if (editingScoreboardText) {
-            display = "§f" + scoreboardBuffer + ((System.currentTimeMillis() / 500) % 2 == 0 ? "§f_" : "");
-        } else {
-            String text = Config.scoreboardFakeText;
-            if (text == null || text.isEmpty()) display = "§7Viper V1|Kills: 5|Rank: Owner";
-            else display = "§f" + text;
-        }
-        context.drawText(this.textRenderer, display, inputX + 5, inputY + 5, COLOR_WHITE, false);
-        context.drawText(this.textRenderer, "§7use §f| §7for new line · ENTER to save", inputX + 5, inputY + 22, COLOR_MUTED, false);
-    }
-
-    private void drawCheckbox(DrawContext context, int x, int y, int w, int h, String label, boolean checked, int mouseX, int mouseY, int accent) {
-        boolean hovered = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
-        int bg = hovered ? 0xFF2a1a44 : 0xFF16121f;
-        context.fill(x, y, x + w, y + h, bg);
-        int border = checked ? accent : (hovered ? accent : COLOR_KEYBORDER);
-        context.fill(x, y, x + w, y + 1, border);
-        context.fill(x, y + h - 1, x + w, y + h, border);
-        context.fill(x, y, x + 1, y + h, border);
-        context.fill(x + w - 1, y, x + w, y + h, border);
-
-        int cbx = x + 6;
-        int cby = y + (h - 10) / 2;
-        context.fill(cbx, cby, cbx + 10, cby + 10, checked ? accent : COLOR_TOGGLE_OFF);
-        if (checked) {
-            context.fill(cbx + 2, cby + 2, cbx + 8, cby + 8, 0xFFFFFFFF);
-        }
-
-        context.drawText(this.textRenderer, label, cbx + 16, cby + 1, checked ? COLOR_WHITE : COLOR_MUTED, false);
     }
 
     private void drawDropdown(DrawContext context, ModCard card, int x, int y, int w, int accent, int mouseX, int mouseY) {
@@ -1007,13 +929,6 @@ public class ViperModsScreen extends Screen {
 
     @Override
     public boolean charTyped(CharInput input) {
-        if (editingScoreboardText) {
-            int cp = input.codepoint();
-            if (cp >= 32 && scoreboardBuffer.length() < 200) {
-                scoreboardBuffer += (char) cp;
-            }
-            return true;
-        }
         if (editingMacroIndex >= 0) {
             int cp = input.codepoint();
             if (cp >= 32 && macroEditBuffer.length() < 80) {
@@ -1033,28 +948,6 @@ public class ViperModsScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyInput input) {
-        if (editingScoreboardText) {
-            int keyCode = input.key();
-            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
-                Config.scoreboardFakeText = scoreboardBuffer;
-                Config.save();
-                editingScoreboardText = false;
-                scoreboardBuffer = "";
-                return true;
-            }
-            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-                editingScoreboardText = false;
-                scoreboardBuffer = "";
-                return true;
-            }
-            if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
-                if (scoreboardBuffer.length() > 0) {
-                    scoreboardBuffer = scoreboardBuffer.substring(0, scoreboardBuffer.length() - 1);
-                }
-                return true;
-            }
-            return true;
-        }
         if (editingMacroIndex >= 0) {
             int keyCode = input.key();
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
@@ -1123,13 +1016,6 @@ public class ViperModsScreen extends Screen {
             Config.save();
             editingMacroIndex = -1;
             macroEditBuffer = "";
-        }
-
-        if (editingScoreboardText) {
-            Config.scoreboardFakeText = scoreboardBuffer;
-            Config.save();
-            editingScoreboardText = false;
-            scoreboardBuffer = "";
         }
 
         if (mx >= searchX && mx <= searchX + searchW && my >= searchY && my <= searchY + searchH) {
@@ -1284,37 +1170,6 @@ public class ViperModsScreen extends Screen {
                             else expandedCard = card.id;
                             return true;
                         }
-                        return true;
-                    }
-
-                    if ("scoreboard".equals(card.id)) {
-                        int t1x = cellX + 14;
-                        int t1y = cellY + 44;
-                        int tw2 = (cw - 42) / 2;
-                        int th2 = 22;
-
-                        if (my >= t1y && my <= t1y + th2 && mx >= t1x && mx <= t1x + tw2) {
-                            Config.hideScoreboard = !Config.hideScoreboard;
-                            Config.save();
-                            return true;
-                        }
-                        int t2x = t1x + tw2 + 14;
-                        if (my >= t1y && my <= t1y + th2 && mx >= t2x && mx <= t2x + tw2) {
-                            Config.fakeScoreboard = !Config.fakeScoreboard;
-                            Config.save();
-                            return true;
-                        }
-
-                        int inputX = cellX + 14;
-                        int inputY = cellY + 74;
-                        int inputW = cw - 28;
-                        int inputH = 40;
-                        if (mx >= inputX && mx <= inputX + inputW && my >= inputY && my <= inputY + inputH) {
-                            editingScoreboardText = true;
-                            scoreboardBuffer = Config.scoreboardFakeText == null ? "" : Config.scoreboardFakeText;
-                            return true;
-                        }
-
                         return true;
                     }
 
