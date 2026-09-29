@@ -12,18 +12,23 @@ import net.minecraft.world.BlockRenderView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
 
 @Mixin(BlockModelRenderer.class)
 public class BlockRotationMixin {
 
     @Inject(method = "render", at = @At("HEAD"), require = 0)
     private void viper_blockRotHead(
-            BlockRenderView world, BlockState state, BlockPos pos,
+            BlockRenderView world,
+            List<BlockState> states,
+            BlockState state,
+            BlockPos pos,
             MatrixStack matrices,
             net.minecraft.client.render.VertexConsumer vertexConsumer,
-            boolean cull, Random random, long seed,
-            CallbackInfoReturnable<Boolean> cir) {
+            boolean cull, int seed,
+            CallbackInfo ci) {
         try {
             if (!Config.antiBlockRotation) return;
             if (state == null || pos == null) return;
@@ -42,11 +47,14 @@ public class BlockRotationMixin {
 
     @Inject(method = "render", at = @At("RETURN"), require = 0)
     private void viper_blockRotReturn(
-            BlockRenderView world, BlockState state, BlockPos pos,
+            BlockRenderView world,
+            List<BlockState> states,
+            BlockState state,
+            BlockPos pos,
             MatrixStack matrices,
             net.minecraft.client.render.VertexConsumer vertexConsumer,
-            boolean cull, Random random, long seed,
-            CallbackInfoReturnable<Boolean> cir) {
+            boolean cull, int seed,
+            CallbackInfo ci) {
         try {
             if (!Config.antiBlockRotation) return;
             if (state == null || pos == null) return;
