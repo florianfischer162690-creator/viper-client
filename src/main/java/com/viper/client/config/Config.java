@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Config {
-    // HUD
     public static boolean hudEnabled = true;
     public static boolean showFps = true;
     public static boolean showCps = true;
@@ -28,7 +27,6 @@ public class Config {
     public static boolean showDirection = true;
     public static boolean showSpeed = true;
 
-    // PVP
     public static boolean toggleSprint = true;
     public static boolean toggleSneak = false;
     public static boolean showCustomCrosshair = true;
@@ -36,13 +34,9 @@ public class Config {
     public static boolean showHealthIndicator = true;
     public static boolean showHitMarker = true;
 
-    // CROSSHAIR
     public static String crosshairPreset = "classic";
-
-    // THEME
     public static String theme = "viper";
 
-    // FARBEN
     public static boolean useCustomCrosshairColor = false;
     public static boolean useCustomTargetColor = false;
     public static boolean useCustomHealthColor = false;
@@ -53,7 +47,6 @@ public class Config {
     public static int healthIndicatorColor = 0xFFFF3B30;
     public static int hitMarkerColor = 0xFFFF3B30;
 
-    // MISC
     public static boolean fullbright = false;
     public static boolean noFog = false;
     public static boolean lowHealthWarning = true;
@@ -62,53 +55,29 @@ public class Config {
     public static int fpsPrevSimDist = 12;
     public static int fpsPrevEntityDist = 100;
 
-    // ZOOM
     public static boolean zoomEnabled = true;
     public static int zoomFov = 30;
     public static int defaultFov = 70;
 
-    // CHAT
     public static boolean chatTimestamps = true;
-
-    // APPLESKIN
     public static boolean showAppleskin = true;
-
-    // SHULKER PREVIEW
     public static boolean showShulkerPreview = true;
-
-    // INVENTORY HUD
     public static boolean showInventoryHud = true;
 
-    // TITLE SYSTEM
     public static boolean showTitle = true;
     public static String currentTitle = "viper";
 
-    // CHAT MACROS
     public static String[] macroTexts = new String[]{"", "", "", "", "", ""};
     public static boolean[] macroEnabled = new boolean[]{true, true, true, true, true, true};
 
-    // CRYSTAL OPTIMIZER
     public static boolean crystalOptimizer = true;
-
-    // ANCHOR OPTIMIZER
     public static boolean anchorOptimizer = true;
-
-    // BLOCK BREAK PROGRESS
     public static boolean showBlockBreakProgress = true;
-
-    // SATURATION BAR
     public static boolean showSaturationBar = true;
-
-    // ABSORPTION HEART INDICATOR
     public static boolean showAbsorptionHearts = true;
-
-    // SHIELD STATUS
     public static boolean showShieldStatus = true;
-
-    // ENCHANT GLINT COLOR
     public static boolean customGlintColor = true;
 
-    // FREECAM
     public static boolean freecamEnabled = false;
     public static double freecamX = 0;
     public static double freecamY = 0;
@@ -116,7 +85,41 @@ public class Config {
     public static float freecamYaw = 0;
     public static float freecamPitch = 0;
 
-    // KEYBINDS
+    // HUGOSMP
+    public static boolean hugoAutoInvsee = true;
+    public static boolean antiBlockRotation = true;
+
+    // DONUTSMP
+    public static boolean donutAdminHud = true;
+    public static boolean donutTabDetector = true;
+    public static boolean donutCoordSnapper = true;
+    public static boolean donutRegionMap = true;
+    public static boolean donutBalanceTracker = true;
+    public static boolean donutEchestViewer = true;
+    public static boolean donutTotemWarning = true;
+    public static boolean donutChestFilter = true;
+    public static boolean donutAntiScam = true;
+    public static boolean donutSpawnerNotifier = true;
+
+    // WAYPOINTS
+    public static boolean showWaypoints = true;
+    public static Map<String, WaypointData> waypoints = new HashMap<>();
+
+    public static class WaypointData {
+        public String name;
+        public int x, y, z;
+        public String dimension;
+
+        public WaypointData() {}
+        public WaypointData(String name, int x, int y, int z, String dimension) {
+            this.name = name;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.dimension = dimension;
+        }
+    }
+
     public static Map<String, Integer> keybinds = new HashMap<>();
 
     public static int getKeybind(String id) { return keybinds.getOrDefault(id, -1); }
@@ -125,7 +128,6 @@ public class Config {
         else keybinds.put(id, key);
     }
 
-    // HUD POSITION
     public static int hudX = 4;
     public static int hudY = 4;
     public static float hudScale = 1.0f;
@@ -143,8 +145,6 @@ public class Config {
     public static ElementPos getPos(String id, int defaultX, int defaultY) {
         return elementPositions.computeIfAbsent(id, k -> new ElementPos(defaultX, defaultY));
     }
-
-    /* ═══════════ THEME ═══════════ */
 
     private static final Map<String, int[]> THEME_COLORS = new HashMap<>();
     static {
@@ -196,8 +196,6 @@ public class Config {
         return useCustomHitMarkerColor ? hitMarkerColor : getAccent();
     }
 
-    /* ═══════════ EXPORT / IMPORT ═══════════ */
-
     public static String exportAsString() {
         try {
             ConfigData data = toData();
@@ -227,8 +225,6 @@ public class Config {
             return false;
         }
     }
-
-    /* ═══════════ LOAD / SAVE ═══════════ */
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static Path configPath;
@@ -316,6 +312,20 @@ public class Config {
         freecamZ = d.freecamZ;
         freecamYaw = d.freecamYaw;
         freecamPitch = d.freecamPitch;
+        hugoAutoInvsee = d.hugoAutoInvsee;
+        antiBlockRotation = d.antiBlockRotation;
+        donutAdminHud = d.donutAdminHud;
+        donutTabDetector = d.donutTabDetector;
+        donutCoordSnapper = d.donutCoordSnapper;
+        donutRegionMap = d.donutRegionMap;
+        donutBalanceTracker = d.donutBalanceTracker;
+        donutEchestViewer = d.donutEchestViewer;
+        donutTotemWarning = d.donutTotemWarning;
+        donutChestFilter = d.donutChestFilter;
+        donutAntiScam = d.donutAntiScam;
+        donutSpawnerNotifier = d.donutSpawnerNotifier;
+        showWaypoints = d.showWaypoints;
+        waypoints = d.waypoints != null ? d.waypoints : new HashMap<>();
         hudX = d.hudX;
         hudY = d.hudY;
         hudScale = d.hudScale;
@@ -385,6 +395,20 @@ public class Config {
         d.freecamZ = freecamZ;
         d.freecamYaw = freecamYaw;
         d.freecamPitch = freecamPitch;
+        d.hugoAutoInvsee = hugoAutoInvsee;
+        d.antiBlockRotation = antiBlockRotation;
+        d.donutAdminHud = donutAdminHud;
+        d.donutTabDetector = donutTabDetector;
+        d.donutCoordSnapper = donutCoordSnapper;
+        d.donutRegionMap = donutRegionMap;
+        d.donutBalanceTracker = donutBalanceTracker;
+        d.donutEchestViewer = donutEchestViewer;
+        d.donutTotemWarning = donutTotemWarning;
+        d.donutChestFilter = donutChestFilter;
+        d.donutAntiScam = donutAntiScam;
+        d.donutSpawnerNotifier = donutSpawnerNotifier;
+        d.showWaypoints = showWaypoints;
+        d.waypoints = waypoints;
         d.hudX = hudX;
         d.hudY = hudY;
         d.hudScale = hudScale;
@@ -454,6 +478,20 @@ public class Config {
         double freecamZ = 0;
         float freecamYaw = 0;
         float freecamPitch = 0;
+        boolean hugoAutoInvsee = true;
+        boolean antiBlockRotation = true;
+        boolean donutAdminHud = true;
+        boolean donutTabDetector = true;
+        boolean donutCoordSnapper = true;
+        boolean donutRegionMap = true;
+        boolean donutBalanceTracker = true;
+        boolean donutEchestViewer = true;
+        boolean donutTotemWarning = true;
+        boolean donutChestFilter = true;
+        boolean donutAntiScam = true;
+        boolean donutSpawnerNotifier = true;
+        boolean showWaypoints = true;
+        Map<String, WaypointData> waypoints = new HashMap<>();
         int hudX = 4;
         int hudY = 4;
         float hudScale = 1.0f;

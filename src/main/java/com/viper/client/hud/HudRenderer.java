@@ -19,6 +19,7 @@ import com.viper.client.hud.element.SaturationElement;
 import com.viper.client.hud.element.ShieldStatusElement;
 import com.viper.client.hud.element.SpeedElement;
 import com.viper.client.hud.element.WatermarkElement;
+import com.viper.client.hud.element.WaypointsElement;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 
@@ -48,6 +49,7 @@ public class HudRenderer {
         ELEMENTS.add(new SaturationElement());
         ELEMENTS.add(new AbsorptionElement());
         ELEMENTS.add(new ShieldStatusElement());
+        ELEMENTS.add(new WaypointsElement());
         keystrokesElement = new KeystrokesElement();
         armorElement = new ArmorElement();
         inventoryElement = new InventoryHudElement();

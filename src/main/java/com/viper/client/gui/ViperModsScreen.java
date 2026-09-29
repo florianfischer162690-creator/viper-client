@@ -31,7 +31,7 @@ public class ViperModsScreen extends Screen {
 
     private int panelX, panelY, panelW, panelH;
     private int activeTab = 0;
-    private final String[] TABS = {"HUD", "PVP", "THEME", "CONFIG"};
+    private final String[] TABS = {"HUD", "PVP", "HUGOSMP", "DONUTSMP", "CUSTOM", "THEME", "CONFIG"};
 
     private final List<List<ModCard>> TAB_MODULES = new ArrayList<>();
     private static final String[] SIDEBAR_LABELS = {"COSMETICS", "SKINS", "EMOTES", "FRIENDS"};
@@ -93,7 +93,7 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("ping", "PING", "Show network ping", () -> Config.showPing, v -> Config.showPing = v));
         hud.add(new ModCard("armor", "ARMOR", "Show armor HUD", () -> Config.showArmor, v -> Config.showArmor = v));
         hud.add(new ModCard("potion", "POTIONS", "Show active effects", () -> Config.showPotion, v -> Config.showPotion = v));
-        hud.add(new ModCard("keystrokes", "KEYSTROKES", "Show WASD keys", () -> Config.showKeystrokes, v -> Config.showKeystrokes = v));
+        hud.add(new ModCard("keystrokes", "KEYSTROKES", "Show WASD keys + CPS", () -> Config.showKeystrokes, v -> Config.showKeystrokes = v));
         hud.add(new ModCard("reach", "REACH", "Show last hit distance", () -> Config.showReach, v -> Config.showReach = v));
         hud.add(new ModCard("combo", "COMBO", "Show hit combo", () -> Config.showCombo, v -> Config.showCombo = v));
         hud.add(new ModCard("direction", "DIRECTION", "Show compass direction", () -> Config.showDirection, v -> Config.showDirection = v));
@@ -110,6 +110,7 @@ public class ViperModsScreen extends Screen {
         hud.add(new ModCard("saturation", "SATURATION", "Show saturation level", () -> Config.showSaturationBar, v -> Config.showSaturationBar = v));
         hud.add(new ModCard("absorption", "ABSORPTION", "Show absorption hearts", () -> Config.showAbsorptionHearts, v -> Config.showAbsorptionHearts = v));
         hud.add(new ModCard("shieldstatus", "SHIELD STATUS", "Show if enemy is blocking", () -> Config.showShieldStatus, v -> Config.showShieldStatus = v));
+        hud.add(new ModCard("waypoints", "WAYPOINTS", "Show closest waypoint (/wp set <name>)", () -> Config.showWaypoints, v -> Config.showWaypoints = v));
 
         ModCard titleCard = new ModCard("title", "TITLE", "Click to select your title", () -> Config.showTitle, v -> Config.showTitle = v);
         titleCard.expandable = true;
@@ -163,6 +164,30 @@ public class ViperModsScreen extends Screen {
         pvp.add(macrosCard);
 
         TAB_MODULES.add(pvp);
+
+        // HUGOSMP tab
+        List<ModCard> hugo = new ArrayList<>();
+        hugo.add(new ModCard("hugoinvsee", "AUTO INVSEE", "Auto /invsee on 1v1 match", () -> Config.hugoAutoInvsee, v -> Config.hugoAutoInvsee = v));
+        hugo.add(new ModCard("antirotation", "ANTI BLOCK ROTATION", "Scramble block rotations (base-hide)", () -> Config.antiBlockRotation, v -> Config.antiBlockRotation = v));
+        TAB_MODULES.add(hugo);
+
+        // DONUTSMP tab
+        List<ModCard> donut = new ArrayList<>();
+        donut.add(new ModCard("donut-adminhud", "ADMIN HUD", "Show when staff is online", () -> Config.donutAdminHud, v -> Config.donutAdminHud = v));
+        donut.add(new ModCard("donut-tabdetector", "TAB DETECTOR", "Notify when players join/leave", () -> Config.donutTabDetector, v -> Config.donutTabDetector = v));
+        donut.add(new ModCard("donut-coordsnapper", "COORD SNAPPER", "Copy coordinates to clipboard", () -> Config.donutCoordSnapper, v -> Config.donutCoordSnapper = v));
+        donut.add(new ModCard("donut-regionmap", "REGION MAP", "Show DonutSMP region overlay", () -> Config.donutRegionMap, v -> Config.donutRegionMap = v));
+        donut.add(new ModCard("donut-balancetracker", "BALANCE TRACKER", "Show player balance on look", () -> Config.donutBalanceTracker, v -> Config.donutBalanceTracker = v));
+        donut.add(new ModCard("donut-echestviewer", "ENDER CHEST VIEWER", "Remember ender chest contents", () -> Config.donutEchestViewer, v -> Config.donutEchestViewer = v));
+        donut.add(new ModCard("donut-totemwarning", "TOTEM WARNING", "Warn when no totem equipped", () -> Config.donutTotemWarning, v -> Config.donutTotemWarning = v));
+        donut.add(new ModCard("donut-chestfilter", "CHEST FILTER", "Highlight valuable items in chests", () -> Config.donutChestFilter, v -> Config.donutChestFilter = v));
+        donut.add(new ModCard("donut-antiscam", "ANTI-SCAM", "Filter scam messages from chat", () -> Config.donutAntiScam, v -> Config.donutAntiScam = v));
+        donut.add(new ModCard("donut-spawnernotifier", "SPAWNER NOTIFIER", "Warn when spawner is nearby", () -> Config.donutSpawnerNotifier, v -> Config.donutSpawnerNotifier = v));
+        TAB_MODULES.add(donut);
+
+        // CUSTOM tab
+        List<ModCard> custom = new ArrayList<>();
+        TAB_MODULES.add(custom);
 
         TAB_MODULES.add(new ArrayList<>());
         TAB_MODULES.add(new ArrayList<>());
@@ -279,8 +304,8 @@ public class ViperModsScreen extends Screen {
 
         context.fill(panelX + SIDEBAR_W + 1, panelY + TAB_H + 18, panelX + panelW, panelY + TAB_H + 19, 0xFF2a1a3a);
 
-        if (activeTab == 2) renderThemeTab(context, mouseX, mouseY);
-        else if (activeTab == 3) renderConfigTab(context, mouseX, mouseY, accent);
+        if (activeTab == 5) renderThemeTab(context, mouseX, mouseY);
+        else if (activeTab == 6) renderConfigTab(context, mouseX, mouseY, accent);
         else if (activeTab < TAB_MODULES.size()) renderCardsTab(context, mouseX, mouseY, accent);
 
         if (awaitingKeybindId != null) {
@@ -381,7 +406,7 @@ public class ViperModsScreen extends Screen {
         int visibleBottom = panelY + panelH - 24;
 
         if (cards.isEmpty()) {
-            context.drawCenteredTextWithShadow(this.textRenderer, "§7No modules match your search",
+            context.drawCenteredTextWithShadow(this.textRenderer, "§7No modules in this tab yet",
                     panelX + panelW / 2 + SIDEBAR_W / 2, panelY + panelH / 2, COLOR_MUTED);
             return;
         }
@@ -904,7 +929,7 @@ public class ViperModsScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (awaitingKeybindId != null) return false;
-        if (activeTab >= 2) return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        if (activeTab >= 5) return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         if (maxScroll > 0) {
             scrollOffset -= (int) (verticalAmount * 20);
             if (scrollOffset < 0) scrollOffset = 0;
@@ -968,7 +993,7 @@ public class ViperModsScreen extends Screen {
             tx += tw + 4;
         }
 
-        if (activeTab == 2) {
+        if (activeTab == 5) {
             int x0 = panelX + SIDEBAR_W + 30;
             int y0 = panelY + TAB_H + 60;
             int swatchSize = 60;
@@ -986,7 +1011,7 @@ public class ViperModsScreen extends Screen {
             return true;
         }
 
-        if (activeTab == 3) {
+        if (activeTab == 6) {
             int x0 = panelX + SIDEBAR_W + 30;
             int y0 = panelY + TAB_H + 60;
             int btnW = 240;

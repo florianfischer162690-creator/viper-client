@@ -32,6 +32,7 @@ public class ViperClient implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static Object gammaOptionRef = null;
+    public static String pendingChatCommand = null;
 
     private static KeyBinding toggleHudKey;
     private static KeyBinding openMenuKey;
@@ -189,6 +190,17 @@ public class ViperClient implements ClientModInitializer {
                 Config.save();
             }
 
+            // Waypoint chat-command
+            try {
+                if (client.player != null) {
+                    String pending = pendingChatCommand;
+                    if (pending != null && !pending.isEmpty()) {
+                        pendingChatCommand = null;
+                        handleWaypointCommand(client, pending);
+                    }
+                }
+            } catch (Throwable ignored) {}
+
             try {
                 long window = client.getWindow().getHandle();
                 if (client.currentScreen == null) {
@@ -251,7 +263,6 @@ public class ViperClient implements ClientModInitializer {
             // FREECAM movement
             try {
                 if (Config.freecamEnabled && client.player != null) {
-                    // spieler-input blocken via keybindings
                     client.options.forwardKey.setPressed(false);
                     client.options.backKey.setPressed(false);
                     client.options.leftKey.setPressed(false);
@@ -317,6 +328,60 @@ public class ViperClient implements ClientModInitializer {
         });
 
         LOGGER.info("[Viper V1] ready.");
+    }
+
+    public static void handleWaypointCommand(MinecraftClient client, String command) {
+        try {
+            String trimmed = command.trim();
+            if (!trimmed.startsWith("/wp")) return;
+
+            String[] parts = trimmed.split("\\s+");
+            if (client.player == null || client.world == null) return;
+
+            if (parts.length == 1 || (parts.length >= 2 && parts[1].equalsIgnoreCase("list"))) {
+                client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fWaypoints (" + Config.waypoints.size() + "/10):"), false);
+                if (Config.waypoints.isEmpty()) {
+                    client.player.sendMessage(net.minecraft.text.Text.literal("§7keine waypoints gesetzt"), false);
+                } else {
+                    for (Config.WaypointData wp : Config.waypoints.values()) {
+                        client.player.sendMessage(net.minecraft.text.Text.literal(
+                                "§7- §f" + wp.name + " §7(" + wp.x + ", " + wp.y + ", " + wp.z + ")"), false);
+                    }
+                }
+                return;
+            }
+
+            String sub = parts[1].toLowerCase();
+
+            if (sub.equals("set")) {
+                if (parts.length < 3) {
+                    client.player.sendMessage(net.minecraft.text.Text.literal("§c[Viper] §fUsage: /wp set <name>"), false);
+                    return;
+                }
+                String name = parts[2];
+                int px = (int) client.player.getX();
+                int py = (int) client.player.getY();
+                int pz = (int) client.player.getZ();
+                String dim = client.world.getRegistryKey().getValue().toString();
+                if (com.viper.client.util.Waypoints.add(name, px, py, pz, dim)) {
+                    client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fWaypoint '§f" + name + "§f' gesetzt §7(" + px + ", " + py + ", " + pz + ")"), false);
+                } else {
+                    client.player.sendMessage(net.minecraft.text.Text.literal("§c[Viper] §fMax 10 waypoints erreicht"), false);
+                }
+            } else if (sub.equals("del") || sub.equals("delete") || sub.equals("remove")) {
+                if (parts.length < 3) {
+                    client.player.sendMessage(net.minecraft.text.Text.literal("§c[Viper] §fUsage: /wp del <name>"), false);
+                    return;
+                }
+                if (com.viper.client.util.Waypoints.remove(parts[2])) {
+                    client.player.sendMessage(net.minecraft.text.Text.literal("§a[Viper] §fWaypoint '§f" + parts[2] + "§f' gelöscht"), false);
+                } else {
+                    client.player.sendMessage(net.minecraft.text.Text.literal("§c[Viper] §fWaypoint nicht gefunden"), false);
+                }
+            } else {
+                client.player.sendMessage(net.minecraft.text.Text.literal("§7[Viper] /wp set <name> | /wp del <name> | /wp list"), false);
+            }
+        } catch (Throwable ignored) {}
     }
 
     private static void sendMacro(MinecraftClient client, int index) {

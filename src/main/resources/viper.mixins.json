@@ -13,7 +13,10 @@
     "GammaMixin",
     "FreecamMixin",
     "FreecamInputMixin",
-    "NametagMixin"
+    "NametagMixin",
+    "FullbrightShadowsMixin",
+    "ChatCommandMixin",
+    "BlockRotationMixin"
   ],
   "injectors": {
     "defaultRequire": 1
