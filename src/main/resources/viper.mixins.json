@@ -25,7 +25,6 @@
     "ChatScreenTabsMixin",
     "ChatHeadsMixin",
     "CustomF3Mixin",
-    "ItemPhysicsMixin",
     "DeathInfoMixin"
   ],
   "injectors": {

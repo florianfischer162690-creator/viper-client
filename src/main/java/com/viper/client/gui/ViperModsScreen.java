@@ -177,7 +177,6 @@ public class ViperModsScreen extends Screen {
         }));
 
         pvp.add(new ModCard("damagetint", "DAMAGE TINT", "Red screen edge on damage", () -> Config.damageTint, v -> Config.damageTint = v));
-        pvp.add(new ModCard("itemphysics", "ITEM PHYSICS", "Dropped items lie flat", () -> Config.itemPhysics, v -> Config.itemPhysics = v));
         pvp.add(new ModCard("totemwarning", "TOTEM WARNING", "Warn when no totem equipped", () -> Config.donutTotemWarning, v -> Config.donutTotemWarning = v));
         pvp.add(new ModCard("weatherchanger", "WEATHER CHANGER", "Client-side weather override", () -> Config.weatherChanger, v -> Config.weatherChanger = v));
         pvp.add(new ModCard("timechanger", "TIME CHANGER", "Client-side time override", () -> Config.timeChanger, v -> Config.timeChanger = v));

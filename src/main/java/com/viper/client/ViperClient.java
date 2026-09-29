@@ -427,7 +427,6 @@ public class ViperClient implements ClientModInitializer {
             case "attackindicator": Config.showAttackIndicator = !Config.showAttackIndicator; break;
             case "deathinfo": Config.showDeathInfo = !Config.showDeathInfo; break;
             case "damagetint": Config.damageTint = !Config.damageTint; break;
-            case "itemphysics": Config.itemPhysics = !Config.itemPhysics; break;
             case "weatherchanger": Config.weatherChanger = !Config.weatherChanger; break;
             case "timechanger": Config.timeChanger = !Config.timeChanger; break;
             case "chattabs": Config.chatTabs = !Config.chatTabs; break;
