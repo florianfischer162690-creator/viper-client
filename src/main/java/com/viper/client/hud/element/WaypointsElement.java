@@ -26,9 +26,22 @@ public class WaypointsElement extends HudElement {
     @Override
     public int render(DrawContext context, MinecraftClient mc, int x, int y) {
         if (mc.player == null) return 0;
-        if (Config.waypoints.isEmpty()) return 0;
 
         int accent = Config.getAccent();
+
+        if (Config.waypoints.isEmpty()) {
+            String label = "WP";
+            String value = "no waypoints — /wp set <name>";
+            int labelW = mc.textRenderer.getWidth(label);
+            int valueW = mc.textRenderer.getWidth(value);
+            int width = labelW + 6 + valueW + PADDING * 2;
+            int height = mc.textRenderer.fontHeight + PADDING * 2;
+            context.fill(x, y, x + width, y + height, COLOR_BG);
+            context.fill(x, y, x + 2, y + height, accent);
+            context.drawText(mc.textRenderer, label, x + PADDING + 3, y + PADDING, accent, true);
+            context.drawText(mc.textRenderer, value, x + PADDING + 3 + labelW + 6, y + PADDING, COLOR_VALUE, true);
+            return height;
+        }
 
         int px = (int) mc.player.getX();
         int py = (int) mc.player.getY();
@@ -36,6 +49,9 @@ public class WaypointsElement extends HudElement {
         String dim = mc.world != null ? mc.world.getRegistryKey().getValue().toString() : "";
 
         Config.WaypointData closest = Waypoints.findClosest(px, py, pz, dim);
+        if (closest == null) {
+            closest = Waypoints.findClosestAny(px, py, pz);
+        }
         if (closest == null) return 0;
 
         double dx = closest.x - px;
@@ -63,6 +79,6 @@ public class WaypointsElement extends HudElement {
 
     @Override
     public int getWidth(MinecraftClient mc) {
-        return mc.textRenderer.getWidth("WP") + 6 + mc.textRenderer.getWidth("this is a long waypoint name N 9999m") + PADDING * 2;
+        return mc.textRenderer.getWidth("WP") + 6 + mc.textRenderer.getWidth("this is a long waypoint name N 99999m") + PADDING * 2;
     }
 }

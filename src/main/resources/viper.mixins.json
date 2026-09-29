@@ -16,7 +16,8 @@
     "NametagMixin",
     "FullbrightShadowsMixin",
     "ChatCommandMixin",
-    "BlockRotationMixin"
+    "BlockRotationMixin",
+    "HugoInvseeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

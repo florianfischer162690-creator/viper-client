@@ -1,27 +1,11 @@
 package com.viper.client.util;
 
 import com.viper.client.config.Config;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class Waypoints {
-
-    public static class Waypoint {
-        public String name;
-        public int x, y, z;
-        public String dimension;
-
-        public Waypoint(String name, int x, int y, int z, String dimension) {
-            this.name = name;
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.dimension = dimension;
-        }
-    }
 
     public static boolean add(String name, int x, int y, int z, String dimension) {
         if (name == null || name.isEmpty()) return false;
@@ -52,6 +36,22 @@ public class Waypoints {
         double closestDist = Double.MAX_VALUE;
         for (Config.WaypointData wp : Config.waypoints.values()) {
             if (wp.dimension != null && !wp.dimension.equals(currentDim)) continue;
+            double dx = wp.x - px;
+            double dy = wp.y - py;
+            double dz = wp.z - pz;
+            double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (dist < closestDist) {
+                closestDist = dist;
+                closest = wp;
+            }
+        }
+        return closest;
+    }
+
+    public static Config.WaypointData findClosestAny(int px, int py, int pz) {
+        Config.WaypointData closest = null;
+        double closestDist = Double.MAX_VALUE;
+        for (Config.WaypointData wp : Config.waypoints.values()) {
             double dx = wp.x - px;
             double dy = wp.y - py;
             double dz = wp.z - pz;
