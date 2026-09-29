@@ -16,7 +16,7 @@ public class CrystalPlaceMixin {
     @Shadow private int attackCooldown;
 
     private static int placeTicker = 0;
-    private static final int MIN_TICKS_BETWEEN_PLACES = 2; // 100ms
+    private static final int MIN_TICKS_BETWEEN_PLACES = 1;
 
     @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true, require = 0)
     private void viper_crystalPlace(CallbackInfo ci) {
@@ -27,7 +27,6 @@ public class CrystalPlaceMixin {
             if (!(mc.player.getMainHandStack().isOf(Items.END_CRYSTAL)
                     || mc.player.getOffHandStack().isOf(Items.END_CRYSTAL))) return;
 
-            // zu schnell → blocken
             if (placeTicker > 0) {
                 ci.cancel();
                 return;

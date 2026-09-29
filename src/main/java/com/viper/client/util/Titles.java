@@ -6,14 +6,12 @@ import java.util.Set;
 
 public class Titles {
 
-    /** DEV-USERS → dürfen "VIPER DEV" wählen */
     private static final Set<String> DEV_USERS = new HashSet<>(Arrays.asList(
             "Vipez20",
             "florianfischer",
             "bloodywinterd"
     ));
 
-    /** BETA-TESTER → dürfen "VIPER BETA TESTER" + "VIPER ALPHA" wählen */
     private static final Set<String> BETA_TESTERS = new HashSet<>(Arrays.asList(
             "Vipez20",
             "bloodywinterd",
@@ -21,13 +19,15 @@ public class Titles {
             "Test2"
     ));
 
-    /** STAFF-USERS → dürfen "VIPER STAFF" wählen */
     private static final Set<String> STAFF_USERS = new HashSet<>(Arrays.asList(
             "Vipez20",
             "bloodywinterd"
     ));
 
-    /** alle titel: id, name, farbe, required-role (null = für alle) */
+    private static final Set<String> OWNER_USERS = new HashSet<>(Arrays.asList(
+            "Vipez20"
+    ));
+
     public static final Title[] ALL_TITLES = {
             new Title("none",            "",                   0xFFFFFFFF, null),
             new Title("viper",           "VIPER",              0xFFA855F7, null),
@@ -43,6 +43,7 @@ public class Titles {
             new Title("viper_beta",      "VIPER BETA TESTER",  0xFF7C3AED, "beta"),
             new Title("viper_staff",     "VIPER STAFF",        0xFF2ECC71, "staff"),
             new Title("viper_dev",       "VIPER DEV",          0xFFFF0033, "dev"),
+            new Title("viper_owner",     "VIPER OWNER",        0xFFFFD700, "owner"),
     };
 
     public static class Title {
@@ -66,6 +67,7 @@ public class Titles {
                 case "beta": return BETA_TESTERS.contains(username);
                 case "staff": return STAFF_USERS.contains(username);
                 case "alpha": return BETA_TESTERS.contains(username) || DEV_USERS.contains(username);
+                case "owner": return OWNER_USERS.contains(username);
             }
             return false;
         }
