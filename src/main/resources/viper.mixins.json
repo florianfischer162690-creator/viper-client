@@ -19,7 +19,6 @@
     "BlockRotationMixin",
     "HugoInvseeMixin",
     "TabListMixin",
-    "BlockOutlineMixin",
     "FreelookMixin",
     "WeatherChangerMixin",
     "TimeChangerMixin",
