@@ -12,14 +12,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(KeyboardInput.class)
 public abstract class FreecamInputMixin extends Input {
 
+    @Shadow public abstract void tick(boolean slowDown, float slowDownFactor);
+
     @Inject(method = "tick", at = @At("TAIL"), require = 0)
     private void viper_freecamBlockInput(boolean slowDown, float slowDownFactor, CallbackInfo ci) {
         try {
             if (!Config.freecamEnabled) return;
-            this.movementForward = 0;
-            this.movementSideways = 0;
-            this.jumping = false;
-            this.sneaking = false;
+            this.playerInput.forward(false);
+            this.playerInput.backward(false);
+            this.playerInput.left(false);
+            this.playerInput.right(false);
+            this.playerInput.jump(false);
+            this.playerInput.sneak(false);
         } catch (Throwable ignored) {}
     }
 }
