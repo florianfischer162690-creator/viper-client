@@ -3,7 +3,6 @@ package com.viper.client.gui;
 import com.viper.client.config.Config;
 import com.viper.client.hud.HudRenderer;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -48,7 +47,6 @@ public class HudEditorScreen extends Screen {
             renderElementWithBorder(mc, context, HudRenderer.keystrokesElement, pos, accent);
         }
 
-        // INVENTORY HUD — neu
         if (Config.showInventoryHud && HudRenderer.inventoryElement.isEnabled()) {
             Config.ElementPos pos = Config.getPos(
                     HudRenderer.inventoryElement.getId(),
@@ -58,7 +56,6 @@ public class HudEditorScreen extends Screen {
             renderElementWithBorder(mc, context, HudRenderer.inventoryElement, pos, accent);
         }
 
-        // armor-element (fix position, zeigt nur rand)
         if (Config.showArmor && HudRenderer.armorElement.isEnabled()) {
             int scaledW = mc.getWindow().getScaledWidth();
             int scaledH = mc.getWindow().getScaledHeight();
@@ -67,8 +64,8 @@ public class HudEditorScreen extends Screen {
             int ax = (scaledW / 2) - 91 - 29 - armorW - 6;
             int ay = (scaledH - 11) - (armorH / 2);
 
-            context.getMatrices().pushMatrix();
-            context.getMatrices().translate((float) ax, (float) ay);
+            context.getMatrices().push();
+            context.getMatrices().translate((float) ax, (float) ay, 0.0f);
 
             context.fill(-1, -1, armorW + 1, 0, accent);
             context.fill(-1, armorH, armorW + 1, armorH + 1, accent);
@@ -76,16 +73,16 @@ public class HudEditorScreen extends Screen {
             context.fill(armorW, -1, armorW + 1, armorH + 1, accent);
 
             HudRenderer.armorElement.render(context, mc, 0, 0);
-            context.getMatrices().popMatrix();
+            context.getMatrices().pop();
         }
 
         super.render(context, mouseX, mouseY, delta);
     }
 
     private void renderElementWithBorder(MinecraftClient mc, DrawContext context, HudRenderer.HudElement el, Config.ElementPos pos, int accent) {
-        context.getMatrices().pushMatrix();
-        context.getMatrices().translate((float) pos.x, (float) pos.y);
-        context.getMatrices().scale(pos.scale, pos.scale);
+        context.getMatrices().push();
+        context.getMatrices().translate((float) pos.x, (float) pos.y, 0.0f);
+        context.getMatrices().scale(pos.scale, pos.scale, 1.0f);
 
         int w = el.getWidth(mc);
         int h = el.getHeight(mc);
@@ -97,14 +94,12 @@ public class HudEditorScreen extends Screen {
         context.fill(w, -1, w + 1, h + 1, borderColor);
 
         el.render(context, mc, 0, 0);
-        context.getMatrices().popMatrix();
+        context.getMatrices().pop();
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (click.button() != 0) return super.mouseClicked(click, doubled);
-        int mx = (int) click.x();
-        int my = (int) click.y();
+    public boolean mouseClicked(double mx, double my, int button) {
+        if (button != 0) return super.mouseClicked(mx, my, button);
         MinecraftClient mc = this.client;
 
         Config.ElementPos kpos = Config.getPos(
@@ -112,24 +107,23 @@ public class HudEditorScreen extends Screen {
                 HudRenderer.keystrokesElement.getDefaultX(mc),
                 HudRenderer.keystrokesElement.getDefaultY(mc)
         );
-        if (hitTest(mc, HudRenderer.keystrokesElement, kpos, mx, my)) {
+        if (hitTest(mc, HudRenderer.keystrokesElement, kpos, (int) mx, (int) my)) {
             draggingId = HudRenderer.keystrokesElement.getId();
-            dragOffsetX = mx - kpos.x;
-            dragOffsetY = my - kpos.y;
+            dragOffsetX = (int) mx - kpos.x;
+            dragOffsetY = (int) my - kpos.y;
             return true;
         }
 
-        // INVENTORY HUD click
         if (Config.showInventoryHud && HudRenderer.inventoryElement.isEnabled()) {
             Config.ElementPos ipos = Config.getPos(
                     HudRenderer.inventoryElement.getId(),
                     HudRenderer.inventoryElement.getDefaultX(),
                     HudRenderer.inventoryElement.getDefaultY()
             );
-            if (hitTest(mc, HudRenderer.inventoryElement, ipos, mx, my)) {
+            if (hitTest(mc, HudRenderer.inventoryElement, ipos, (int) mx, (int) my)) {
                 draggingId = HudRenderer.inventoryElement.getId();
-                dragOffsetX = mx - ipos.x;
-                dragOffsetY = my - ipos.y;
+                dragOffsetX = (int) mx - ipos.x;
+                dragOffsetY = (int) my - ipos.y;
                 return true;
             }
         }
@@ -137,23 +131,23 @@ public class HudEditorScreen extends Screen {
         for (HudRenderer.HudElement el : HudRenderer.ELEMENTS) {
             if (!el.isEnabled()) continue;
             Config.ElementPos pos = Config.getPos(el.getId(), el.getDefaultX(), el.getDefaultY());
-            if (hitTest(mc, el, pos, mx, my)) {
+            if (hitTest(mc, el, pos, (int) mx, (int) my)) {
                 draggingId = el.getId();
-                dragOffsetX = mx - pos.x;
-                dragOffsetY = my - pos.y;
+                dragOffsetX = (int) mx - pos.x;
+                dragOffsetY = (int) my - pos.y;
                 return true;
             }
         }
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mx, my, button);
     }
 
     @Override
-    public boolean mouseDragged(Click click, double offsetX, double offsetY) {
+    public boolean mouseDragged(double mx, double my, int button, double offsetX, double offsetY) {
         if (draggingId != null) {
             Config.ElementPos pos = findPos(draggingId);
             if (pos != null) {
-                int newX = (int) click.x() - dragOffsetX;
-                int newY = (int) click.y() - dragOffsetY;
+                int newX = (int) mx - dragOffsetX;
+                int newY = (int) my - dragOffsetY;
 
                 MinecraftClient mc = this.client;
                 HudRenderer.HudElement el = findElement(draggingId);
@@ -174,7 +168,7 @@ public class HudEditorScreen extends Screen {
             }
             return true;
         }
-        return super.mouseDragged(click, offsetX, offsetY);
+        return super.mouseDragged(mx, my, button, offsetX, offsetY);
     }
 
     private boolean overlaps(MinecraftClient mc, String selfId, int nx, int ny, int w, int h) {
@@ -216,9 +210,9 @@ public class HudEditorScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(Click click) {
+    public boolean mouseReleased(double mx, double my, int button) {
         if (draggingId != null) { draggingId = null; return true; }
-        return super.mouseReleased(click);
+        return super.mouseReleased(mx, my, button);
     }
 
     @Override
@@ -235,7 +229,6 @@ public class HudEditorScreen extends Screen {
             return true;
         }
 
-        // INVENTORY HUD scroll
         if (Config.showInventoryHud && HudRenderer.inventoryElement.isEnabled()) {
             Config.ElementPos ipos = Config.getPos(
                     HudRenderer.inventoryElement.getId(),

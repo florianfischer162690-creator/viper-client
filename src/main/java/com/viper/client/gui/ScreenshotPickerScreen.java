@@ -2,7 +2,6 @@ package com.viper.client.gui;
 
 import com.viper.client.config.Config;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -70,32 +69,26 @@ public class ScreenshotPickerScreen extends Screen {
         int accent = Config.getAccent();
         int accentDark = Config.getAccentDark();
 
-        // backdrop
         context.fill(0, 0, this.width, this.height, 0xBB000000);
 
-        // panel
         context.fill(panelX, panelY, panelX + panelW, panelY + panelH, COLOR_BG);
         context.fill(panelX, panelY, panelX + panelW, panelY + 1, accentDark);
         context.fill(panelX, panelY + panelH - 1, panelX + panelW, panelY + panelH, accentDark);
         context.fill(panelX, panelY, panelX + 1, panelY + panelH, accentDark);
         context.fill(panelX + panelW - 1, panelY, panelX + panelW, panelY + panelH, accentDark);
 
-        // header
         context.drawText(this.textRenderer, "§l📸 SCREENSHOTS", panelX + 20, panelY + 16, accent, false);
         context.drawText(this.textRenderer, "§7" + screenshots.size() + " files — click to edit",
                 panelX + 20, panelY + 30, COLOR_MUTED, false);
 
-        // close button
         int closeX = panelX + panelW - 28;
         int closeY = panelY + 8;
         boolean closeHover = mouseX >= closeX && mouseX <= closeX + 20 && mouseY >= closeY && mouseY <= closeY + 20;
         if (closeHover) context.fill(closeX, closeY, closeX + 20, closeY + 20, 0xFF3a1a2a);
         context.drawText(this.textRenderer, "§c✕", closeX + 6, closeY + 6, 0xFFFF5555, false);
 
-        // divider
         context.fill(panelX + 1, panelY + 52, panelX + panelW - 1, panelY + 53, 0xFF2a1a3a);
 
-        // list
         int listX = panelX + 16;
         int listY = panelY + 60;
         int listW = panelW - 32;
@@ -124,25 +117,21 @@ public class ScreenshotPickerScreen extends Screen {
                         && mouseY >= ry && mouseY <= ry + ROW_H
                         && mouseY >= listY && mouseY <= listBottom;
 
-                // row bg
                 context.fill(listX, ry, listX + listW, ry + ROW_H, hovered ? COLOR_ROW_H : COLOR_ROW);
                 if (hovered) {
                     context.fill(listX, ry, listX + 3, ry + ROW_H, accent);
                 }
 
-                // name (truncate if long)
                 String name = f.getName();
                 if (name.length() > 42) name = name.substring(0, 39) + "...";
                 context.drawText(this.textRenderer, "§f" + name, listX + 12, ry + 8, COLOR_WHITE, false);
 
-                // meta: datum + größe
                 String dateStr = sdf.format(new Date(f.lastModified()));
                 long kb = f.length() / 1024;
                 String sizeStr = kb + " KB";
                 String meta = "§7" + dateStr + "  §8•  §7" + sizeStr;
                 context.drawText(this.textRenderer, meta, listX + 12, ry + 22, COLOR_MUTED, false);
 
-                // "edit" hint rechts
                 if (hovered) {
                     int hintW = this.textRenderer.getWidth("§e▶ edit");
                     context.drawText(this.textRenderer, "§e▶ edit",
@@ -153,7 +142,6 @@ public class ScreenshotPickerScreen extends Screen {
 
         context.disableScissor();
 
-        // scrollbar
         if (maxScroll > 0) {
             int barX = panelX + panelW - 8;
             int barY = listY;
@@ -169,13 +157,12 @@ public class ScreenshotPickerScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (click.button() != 0) return super.mouseClicked(click, doubled);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
 
-        int mx = (int) click.x();
-        int my = (int) click.y();
+        int mx = (int) mouseX;
+        int my = (int) mouseY;
 
-        // close
         int closeX = panelX + panelW - 28;
         int closeY = panelY + 8;
         if (mx >= closeX && mx <= closeX + 20 && my >= closeY && my <= closeY + 20) {
@@ -183,7 +170,6 @@ public class ScreenshotPickerScreen extends Screen {
             return true;
         }
 
-        // row click
         int listX = panelX + 16;
         int listY = panelY + 60;
         int listW = panelW - 32;
@@ -203,7 +189,7 @@ public class ScreenshotPickerScreen extends Screen {
                 return true;
             }
         }
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override

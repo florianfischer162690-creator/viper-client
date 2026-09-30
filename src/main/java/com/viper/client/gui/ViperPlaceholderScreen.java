@@ -1,7 +1,6 @@
 package com.viper.client.gui;
 
 import com.viper.client.config.Config;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -147,11 +146,11 @@ public class ViperPlaceholderScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (click.button() != 0) return super.mouseClicked(click, doubled);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
 
-        int mx = (int) click.x();
-        int my = (int) click.y();
+        int mx = (int) mouseX;
+        int my = (int) mouseY;
 
         int closeX = panelX + panelW - 28;
         int closeY = panelY + 8;
@@ -183,7 +182,7 @@ public class ViperPlaceholderScreen extends Screen {
             }
         }
 
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override

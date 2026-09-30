@@ -2,20 +2,13 @@ package com.viper.client.gui;
 
 import com.viper.client.ViperClient;
 import com.viper.client.config.Config;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 
 public class ScreenshotEditorScreen extends Screen {
 
@@ -25,7 +18,6 @@ public class ScreenshotEditorScreen extends Screen {
     private boolean loaded = false;
     private String loadError = null;
 
-    private Identifier textureId = null;
     private int textureW = 0;
     private int textureH = 0;
 
@@ -60,20 +52,8 @@ public class ScreenshotEditorScreen extends Screen {
                 return;
             }
             loaded = true;
-
-            try (InputStream in = new FileInputStream(screenshotFile)) {
-                NativeImage nativeImage = NativeImage.read(in);
-                textureW = nativeImage.getWidth();
-                textureH = nativeImage.getHeight();
-
-                String uniqueName = "screenshot_preview_" + screenshotFile.hashCode();
-                final String texName = uniqueName;
-                textureId = Identifier.of("viper", uniqueName.toLowerCase().replaceAll("[^a-z0-9_]", "_"));
-
-                NativeImageBackedTexture tex = new NativeImageBackedTexture(() -> texName, nativeImage);
-                tex.upload();
-                MinecraftClient.getInstance().getTextureManager().registerTexture(textureId, tex);
-            }
+            textureW = previewImage.getWidth();
+            textureH = previewImage.getHeight();
         } catch (Exception e) {
             ViperClient.LOGGER.error("[ScreenshotEditor] load failed", e);
             loadError = e.getMessage();
@@ -114,24 +94,9 @@ public class ScreenshotEditorScreen extends Screen {
         if (!loaded) {
             context.fill(previewX, previewY, previewX + previewW, previewY + previewH, 0xFF000000);
             context.drawCenteredTextWithShadow(this.textRenderer, "§7Loading...", this.width / 2, previewY + previewH / 2, 0xFF8A8A9C);
-        } else if (textureId == null) {
-            context.fill(previewX, previewY, previewX + previewW, previewY + previewH, 0xFF000000);
-            context.drawCenteredTextWithShadow(this.textRenderer, "§c✗ texture load failed", this.width / 2, previewY + previewH / 2, 0xFFFF5555);
         } else {
-            try {
-                context.drawTexture(
-                        net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED,
-                        textureId,
-                        previewX, previewY,
-                        0, 0,
-                        previewW, previewH,
-                        textureW, textureH
-                );
-            } catch (Throwable t) {
-                ViperClient.LOGGER.error("[ScreenshotEditor] draw failed", t);
-                context.fill(previewX, previewY, previewX + previewW, previewY + previewH, 0xFF000000);
-                context.drawCenteredTextWithShadow(this.textRenderer, "§c✗ draw failed", this.width / 2, previewY + previewH / 2, 0xFFFF5555);
-            }
+            context.fill(previewX, previewY, previewX + previewW, previewY + previewH, 0xFF000000);
+            context.drawCenteredTextWithShadow(this.textRenderer, "§7" + textureW + "×" + textureH + " · preview on save", this.width / 2, previewY + previewH / 2, 0xFF8A8A9C);
         }
 
         int y = btnBaseY;
@@ -169,11 +134,11 @@ public class ScreenshotEditorScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (click.button() != 0) return super.mouseClicked(click, doubled);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
 
-        int mx = (int) click.x();
-        int my = (int) click.y();
+        int mx = (int) mouseX;
+        int my = (int) mouseY;
 
         int y = btnBaseY;
 
@@ -199,7 +164,7 @@ public class ScreenshotEditorScreen extends Screen {
             return true;
         }
 
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     private void saveWithFrame() {
@@ -245,12 +210,6 @@ public class ScreenshotEditorScreen extends Screen {
 
     @Override
     public void close() {
-        try {
-            if (textureId != null) {
-                MinecraftClient.getInstance().getTextureManager().destroyTexture(textureId);
-                textureId = null;
-            }
-        } catch (Throwable ignored) {}
         if (this.client != null) this.client.setScreen(null);
     }
 

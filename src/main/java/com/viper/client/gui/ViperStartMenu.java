@@ -55,7 +55,6 @@ public class ViperStartMenu extends Screen {
                 cx, cy - 40, COLOR_MUTED
         );
 
-        // MOD MENU label — klickbar
         labelW = 280;
         labelH = 26;
         labelX = cx - labelW / 2;
@@ -80,12 +79,10 @@ public class ViperStartMenu extends Screen {
 
         context.drawCenteredTextWithShadow(this.textRenderer, "MOD MENU", cx, labelY + 9, COLOR_WHITE);
 
-        // 2 buttons unter dem label
         int btnY = labelY + labelH + 22;
         int totalW = BTN_SIZE * 2 + BTN_GAP;
         int startX = cx - totalW / 2;
 
-        // HUD-EDITOR button (links)
         int bx1 = startX;
         hoveredHudBtn = mouseX >= bx1 && mouseX <= bx1 + BTN_SIZE && mouseY >= btnY && mouseY <= btnY + BTN_SIZE;
         drawSquareButton(context, bx1, btnY, BTN_SIZE, hoveredHudBtn, accent, accentDark, accentBg);
@@ -94,7 +91,6 @@ public class ViperStartMenu extends Screen {
             context.drawCenteredTextWithShadow(this.textRenderer, "HUD EDITOR", bx1 + BTN_SIZE / 2, btnY + BTN_SIZE + 10, accent);
         }
 
-        // SCREENSHOTS button (rechts)
         int bx2 = startX + BTN_SIZE + BTN_GAP;
         hoveredScreenBtn = mouseX >= bx2 && mouseX <= bx2 + BTN_SIZE && mouseY >= btnY && mouseY <= btnY + BTN_SIZE;
         drawSquareButton(context, bx2, btnY, BTN_SIZE, hoveredScreenBtn, accent, accentDark, accentBg);
@@ -118,10 +114,10 @@ public class ViperStartMenu extends Screen {
     }
 
     private void drawTitle(DrawContext context, int cx, int cy, float pulse, int accent, int accentLight, int accentDark) {
-        context.getMatrices().pushMatrix();
-        context.getMatrices().translate((float) cx, (float) cy);
+        context.getMatrices().push();
+        context.getMatrices().translate((float) cx, (float) cy, 0.0f);
         float scale = 2.6f + pulse * 0.05f;
-        context.getMatrices().scale(scale, scale);
+        context.getMatrices().scale(scale, scale, 1.0f);
 
         String vip = "VIPER";
         String v1 = "V1";
@@ -138,7 +134,7 @@ public class ViperStartMenu extends Screen {
         drawVLogo(context, startX + vipW + gap, -8, logoW, 16, pulse, accent);
         drawGlowText(context, "§l" + v1, startX + vipW + gap + logoW + gap, -4, accent, accentLight);
 
-        context.getMatrices().popMatrix();
+        context.getMatrices().pop();
     }
 
     private void drawGlowText(DrawContext context, String txt, int x, int y, int accent, int accentLight) {
@@ -216,11 +212,8 @@ public class ViperStartMenu extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(net.minecraft.client.gui.Click click, boolean doubled) {
-        if (click.button() != 0) return super.mouseClicked(click, doubled);
-
-        int mx = (int) click.x();
-        int my = (int) click.y();
+    public boolean mouseClicked(double mx, double my, int button) {
+        if (button != 0) return super.mouseClicked(mx, my, button);
 
         if (mx >= labelX && mx <= labelX + labelW && my >= labelY && my <= labelY + labelH) {
             if (this.client != null) this.client.setScreen(new ViperModsScreen());
@@ -243,7 +236,7 @@ public class ViperStartMenu extends Screen {
             return true;
         }
 
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mx, my, button);
     }
 
     @Override

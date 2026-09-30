@@ -55,7 +55,7 @@ public class CrystalHitMixin {
             if (crystals.isEmpty()) return;
 
             EndCrystalEntity target = crystals.get(0);
-            double dist = mc.player.getEyePos().distanceTo(target.getEntityPos());
+            double dist = mc.player.getEyePos().distanceTo(target.getPos());
             if (dist > 5.0) return;
 
             mc.interactionManager.attackEntity(mc.player, target);

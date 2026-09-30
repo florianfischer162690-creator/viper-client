@@ -5,8 +5,6 @@ import com.viper.client.config.Config;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.input.CharInput;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
@@ -76,19 +74,16 @@ public class NotepadScreen extends Screen {
 
         context.fill(0, 0, this.width, this.height, 0xBB000000);
 
-        // panel
         context.fill(panelX, panelY, panelX + panelW, panelY + panelH, COLOR_BG);
         context.fill(panelX, panelY, panelX + panelW, panelY + 1, accentDark);
         context.fill(panelX, panelY + panelH - 1, panelX + panelW, panelY + panelH, accentDark);
         context.fill(panelX, panelY, panelX + 1, panelY + panelH, accentDark);
         context.fill(panelX + panelW - 1, panelY, panelX + panelW, panelY + panelH, accentDark);
 
-        // header
         context.drawText(this.textRenderer, "§l📓 NOTEPAD", panelX + PADDING, panelY + 16, accent, false);
         context.drawText(this.textRenderer, "§7Auto-saves on close · ESC to close",
                 panelX + PADDING + 130, panelY + 16, COLOR_MUTED, false);
 
-        // text-bereich hintergrund
         int fieldX = panelX + PADDING - 2;
         int fieldY = panelY + 46;
         int fieldW = panelW - PADDING * 2 + 4;
@@ -99,7 +94,6 @@ public class NotepadScreen extends Screen {
         context.fill(fieldX, fieldY, fieldX + 1, fieldY + fieldH, accentDark);
         context.fill(fieldX + fieldW - 1, fieldY, fieldX + fieldW, fieldY + fieldH, accentDark);
 
-        // text rendern — mehrzeilig
         String fullText = text.toString();
         String[] lines = fullText.split("\n", -1);
         int lineH = this.textRenderer.fontHeight + 2;
@@ -112,7 +106,6 @@ public class NotepadScreen extends Screen {
             ty += lineH;
         }
 
-        // cursor blinken
         long now = System.currentTimeMillis();
         if (now - lastBlink > 500) {
             cursorVisible = !cursorVisible;
@@ -132,18 +125,16 @@ public class NotepadScreen extends Screen {
     }
 
     @Override
-    public boolean charTyped(CharInput input) {
-        int cp = input.codepoint();
-        if (cp >= 32) {
-            text.appendCodePoint(cp);
+    public boolean charTyped(char chr, int modifiers) {
+        if (chr >= 32) {
+            text.append(chr);
             lastBlink = 0;
         }
         return true;
     }
 
     @Override
-    public boolean keyPressed(KeyInput input) {
-        int keyCode = input.key();
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             close();
             return true;
@@ -163,7 +154,7 @@ public class NotepadScreen extends Screen {
             lastBlink = 0;
             return true;
         }
-        return super.keyPressed(input);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override

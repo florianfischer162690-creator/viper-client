@@ -114,11 +114,11 @@ public class HudRenderer {
             if (pos.x + elW > scaledW) pos.x = Math.max(0, scaledW - elW);
             if (pos.y + elH > scaledH) pos.y = Math.max(0, scaledH - elH);
 
-            context.getMatrices().pushMatrix();
-            context.getMatrices().translate((float) pos.x, (float) pos.y);
-            context.getMatrices().scale(pos.scale, pos.scale);
+            context.getMatrices().push();
+            context.getMatrices().translate((float) pos.x, (float) pos.y, 0.0f);
+            context.getMatrices().scale(pos.scale, pos.scale, 1.0f);
             el.render(context, mc, 0, 0);
-            context.getMatrices().popMatrix();
+            context.getMatrices().pop();
         }
 
         if (keystrokesElement.isEnabled()) {
@@ -136,11 +136,11 @@ public class HudRenderer {
             if (pos.x + elW > scaledW) pos.x = Math.max(0, scaledW - elW);
             if (pos.y + elH > scaledH) pos.y = Math.max(0, scaledH - elH);
 
-            context.getMatrices().pushMatrix();
-            context.getMatrices().translate((float) pos.x, (float) pos.y);
-            context.getMatrices().scale(pos.scale, pos.scale);
+            context.getMatrices().push();
+            context.getMatrices().translate((float) pos.x, (float) pos.y, 0.0f);
+            context.getMatrices().scale(pos.scale, pos.scale, 1.0f);
             keystrokesElement.render(context, mc, 0, 0);
-            context.getMatrices().popMatrix();
+            context.getMatrices().pop();
         }
 
         if (Config.showInventoryHud && inventoryElement.isEnabled()) {
@@ -158,11 +158,11 @@ public class HudRenderer {
             if (pos.x + elW > scaledW) pos.x = Math.max(0, scaledW - elW);
             if (pos.y + elH > scaledH) pos.y = Math.max(0, scaledH - elH);
 
-            context.getMatrices().pushMatrix();
-            context.getMatrices().translate((float) pos.x, (float) pos.y);
-            context.getMatrices().scale(pos.scale, pos.scale);
+            context.getMatrices().push();
+            context.getMatrices().translate((float) pos.x, (float) pos.y, 0.0f);
+            context.getMatrices().scale(pos.scale, pos.scale, 1.0f);
             inventoryElement.render(context, mc, 0, 0);
-            context.getMatrices().popMatrix();
+            context.getMatrices().pop();
         }
 
         if (Config.showArmor && armorElement.isEnabled()) {
@@ -170,10 +170,10 @@ public class HudRenderer {
             int armorH = armorElement.getHeight(mc);
             int ax = (scaledW / 2) - 91 - 29 - armorW - 6;
             int ay = (scaledH - 11) - (armorH / 2);
-            context.getMatrices().pushMatrix();
-            context.getMatrices().translate((float) ax, (float) ay);
+            context.getMatrices().push();
+            context.getMatrices().translate((float) ax, (float) ay, 0.0f);
             armorElement.render(context, mc, 0, 0);
-            context.getMatrices().popMatrix();
+            context.getMatrices().pop();
         }
     }
 

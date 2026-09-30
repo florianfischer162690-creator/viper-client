@@ -3,11 +3,8 @@ package com.viper.client.gui;
 import com.viper.client.config.Config;
 import com.viper.client.util.Titles;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.input.CharInput;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
@@ -189,7 +186,6 @@ public class ViperModsScreen extends Screen {
 
         TAB_MODULES.add(pvp);
 
-        // HUGOSMP tab
         List<ModCard> hugo = new ArrayList<>();
         hugo.add(new ModCard("hugoinvsee", "AUTO INVSEE", "Auto /invsee on 1v1 match", () -> Config.hugoAutoInvsee, v -> Config.hugoAutoInvsee = v));
         hugo.add(new ModCard("antirotation", "ANTI BLOCK ROTATION", "Scramble block rotations (base-hide)", () -> Config.antiBlockRotation, v -> Config.antiBlockRotation = v));
@@ -198,7 +194,6 @@ public class ViperModsScreen extends Screen {
         hugo.add(new ModCard("rtptimer", "RTP TIMER", "Show /rtp cooldown", () -> Config.showRtpTimer, v -> Config.showRtpTimer = v));
         TAB_MODULES.add(hugo);
 
-        // DONUTSMP tab
         List<ModCard> donut = new ArrayList<>();
         donut.add(new ModCard("adminhud", "ADMIN HUD", "Show when staff is online", () -> Config.donutAdminHud, v -> Config.donutAdminHud = v));
         donut.add(new ModCard("coordsnapper", "COORD SNAPPER", "Copy coordinates to clipboard", () -> Config.donutCoordSnapper, v -> Config.donutCoordSnapper = v));
@@ -210,8 +205,8 @@ public class ViperModsScreen extends Screen {
         donut.add(new ModCard("spawnernotifier", "SPAWNER NOTIFIER", "Warn when spawner is nearby", () -> Config.donutSpawnerNotifier, v -> Config.donutSpawnerNotifier = v));
         TAB_MODULES.add(donut);
 
-        TAB_MODULES.add(new ArrayList<>()); // THEME
-        TAB_MODULES.add(new ArrayList<>()); // CONFIG
+        TAB_MODULES.add(new ArrayList<>());
+        TAB_MODULES.add(new ArrayList<>());
     }
 
     private void applyFpsBoost(boolean enable) {
@@ -567,7 +562,6 @@ public class ViperModsScreen extends Screen {
         context.drawText(this.textRenderer, "§72. Send the code to a friend", x, importY + btnH + 70, COLOR_MUTED, false);
         context.drawText(this.textRenderer, "§73. Friend copies it + clicks IMPORT", x, importY + btnH + 84, COLOR_MUTED, false);
     }
-
     private void drawCardFull(DrawContext context, ModCard card, int x, int y, int w, int h, boolean hovered, int mouseX, int mouseY, int accent) {
         context.fill(x, y, x + w, y + h, hovered ? Config.getAccentBg() : 0xFF1c1228);
         if (card.getter.get() || card.isAction) context.fill(x, y, x + 3, y + h, accent);
@@ -928,30 +922,28 @@ public class ViperModsScreen extends Screen {
         if (key >= GLFW.GLFW_KEY_0 && key <= GLFW.GLFW_KEY_9) return String.valueOf((char) ('0' + (key - GLFW.GLFW_KEY_0)));
         return "KEY" + key;
     }
-
     @Override
-    public boolean charTyped(CharInput input) {
+    public boolean charTyped(char chr, int modifiers) {
         if (editingMacroIndex >= 0) {
-            int cp = input.codepoint();
+            int cp = chr;
             if (cp >= 32 && macroEditBuffer.length() < 80) {
                 macroEditBuffer += (char) cp;
             }
             return true;
         }
         if (searchFocused && awaitingKeybindId == null) {
-            int cp = input.codepoint();
+            int cp = chr;
             if (cp >= 32) {
                 searchQuery += (char) cp;
             }
             return true;
         }
-        return super.charTyped(input);
+        return super.charTyped(chr, modifiers);
     }
 
     @Override
-    public boolean keyPressed(KeyInput input) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (editingMacroIndex >= 0) {
-            int keyCode = input.key();
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 Config.macroTexts[editingMacroIndex] = macroEditBuffer;
                 Config.save();
@@ -973,7 +965,6 @@ public class ViperModsScreen extends Screen {
             return true;
         }
         if (awaitingKeybindId != null) {
-            int keyCode = input.key();
             if (keyCode == GLFW.GLFW_KEY_ESCAPE) { awaitingKeybindId = null; return true; }
             if (keyCode == GLFW.GLFW_KEY_DELETE || keyCode == GLFW.GLFW_KEY_BACKSPACE) {
                 Config.setKeybind(awaitingKeybindId, -1); awaitingKeybindId = null; Config.save(); return true;
@@ -981,14 +972,13 @@ public class ViperModsScreen extends Screen {
             Config.setKeybind(awaitingKeybindId, keyCode); awaitingKeybindId = null; Config.save(); return true;
         }
         if (searchFocused) {
-            int keyCode = input.key();
             if (keyCode == GLFW.GLFW_KEY_ESCAPE) { searchFocused = false; return true; }
             if (keyCode == GLFW.GLFW_KEY_BACKSPACE && searchQuery.length() > 0) {
                 searchQuery = searchQuery.substring(0, searchQuery.length() - 1);
                 return true;
             }
         }
-        return super.keyPressed(input);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
@@ -1005,12 +995,12 @@ public class ViperModsScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (click.button() != 0) return super.mouseClicked(click, doubled);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
         if (awaitingKeybindId != null) return true;
 
-        int mx = (int) click.x();
-        int my = (int) click.y();
+        int mx = (int) mouseX;
+        int my = (int) mouseY;
         int accent = Config.getAccent();
 
         if (editingMacroIndex >= 0) {
@@ -1232,7 +1222,7 @@ public class ViperModsScreen extends Screen {
             }
         }
 
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     private boolean handleDropdownClick(ModCard card, int x, int y, int w, int mx, int my, int accent) {
