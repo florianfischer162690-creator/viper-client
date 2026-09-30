@@ -16,7 +16,7 @@
     "NametagMixin",
     "FullbrightShadowsMixin",
     "ChatCommandMixin",
-    "BlockRotationMixin",
+    
     "HugoInvseeMixin",
     "TabListMixin",
     "WeatherChangerMixin",
