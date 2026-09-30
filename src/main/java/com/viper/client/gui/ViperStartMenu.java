@@ -114,10 +114,10 @@ public class ViperStartMenu extends Screen {
     }
 
     private void drawTitle(DrawContext context, int cx, int cy, float pulse, int accent, int accentLight, int accentDark) {
-        context.getMatrices().push();
-        context.getMatrices().translate((float) cx, (float) cy, 0.0f);
+        context.getMatrices().pushMatrix();
+        context.getMatrices().translate((float) cx, (float) cy);
         float scale = 2.6f + pulse * 0.05f;
-        context.getMatrices().scale(scale, scale, 1.0f);
+        context.getMatrices().scale(scale, scale);
 
         String vip = "VIPER";
         String v1 = "V1";
@@ -134,7 +134,7 @@ public class ViperStartMenu extends Screen {
         drawVLogo(context, startX + vipW + gap, -8, logoW, 16, pulse, accent);
         drawGlowText(context, "§l" + v1, startX + vipW + gap + logoW + gap, -4, accent, accentLight);
 
-        context.getMatrices().pop();
+        context.getMatrices().popMatrix();
     }
 
     private void drawGlowText(DrawContext context, String txt, int x, int y, int accent, int accentLight) {

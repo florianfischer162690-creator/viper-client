@@ -64,8 +64,8 @@ public class HudEditorScreen extends Screen {
             int ax = (scaledW / 2) - 91 - 29 - armorW - 6;
             int ay = (scaledH - 11) - (armorH / 2);
 
-            context.getMatrices().push();
-            context.getMatrices().translate((float) ax, (float) ay, 0.0f);
+            context.getMatrices().pushMatrix();
+            context.getMatrices().translate((float) ax, (float) ay);
 
             context.fill(-1, -1, armorW + 1, 0, accent);
             context.fill(-1, armorH, armorW + 1, armorH + 1, accent);
@@ -73,16 +73,16 @@ public class HudEditorScreen extends Screen {
             context.fill(armorW, -1, armorW + 1, armorH + 1, accent);
 
             HudRenderer.armorElement.render(context, mc, 0, 0);
-            context.getMatrices().pop();
+            context.getMatrices().popMatrix();
         }
 
         super.render(context, mouseX, mouseY, delta);
     }
 
     private void renderElementWithBorder(MinecraftClient mc, DrawContext context, HudRenderer.HudElement el, Config.ElementPos pos, int accent) {
-        context.getMatrices().push();
-        context.getMatrices().translate((float) pos.x, (float) pos.y, 0.0f);
-        context.getMatrices().scale(pos.scale, pos.scale, 1.0f);
+        context.getMatrices().pushMatrix();
+        context.getMatrices().translate((float) pos.x, (float) pos.y);
+        context.getMatrices().scale(pos.scale, pos.scale);
 
         int w = el.getWidth(mc);
         int h = el.getHeight(mc);
@@ -94,7 +94,7 @@ public class HudEditorScreen extends Screen {
         context.fill(w, -1, w + 1, h + 1, borderColor);
 
         el.render(context, mc, 0, 0);
-        context.getMatrices().pop();
+        context.getMatrices().popMatrix();
     }
 
     @Override
