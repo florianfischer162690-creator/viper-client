@@ -4,7 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "InGameHudMixin",
-    "FoodHoverMixin",
+               
     "ChatHudMixin",
     "CrystalOptimizerMixin",
     "CrystalHitMixin",
@@ -28,7 +28,6 @@
     "DeathInfoMixin",
     "ChestFilterMixin",
     "AntiScamMixin",
-    "ItemPriceTooltipMixin",
     "RegionMapMixin",
     "BalanceTrackerMixin",
     "EchestViewerMixin",
