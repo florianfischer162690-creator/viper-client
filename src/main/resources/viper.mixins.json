@@ -11,8 +11,7 @@
     "CrystalPlaceMixin",
     "AnchorOptimizerMixin",
     "GammaMixin",
-    "FreecamMixin",
-    "FreecamInputMixin",
+
     "NametagMixin",
     "FullbrightShadowsMixin",
     "ChatCommandMixin",
