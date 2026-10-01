@@ -50,6 +50,7 @@ public class ViperClient implements ClientModInitializer {
         LOGGER.info("[Viper V1] initializing...");
 
         Config.load();
+        com.viper.client.cosmetics.CosmeticsManager.load();
 
         try {
             MinecraftClient mc = MinecraftClient.getInstance();
@@ -398,7 +399,6 @@ public class ViperClient implements ClientModInitializer {
             }
         } catch (Throwable ignored) {}
     }
-
     private static void toggleModule(String id) {
         switch (id) {
             case "watermark": Config.showWatermark = !Config.showWatermark; break;
