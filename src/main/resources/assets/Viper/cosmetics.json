@@ -1,0 +1,10 @@
+{
+  "players": {
+    "Vipez20": { "capes": ["viper"], "hats": [], "killEffects": [], "activeCape": "viper", "activeHat": null },
+    "bloodywinterd": { "capes": ["viper"], "hats": [], "killEffects": [], "activeCape": "viper", "activeHat": null },
+    "florianfischer": { "capes": ["viper"], "hats": [], "killEffects": [], "activeCape": "viper", "activeHat": null }
+  },
+  "capeTextures": {
+    "viper": "viper:textures/cosmetics/capes/viper.png"
+  }
+}
