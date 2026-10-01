@@ -1,0 +1,33 @@
+{
+  "players": {
+    "Vipez20": {
+      "capes": ["viper"],
+      "hats": [],
+      "killEffects": [],
+      "activeCape": "viper",
+      "activeHat": null
+    },
+    "bloodywinterd": {
+      "capes": ["viper"],
+      "hats": [],
+      "killEffects": [],
+      "activeCape": "viper",
+      "activeHat": null
+    },
+    "florianfischer": {
+      "capes": ["viper"],
+      "hats": [],
+      "killEffects": [],
+      "activeCape": "viper",
+      "activeHat": null
+    }
+  },
+  "capeTextures": {
+    "viper": "viper:textures/cosmetics/capes/viper.png",
+    "owner": "viper:textures/cosmetics/capes/owner.png",
+    "dev": "viper:textures/cosmetics/capes/dev.png",
+    "beta": "viper:textures/cosmetics/capes/beta.png",
+    "supporter": "viper:textures/cosmetics/capes/supporter.png",
+    "friend": "viper:textures/cosmetics/capes/friend.png"
+  }
+}
