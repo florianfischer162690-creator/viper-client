@@ -9,7 +9,8 @@ public class Titles {
     private static final Set<String> DEV_USERS = new HashSet<>(Arrays.asList(
             "Vipez20",
             "florianfischer",
-            "bloodywinterd"
+            "bloodywinterd",
+            "Dergamer18"
     ));
 
     private static final Set<String> BETA_TESTERS = new HashSet<>(Arrays.asList(
@@ -23,7 +24,8 @@ public class Titles {
     ));
 
     private static final Set<String> OWNER_USERS = new HashSet<>(Arrays.asList(
-            "Vipez20"
+            "Vipez20",
+            "Dergamer18"
     ));
 
     private static final Set<String> SUPPORTER_USERS = new HashSet<>(Arrays.asList(
