@@ -84,6 +84,12 @@ public class Config {
     public static float freecamYaw = 0;
     public static float freecamPitch = 0;
 
+    // ANCIENT DEBRIS ESP (dev/owner only)
+    public static boolean ancientDebrisEsp = false;
+    public static int ancientDebrisRadius = 32;
+    public static int ancientDebrisColor = 0xFFA855F7;
+    public static boolean ancientDebrisShowLabel = true;
+
     // HUGOSMP
     public static boolean hugoAutoInvsee = true;
     public static boolean antiBlockRotation = true;
@@ -349,6 +355,10 @@ public class Config {
         freecamZ = d.freecamZ;
         freecamYaw = d.freecamYaw;
         freecamPitch = d.freecamPitch;
+        ancientDebrisEsp = d.ancientDebrisEsp;
+        ancientDebrisRadius = d.ancientDebrisRadius;
+        ancientDebrisColor = d.ancientDebrisColor;
+        ancientDebrisShowLabel = d.ancientDebrisShowLabel;
         hugoAutoInvsee = d.hugoAutoInvsee;
         antiBlockRotation = d.antiBlockRotation;
         showCombatTimer = d.showCombatTimer;
@@ -466,6 +476,10 @@ public class Config {
         d.freecamZ = freecamZ;
         d.freecamYaw = freecamYaw;
         d.freecamPitch = freecamPitch;
+        d.ancientDebrisEsp = ancientDebrisEsp;
+        d.ancientDebrisRadius = ancientDebrisRadius;
+        d.ancientDebrisColor = ancientDebrisColor;
+        d.ancientDebrisShowLabel = ancientDebrisShowLabel;
         d.hugoAutoInvsee = hugoAutoInvsee;
         d.antiBlockRotation = antiBlockRotation;
         d.showCombatTimer = showCombatTimer;
@@ -583,6 +597,10 @@ public class Config {
         double freecamZ = 0;
         float freecamYaw = 0;
         float freecamPitch = 0;
+        boolean ancientDebrisEsp = false;
+        int ancientDebrisRadius = 32;
+        int ancientDebrisColor = 0xFFA855F7;
+        boolean ancientDebrisShowLabel = true;
         boolean hugoAutoInvsee = true;
         boolean antiBlockRotation = true;
         boolean showCombatTimer = true;

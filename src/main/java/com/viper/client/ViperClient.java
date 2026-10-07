@@ -50,6 +50,7 @@ public class ViperClient implements ClientModInitializer {
         LOGGER.info("[Viper V1] initializing...");
 
         Config.load();
+        com.viper.client.cosmetics.CosmeticsManager.load();
 
         try {
             MinecraftClient mc = MinecraftClient.getInstance();
@@ -59,6 +60,7 @@ public class ViperClient implements ClientModInitializer {
         } catch (Throwable ignored) {}
 
         HudRenderer.init();
+        com.viper.client.hud.element.AncientDebrisEspRenderer.register();
         DamageTintRenderer.register();
         ChatTabsUI.register();
 
@@ -324,11 +326,14 @@ public class ViperClient implements ClientModInitializer {
                     }
                 }
             } catch (Throwable ignored) {}
+
+            try {
+                com.viper.client.util.AncientDebrisScanner.tick();
+            } catch (Throwable ignored) {}
         });
 
         LOGGER.info("[Viper V1] ready.");
     }
-
     public static void handleWaypointCommand(MinecraftClient client, String command) {
         try {
             String trimmed = command.trim();
@@ -452,6 +457,7 @@ public class ViperClient implements ClientModInitializer {
             case "combattimer": Config.showCombatTimer = !Config.showCombatTimer; break;
             case "itempricetooltip": Config.itemPriceTooltip = !Config.itemPriceTooltip; break;
             case "rtptimer": Config.showRtpTimer = !Config.showRtpTimer; break;
+            case "ancientdebris": Config.ancientDebrisEsp = !Config.ancientDebrisEsp; break;
         }
         Config.save();
         MinecraftClient client = MinecraftClient.getInstance();
