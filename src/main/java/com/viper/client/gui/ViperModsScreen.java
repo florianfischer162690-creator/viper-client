@@ -182,6 +182,9 @@ public class ViperModsScreen extends Screen {
         pvp.add(new ModCard("timechanger", "TIME CHANGER", "Client-side time override", () -> Config.timeChanger, v -> Config.timeChanger = v));
         pvp.add(new ModCard("customf3", "CUSTOM F3", "Customize debug screen", () -> Config.customF3, v -> Config.customF3 = v));
 
+        // ANCIENT DEBRIS ESP
+        pvp.add(new ModCard("ancientdebris", "ANCIENT DEBRIS ESP", "See ancient debris through walls", () -> Config.ancientDebrisEsp, v -> Config.ancientDebrisEsp = v));
+
         ModCard macrosCard = new ModCard("chatmacros", "CHAT MACROS", "Click to edit presets", () -> true, v -> {});
         macrosCard.expandable = true;
         macrosCard.isAction = true;
