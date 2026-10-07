@@ -155,6 +155,22 @@ public class ViperClient implements ClientModInitializer {
                 keyPressedState.put("__open_menu__", menuDown);
             } catch (Throwable ignored) {}
 
+            // F8 = ANCIENT DEBRIS ESP TOGGLE
+            try {
+                long window = client.getWindow().getHandle();
+                boolean f8Down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F8) == GLFW.GLFW_PRESS;
+                boolean f8WasDown = keyPressedState.getOrDefault("__ancient_debris__", false);
+                if (f8Down && !f8WasDown && client.currentScreen == null) {
+                    Config.ancientDebrisEsp = !Config.ancientDebrisEsp;
+                    Config.save();
+                    if (client.player != null) {
+                        client.player.sendMessage(net.minecraft.text.Text.literal(
+                                "§a[Viper] §fAncient Debris ESP " + (Config.ancientDebrisEsp ? "§aon" : "§coff")), true);
+                    }
+                }
+                keyPressedState.put("__ancient_debris__", f8Down);
+            } catch (Throwable ignored) {}
+
             try {
                 long window = client.getWindow().getHandle();
                 if (client.currentScreen == null) {
